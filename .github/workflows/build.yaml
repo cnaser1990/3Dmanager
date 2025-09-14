@@ -1,0 +1,21 @@
+name: Build Windows EXE
+on: 
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          pip install django pyinstaller
+          pyinstaller --onefile --name app --hidden-import django --add-data "templates;templates" --add-data "static;static" --add-data "calculator;calculator" app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          path: dist/app.exe

@@ -1,0 +1,15 @@
+openssl genrsa -out rs256-private.pem 2048
+
+openssl rsa -in rs256-private.pem -pubout -out rs256-public.pem
+
+python tools/issue_licence.py --private-key-file ./rs256-private.pem  --customer-id "user@example.com" --plan monthly --hw "8bc775cb799ac407614427fb6a27ab815494d2d978ee1e2e65fc7b37d717ee62" --out license.jwt
+
+pyinstaller --clean --onefile --noconsole --name app   --add-data "templates:templates"   --add-data "static:static"   --add-data "config:config"   --collect-all django   --collect-all asgiref   --collect-all sqlparse   --collect-all jose   --hidden-import "jose.backends.cryptography_backend"   run_app.py
+
+pyinstaller --onefile `
+  --name app `
+  --hidden-import django `
+  --add-data "templates;templates" `
+  --add-data "static;static" `
+  --add-data "calculator;calculator" `
+  app.py

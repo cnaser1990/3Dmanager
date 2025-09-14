@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  {% if auto_redirect %}
+    <meta http-equiv="refresh" content="5; url={% url 'calculator:index' %}">
+  {% endif %}
+  <title>Calculator -- License</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; max-width: 720px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .bad { color: #b00020; }
+    .ok { color: #0a7; }
+    code, pre { background: #f6f8fa; padding: 4px 6px; border-radius: 6px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    input[type=file] { max-width: 100%; }
+    button { padding: 8px 12px; cursor: pointer; }
+    .success-btn { 
+      background: #0a7; 
+      color: white; 
+      padding: 10px 20px; 
+      text-decoration: none; 
+      border-radius: 6px; 
+      display: inline-block;
+      font-weight: 500;
+    }
+    .success-btn:hover { background: #086; }
+    .redirect-notice { 
+      background: #e8f5e9; 
+      padding: 12px; 
+      border-radius: 6px; 
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>License</h1>
+  {% if status.valid %}
+    <div class="card ok">
+      <p><strong>Status:</strong> Valid</p>
+      <p><strong>Expires in:</strong> {{ status.expires_in_days }} day(s)</p>
+      <p><strong>Plan:</strong> {{ status.payload.plan|default:"N/A" }}</p>
+      <p><strong>License ID:</strong> {{ status.payload.lic }}</p>
+      
+      {% if auto_redirect %}
+        <div class="redirect-notice">
+          <p>✓ Redirecting to main app in 5 seconds...</p>
+          <a href="{% url 'calculator:index' %}" class="success-btn">Go to 3D Calculator Now</a>
+        </div>
+      {% else %}
+        <div style="margin-top: 12px;">
+          <a href="{% url 'calculator:index' %}" class="success-btn">Go to 3D Calculator</a>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="card bad">
+      <p><strong>Status:</strong> Not valid</p>
+      <p><strong>Reason:</strong> {{ status.error }}</p>
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <h3>Install or replace license</h3>
+    <form method="post" action="{% url 'license_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row">
+        <input name="file" type="file" accept=".jwt,.lic,.txt,application/jwt,text/plain" required>
+        <button type="submit">Upload license file</button>
+      </div>
+      <p>License file path: <code>{{ license_path }}</code></p>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Hardware fingerprint</h3>
+    <p>Send this fingerprint to receive your license:</p>
+    <pre>{{ fingerprint }}</pre>
+    <p><a href="{% url 'license_fingerprint' %}">Open as text</a></p>
+  </div>
+</body>
+</html>

@@ -19,9 +19,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from calculator.views_license import license_fingerprint, license_page, license_upload
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('calculator.urls')),
+    path("license/", license_page, name="license_page"),
+    path("license/upload", license_upload, name="license_upload"),
+    path("license/fingerprint", license_fingerprint, name="license_fingerprint"),
 ]
 
 # Serve media files during development

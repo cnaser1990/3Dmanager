@@ -1,5 +1,7 @@
 # calculator/urls.py
 from django.urls import path
+
+from calculator.views_license import license_fingerprint, license_page, license_upload
 from . import views
 
 app_name = 'calculator'
@@ -21,4 +23,3 @@ urlpatterns = [
     path('api/settings/pricing.json', views.pricing_settings_json, name='pricing_settings_json'),
     path('api/calculate_preview/', views.calculate_preview, name='calculate_preview'),
 ]
-

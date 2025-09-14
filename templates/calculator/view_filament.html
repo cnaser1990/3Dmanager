@@ -1,0 +1,280 @@
+<!-- templates/calculator/view_filament.html -->
+{% extends "calculator/base.html" %}
+
+{% block title %}{{ filament.name }} - {{ filament.color }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-4">
+        <!-- Filament Info Card -->
+        <div class="card fade-in">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-spool me-2"></i>اطلاعات فیلامنت</h5>
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'calculator:edit_filament' filament.pk %}">
+                            <i class="fas fa-edit me-2"></i>ویرایش
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'calculator:delete_filament' filament.pk %}" 
+                               onclick="return confirm('آیا مطمئن هستید؟')">
+                            <i class="fas fa-trash me-2"></i>حذف
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <div class="position-relative d-inline-block">
+                        <i class="fas fa-spool fa-4x text-primary mb-3"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                            {{ filament.material }}
+                        </span>
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-2">{{ filament.name }}</h4>
+                <span class="badge fs-6 mb-4" style="background: var(--primary); color: white; padding: 10px 20px;">
+                    {{ filament.color }} - {{ filament.material }}
+                </span>
+                
+                <div class="my-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">میزان باقی‌مانده</span>
+                        <span class="fw-bold fs-5">{{ filament.remaining_amount|floatformat:1 }}/{{ filament.initial_amount|floatformat:1 }} متر</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 20px;">
+                        {% with percentage=usage_percentage %}
+                        <div class="progress-bar position-relative" style="width: {{ percentage }}%; 
+                            background: linear-gradient(135deg, 
+                            {% if percentage > 70 %}#00d4aa, #38b2ac{% elif percentage > 30 %}#f6ad55, #ed8936{% else %}#fc8181, #e53e3e{% endif %});">
+                            <span class="position-absolute w-100 text-center text-white fw-bold">{{ percentage }}%</span>
+                        </div>
+                        {% endwith %}
+                    </div>
+                    
+                    {% if usage_percentage < 20 %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            فیلامنت در حال تمام شدن است!
+                        </div>
+                    {% elif usage_percentage < 50 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            فیلامنت کم است، تهیه فیلامنت جدید را در نظر بگیرید
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="cost-preview">
+                    <div class="cost-item">
+                        <span><i class="fas fa-tag me-2 text-primary"></i>قیمت خرید:</span>
+                        <span class="fw-bold">{{ filament.cost_per_kg|floatformat:0 }} تومان/کیلو</span>
+                    </div>
+                    <div class="cost-item">
+                        <span><i class="fas fa-calculator me-2 text-success"></i>قیمت هر متر:</span>
+                        <span class="fw-bold">{{ cost_per_meter|floatformat:0 }} تومان</span>
+                    </div>
+                    <div class="cost-item">
+                        <span><i class="fas fa-coins me-2 text-warning"></i>ارزش باقی‌مانده:</span>
+                        <span class="fw-bold">{{ remaining_value|floatformat:0 }} تومان</span>
+                    </div>
+                    <div class="cost-item">
+                        <span><i class="fas fa-calendar me-2 text-info"></i>تاریخ خرید:</span>
+                        <span class="fw-bold">{{ filament.created_date|date:"Y/m/d" }}</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{% url 'calculator:add_project' filament.pk %}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-plus me-2"></i>مدل جدید
+                    </a>
+                    <a href="{% url 'calculator:edit_filament' filament.pk %}" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-2"></i>ویرایش اطلاعات
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Card -->
+        {% if stats.count %}
+        <div class="card fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-bar me-2"></i>آمار این فیلامنت</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <div class="stats-card border-0 p-3">
+                            <h4 class="text-primary mb-1">{{ stats.count }}</h4>
+                            <small class="text-muted">مدل انجام شده</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stats-card border-0 p-3">
+                            <h4 class="text-success mb-1">{{ stats.total_weight|default:0|floatformat:1 }}</h4>
+                            <small class="text-muted">گرم مصرف شده</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cost-preview">
+                    <div class="cost-item">
+                        <span>کل هزینه تولید:</span>
+                        <span class="fw-bold text-danger">{{ stats.total_cost|default:0|floatformat:0 }} تومان</span>
+                    </div>
+                    <div class="cost-item">
+                        <span>کل قیمت فروش:</span>
+                        <span class="fw-bold text-success">{{ stats.total_selling|default:0|floatformat:0 }} تومان</span>
+                    </div>
+                    <div class="cost-item">
+                        <span class="fw-bold">سود کل:</span>
+                        <span class="fw-bold text-primary">
+                            <div class="cost-item">
+                                <span class="fw-bold">سود کل:</span>
+                                <span class="fw-bold text-primary">
+                                    {{ stats.profit|floatformat:0 }} تومان
+                                </span>
+                            </div>
+                        </span>
+                    </div>
+                    <div class="cost-item">
+                        <span>متوسط سود هر مدل:</span>
+                        <span class="fw-bold text-info">
+                            {% if stats.count %}
+                                {{ stats.avg_profit|floatformat:0 }} تومان
+                            {% else %}
+                                0 تومان
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-xl-8">
+        <div class="card slide-in-right">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list me-2"></i>مدل‌های انجام شده</h5>
+                <span class="badge bg-info">{{ projects|length }} مدل</span>
+            </div>
+            <div class="card-body">
+                {% if projects %}
+                    <div class="row">
+                        {% for project in projects %}
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card border-0 h-100" 
+                                 style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));">
+                                <div class="card-body p-3">
+                                    <!-- Project Image -->
+                                    <div class="text-center mb-3">
+                                        {% if project.has_image %}
+                                            <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" 
+                                                 class="img-fluid rounded project-image" 
+                                                 style="height: 120px; width: 100%; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center image-placeholder" 
+                                                 style="height: 120px;">
+                                                <i class="fas fa-cube fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 text-primary">{{ project.model_name }}</h6>
+                                        <span class="badge bg-secondary">{{ project.code }}</span>
+                                    </div>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <small class="text-muted">وزن</small>
+                                            <br>
+                                            <strong>{{ project.filament_weight_used|floatformat:1 }}گ</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">زمان</small>
+                                            <br>
+                                            <strong>{{ project.print_time_hours }}س</strong>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="text-muted">ابعاد</small>
+                                            <br>
+                                            <strong>{{ project.size_x|floatformat:0 }}×{{ project.size_y|floatformat:0 }}×{{ project.size_z|floatformat:0 }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="cost-preview">
+                                        <div class="cost-item">
+                                            <span><small>هزینه:</small></span>
+                                            <span class="text-danger fw-bold">{{ project.total_cost|floatformat:0 }}</span>
+                                        </div>
+                                        <div class="cost-item">
+                                            <span><small>قیمت:</small></span>
+                                            <span class="text-success fw-bold">{{ project.selling_price|floatformat:0 }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2 mt-3">
+                                        <a href="{% url 'calculator:sales' %}?code={{ project.code }}" 
+                                           class="btn btn-success btn-sm flex-fill">
+                                            <i class="fas fa-shopping-cart me-1"></i>فروش
+                                        </a>
+                                        <a href="{% url 'calculator:edit_project' project.pk %}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'calculator:delete_project' project.pk %}" 
+                                           class="btn btn-outline-danger btn-sm"
+                                           onclick="return confirm('آیا مطمئن هستید؟')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="animate__animated animate__pulse animate__infinite">
+                            <i class="fas fa-project-diagram fa-4x text-muted mb-4"></i>
+                        </div>
+                        <h4 class="text-muted mb-3">هنوز مدل‌ای با این فیلامنت انجام نداده‌اید</h4>
+                        <p class="text-muted mb-4">شروع کنید و اولین مدل خود را با این فیلامنت بسازید</p>
+                        <a href="{% url 'calculator:add_project' filament.pk %}" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>اولین مدل را شروع کنید
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add project count animation
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate cards on scroll
+    const cards = document.querySelectorAll('.col-lg-6');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,543 @@
+<!-- templates/calculator/sales.html -->
+{% extends "calculator/base.html" %}
+
+{% block title %}مدیریت فروش{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-8">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-shopping-cart me-2"></i>ثبت فروش جدید</h5>
+            </div>
+            <div class="card-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pills-select-tab" data-bs-toggle="pill" 
+                                data-bs-target="#pills-select" type="button" role="tab">
+                            <i class="fas fa-mouse-pointer me-2"></i>انتخاب از لیست
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-code-tab" data-bs-toggle="pill" 
+                                data-bs-target="#pills-code" type="button" role="tab">
+                            <i class="fas fa-keyboard me-2"></i>وارد کردن کد
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="pills-tabContent">
+                    <!-- Select from List Tab -->
+                    <div class="tab-pane fade show active" id="pills-select" role="tabpanel">
+                        <form method="POST" action="{% url 'calculator:sales' %}" id="selectSaleForm">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="{{ form.project.id_for_label }}" class="form-label">
+                                            <i class="fas fa-list me-2"></i>انتخاب محصول
+                                        </label>
+                                        {{ form.project }}
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                                            <i class="fas fa-hashtag me-2"></i>تعداد
+                                        </label>
+                                        {{ form.quantity }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="{{ form.unit_price.id_for_label }}" class="form-label">
+                                            <i class="fas fa-money-bill me-2"></i>قیمت واحد
+                                        </label>
+                                        {{ form.unit_price }}
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="{{ form.packaging_cost.id_for_label }}" class="form-label">
+                                            <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
+                                        </label>
+                                        {{ form.packaging_cost }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product Preview -->
+                            <div id="product_preview" class="cost-preview" style="display: none;">
+                                <div class="alert alert-info">
+                                    <h6 class="mb-3"><i class="fas fa-eye me-2"></i>پیش‌نمایش فروش</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="cost-item">
+                                                <span>هزینه تولید واحد:</span>
+                                                <span id="preview_unit_cost" class="text-danger fw-bold">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="cost-item">
+                                                <span>قیمت پیشنهادی واحد:</span>
+                                                <span id="preview_suggested" class="text-success fw-bold">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="cost-item">
+                                                <span>قیمت کل:</span>
+                                                <span id="preview_total_price" class="text-primary fw-bold">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="cost-item">
+                                                <span>سود کل:</span>
+                                                <span id="preview_total_profit" class="text-success fw-bold">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="{{ form.customer_name.id_for_label }}" class="form-label">
+                                            <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
+                                        </label>
+                                        {{ form.customer_name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="{{ form.customer_phone.id_for_label }}" class="form-label">
+                                            <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
+                                        </label>
+                                        {{ form.customer_phone }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                    <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
+                                </label>
+                                {{ form.notes }}
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-2"></i>ثبت فروش
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Enter Code Tab -->
+                    <div class="tab-pane fade" id="pills-code" role="tabpanel">
+                        <form method="POST" action="{% url 'calculator:sales' %}" id="codeSaleForm">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="{{ form.project_code.id_for_label }}" class="form-label">
+                                            <i class="fas fa-hashtag me-2"></i>کد محصول
+                                        </label>
+                                        {{ form.project_code }}
+                                        <div class="form-text">کد عددی محصول را وارد کنید</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-hashtag me-2"></i>تعداد
+                                        </label>
+                                        <input type="number" class="form-control" name="quantity" value="1" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-money-bill me-2"></i>قیمت واحد
+                                        </label>
+                                        <input type="number" class="form-control" name="unit_price" required placeholder="150000">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
+                                        </label>
+                                        <input type="number" class="form-control" name="packaging_cost" value="0" min="0" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
+                                        </label>
+                                        <input type="text" class="form-control" name="customer_name" placeholder="نام و نام خانوادگی">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
+                                        </label>
+                                        <input type="text" class="form-control" name="customer_phone" placeholder="09123456789">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
+                                </label>
+                                <textarea class="form-control" name="notes" rows="3" 
+                                          placeholder="توضیحات اضافی در مورد فروش..."></textarea>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-2"></i>ثبت فروش
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Sales -->
+        <div class="card slide-in-right mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-history me-2"></i>فروش‌های اخیر</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_sales %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>کد</th>
+                                    <th>تصویر</th>
+                                    <th>نام محصول</th>
+                                    <th>فیلامنت</th>
+                                    <th>تعداد</th>
+                                    <th>قیمت واحد</th>
+                                    <th>بسته‌بندی</th>
+                                    <th>قیمت کل</th>
+                                    <th>مشتری</th>
+                                    <th>تاریخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary fs-6">{{ sale.project_code }}</span>
+                                    </td>
+                                    <td>
+                                        {% if sale.project.has_image %}
+                                            <img src="{{ sale.project.picture.url }}" alt="{{ sale.project.model_name }}" 
+                                                 class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-cube text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ sale.project.model_name|default:'نامشخص' }}</strong></td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ sale.project.filament.name|default:'نامشخص' }} - {{ sale.project.filament.color|default:'' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ sale.quantity }} عدد</span>
+                                    </td>
+                                    <td class="text-primary">
+                                        {{ sale.unit_price|floatformat:0 }} تومان
+                                    </td>
+                                    <td class="text-secondary">
+                                        {% if sale.packaging_cost > 0 %}
+                                            {{ sale.packaging_cost|floatformat:0 }} تومان
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-success fw-bold">
+                                        {{ sale.total_price|floatformat:0 }} تومان
+                                    </td>
+                                    <td>
+                                        {% if sale.customer_name %}
+                                            {{ sale.customer_name }}
+                                            {% if sale.customer_phone %}
+                                                <br><small class="text-muted">{{ sale.customer_phone }}</small>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">ناشناس</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ sale.sale_date|date:"Y/m/d H:i" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">هنوز فروشی ثبت نشده است</h5>
+                        <p class="text-muted">اولین فروش خود را ثبت کنید</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <!-- Available Projects -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-list me-2"></i>فهرست محصولات</h6>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                {% if all_projects %}
+                    {% for project in all_projects|slice:":10" %}
+                    <div class="border rounded-3 p-3 mb-3" 
+                         style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); cursor: pointer;"
+                         onclick="selectProject({{ project.pk }}, '{{ project.model_name|escapejs }}', {{ project.selling_price }}, {{ project.total_cost }})">
+                        
+                        <!-- Project Image -->
+                        <div class="row">
+                            <div class="col-4">
+                                {% if project.has_image %}
+                                    <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" 
+                                         class="img-fluid rounded" 
+                                         style="height: 60px; width: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                         style="height: 60px;">
+                                        <i class="fas fa-cube text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-8">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-primary">{{ project.code }}</span>
+                                    <small class="text-muted">{{ project.created_date|date:"Y/m/d" }}</small>
+                                </div>
+                                <h6 class="mb-1">{{ project.model_name }}</h6>
+                                <p class="text-muted mb-2">
+                                    <small>{{ project.filament.name }} - {{ project.filament.color }}</small>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-success fw-bold">
+                                        {{ project.selling_price|floatformat:0 }} تومان
+                                    </small>
+                                    <small class="text-primary">
+                                        سود: {{ project.profit|floatformat:0 }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if all_projects|length > 10 %}
+                    <div class="text-center">
+                        <small class="text-muted">و {{ all_projects|length|add:"-10" }} محصول دیگر...</small>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">هیچ محصولی موجود نیست</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden project data for JavaScript -->
+<script type="application/json" id="projects-data">
+{
+    {% for project in all_projects %}
+    "{{ project.pk }}": {
+        "id": {{ project.pk }},
+        "name": "{{ project.model_name|escapejs }}",
+        "cost": {{ project.total_cost }},
+        "price": {{ project.selling_price }},
+        "profit": {{ project.profit }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+}
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Store project data
+let projectsData = {};
+try {
+    projectsData = JSON.parse(document.getElementById('projects-data').textContent);
+} catch (e) {
+    console.log('Could not parse projects data');
+}
+
+// Project selection functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.querySelector('select[name="project"]');
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const unitPriceInput = document.querySelector('input[name="unit_price"]');
+    const packagingInput = document.querySelector('input[name="packaging_cost"]');
+    
+    if (projectSelect) {
+        projectSelect.addEventListener('change', function() {
+            handleProjectSelection(this);
+        });
+    }
+    
+    // Add quantity, price and packaging change listeners
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updateTotalCalculations);
+    }
+    if (unitPriceInput) {
+        unitPriceInput.addEventListener('input', updateTotalCalculations);
+    }
+    if (packagingInput) {
+        packagingInput.addEventListener('input', updateTotalCalculations);
+    }
+});
+
+function handleProjectSelection(selectElement) {
+    const unitPriceInput = document.querySelector('input[name="unit_price"]');
+    const preview = document.getElementById('product_preview');
+    
+    if (selectElement.value && projectsData[selectElement.value]) {
+        const project = projectsData[selectElement.value];
+        
+        // Set suggested price
+        if (unitPriceInput) {
+            unitPriceInput.value = Math.round(project.price);
+        }
+        
+        // Show preview
+        updatePreview(project.cost, project.price, project.profit);
+        preview.style.display = 'block';
+        
+    } else {
+        if (unitPriceInput) {
+            unitPriceInput.value = '';
+        }
+        preview.style.display = 'none';
+    }
+    
+    updateTotalCalculations();
+}
+
+function updatePreview(cost, price, profit) {
+    const costElement = document.getElementById('preview_unit_cost');
+    const suggestedElement = document.getElementById('preview_suggested');
+    
+    if (costElement) {
+        costElement.textContent = Math.round(cost).toLocaleString() + ' تومان';
+    }
+    if (suggestedElement) {
+        suggestedElement.textContent = Math.round(price).toLocaleString() + ' تومان';
+    }
+    
+    updateTotalCalculations();
+}
+
+function updateTotalCalculations() {
+    const projectSelect = document.querySelector('select[name="project"]');
+    const quantityInput = document.querySelector('input[name="quantity"]');
+    const unitPriceInput = document.querySelector('input[name="unit_price"]');
+    const packagingInput = document.querySelector('input[name="packaging_cost"]');
+    const totalPriceElement = document.getElementById('preview_total_price');
+    const totalProfitElement = document.getElementById('preview_total_profit');
+    
+    if (!projectSelect || !projectSelect.value || !projectsData[projectSelect.value]) return;
+    
+    const project = projectsData[projectSelect.value];
+    const quantity = parseInt(quantityInput ? quantityInput.value : 1) || 1;
+    const unitPrice = parseFloat(unitPriceInput ? unitPriceInput.value : 0) || 0;
+    const packagingCost = parseFloat(packagingInput ? packagingInput.value : 0) || 0;
+    
+    const subtotal = unitPrice * quantity;
+    const totalPrice = subtotal + packagingCost; // Total price includes packaging
+    const unitProfit = unitPrice - project.cost;
+    const totalProfit = unitProfit * quantity; // FIX: Profit does NOT include packaging
+    
+    if (totalPriceElement) {
+        totalPriceElement.textContent = Math.round(totalPrice).toLocaleString() + ' تومان';
+    }
+    
+    if (totalProfitElement) {
+        totalProfitElement.textContent = Math.round(totalProfit).toLocaleString() + ' تومان';
+        totalProfitElement.className = totalProfit >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+    }
+}
+
+// Quick select from sidebar
+function selectProject(id, name, price, cost) {
+    // Switch to select tab
+    const selectTab = document.getElementById('pills-select-tab');
+    if (selectTab) {
+        selectTab.click();
+    }
+    
+    // Select the project
+    const projectSelect = document.querySelector('select[name="project"]');
+    if (projectSelect) {
+        projectSelect.value = id;
+        
+        // Trigger change event
+        const event = new Event('change', { bubbles: true });
+        projectSelect.dispatchEvent(event);
+    }
+    
+    // Focus on quantity input
+    setTimeout(() => {
+        const quantityInput = document.querySelector('input[name="quantity"]');
+        if (quantityInput) {
+            quantityInput.focus();
+        }
+    }, 300);
+}
+
+// Tab switching
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+        // Switch to code tab and fill the code
+        const codeTab = document.getElementById('pills-code-tab');
+        if (codeTab) {
+            codeTab.click();
+        }
+        
+        const codeInput = document.querySelector('input[name="project_code"]');
+        if (codeInput) {
+            codeInput.value = code;
+        }
+        
+        const codeQuantityInput = document.querySelector('#pills-code input[name="quantity"]');
+        if (codeQuantityInput) {
+            codeQuantityInput.focus();
+        }
+    }
+});
+</script>
+{% endblock %}

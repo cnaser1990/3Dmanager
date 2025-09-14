@@ -1,0 +1,170 @@
+<!-- templates/calculator/add_filament.html -->
+{% extends "calculator/base.html" %}
+
+{% block title %}اضافه کردن فیلامنت جدید{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5><i class="fas fa-spool me-2"></i>اضافه کردن فیلامنت جدید</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="filamentForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tag me-2 text-primary"></i>نام فیلامنت
+                                </label>
+                                {{ form.name }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    نام برند و مدل فیلامنت را وارد کنید
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="{{ form.color.id_for_label }}" class="form-label">
+                                    <i class="fas fa-palette me-2 text-success"></i>رنگ
+                                </label>
+                                {{ form.color }}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    رنگ دقیق فیلامنت
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <label for="{{ form.material.id_for_label }}" class="form-label">
+                                    <i class="fas fa-atom me-2 text-info"></i>نوع ماده
+                                </label>
+                                {{ form.material }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <label for="{{ form.initial_amount.id_for_label }}" class="form-label">
+                                    <i class="fas fa-weight me-2 text-warning"></i>مقدار اولیه (متر)
+                                </label>
+                                {{ form.initial_amount }}
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    معمولاً 1 کیلو = 330 متر
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-4">
+                                <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label">
+                                    <i class="fas fa-money-bill me-2 text-danger"></i>قیمت (تومان/کیلو)
+                                </label>
+                                {{ form.cost_per_kg }}
+                                <div class="form-text">
+                                    <i class="fas fa-chart-line me-1"></i>
+                                    قیمت خرید هر کیلوگرم
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Preview -->
+                    <div class="cost-preview" id="filamentPreview">
+                        <h6 class="mb-3">
+                            <i class="fas fa-eye me-2"></i>پیش‌نمایش
+                        </h6>
+                        <div class="cost-item">
+                            <span>نام کامل:</span>
+                            <span id="previewName" class="fw-bold">-</span>
+                        </div>
+                        <div class="cost-item">
+                            <span>قیمت هر متر:</span>
+                            <span id="previewPrice" class="fw-bold text-primary">-</span>
+                        </div>
+                        <div class="cost-item">
+                            <span>ارزش کل:</span>
+                            <span id="previewTotal" class="fw-bold text-success">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 justify-content-end mt-4">
+                        <a href="{% url 'calculator:index' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>انصراف
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>ذخیره فیلامنت
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h6><i class="fas fa-lightbulb me-2"></i>نکات مفید</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-primary"><i class="fas fa-thermometer-half me-2"></i>دمای پرینت</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>PLA:</strong> 190-220°C</li>
+                                <li><strong>PLA+:</strong> 200-230°C</li>
+                                <li><strong>ABS:</strong> 230-260°C</li>
+                                <li><strong>PETG:</strong> 220-250°C</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h6 class="text-success"><i class="fas fa-ruler me-2"></i>تبدیل وزن به طول</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>1.75mm PLA:</strong> 1kg ≈ 330m</li>
+                                <li><strong>3.00mm PLA:</strong> 1kg ≈ 110m</li>
+                                <li><strong>TPU:</strong> 1kg ≈ 400m</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updatePreview() {
+    const name = document.getElementById('{{ form.name.id_for_label }}').value;
+    const color = document.getElementById('{{ form.color.id_for_label }}').value;
+    const material = document.getElementById('{{ form.material.id_for_label }}').value;
+    const amount = parseFloat(document.getElementById('{{ form.initial_amount.id_for_label }}').value) || 0;
+    const cost = parseFloat(document.getElementById('{{ form.cost_per_kg.id_for_label }}').value) || 0;
+    
+    const fullName = `${name} ${color} ${material}`.trim();
+    const pricePerMeter = (cost / 330).toFixed(0);
+    const totalValue = (amount * cost / 330).toFixed(0);
+    
+    document.getElementById('previewName').textContent = fullName || '-';
+    document.getElementById('previewPrice').textContent = pricePerMeter > 0 ? `${parseInt(pricePerMeter).toLocaleString('fa-IR')} تومان` : '-';
+    document.getElementById('previewTotal').textContent = totalValue > 0 ? `${parseInt(totalValue).toLocaleString('fa-IR')} تومان` : '-';
+}
+
+// Update preview on input change
+document.querySelectorAll('#filamentForm input, #filamentForm select').forEach(input => {
+    input.addEventListener('input', updatePreview);
+});
+
+// Initial preview update
+updatePreview();
+</script>
+{% endblock %}

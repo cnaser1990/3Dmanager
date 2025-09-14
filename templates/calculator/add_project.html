@@ -1,0 +1,582 @@
+{% extends "calculator/base.html" %}
+
+{% block title %}مدل جدید - {{ filament.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4">
+  <!-- Hero / Summary -->
+  <div class="hero-card mb-4">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="hero-icon"><i class="fas fa-cube"></i></span>
+            <h1 class="hero-title mb-0">افزودن مدل جدید</h1>
+          </div>
+          <div class="hero-subtitle mt-2">
+            مشخصات مدل را وارد کنید، تصویر را اضافه کنید و هزینه‌ها را به‌صورت زنده مشاهده کنید
+          </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="badge rounded-pill bg-primary-soft">
+            <i class="fas fa-flask ms-1"></i>{{ filament.material }}
+          </span>
+          <span class="badge rounded-pill bg-success-soft">
+            <i class="fas fa-spool ms-1"></i>{{ filament.name }} - {{ filament.color }}
+          </span>
+          <span class="badge rounded-pill bg-warning-soft text-dark">
+            <i class="fas fa-ruler ms-1"></i>باقی‌مانده: {{ filament.remaining_amount|floatformat:1 }} m
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Main form -->
+    <div class="col-12 col-xl-8">
+      <form method="post" enctype="multipart/form-data" id="model-form">
+        {% csrf_token %}
+
+        <!-- Section: Basic -->
+        <div class="card neo-card">
+          <div class="card-header border-0 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <span class="step-index">1</span>
+              <h5 class="mb-0">اطلاعات پایه</h5>
+            </div>
+            <span class="text-muted small">نام مدل و تصویر</span>
+          </div>
+          <div class="card-body">
+            <div class="row g-3 align-items-start">
+              <div class="col-md-8">
+                <label for="id_model_name" class="form-label fw-semibold">نام مدل</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text"><i class="fas fa-cube"></i></span>
+                  {{ form.model_name }}
+                </div>
+                {% if form.model_name.errors %}
+                  <div class="text-danger small mt-1">{{ form.model_name.errors.0 }}</div>
+                {% else %}
+                  <div class="form-text">مثال: گلدان دکوراتیو، فیگور قهرمان، هاب کابل</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label for="id_picture" class="form-label fw-semibold">تصویر مدل</label>
+                <div class="upload-tile" id="upload-tile">
+                  <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                  <div class="upload-hint">برای انتخاب تصویر کلیک کنید</div>
+                  {{ form.picture }}
+                  <img id="previewImg" alt="پیش‌نمایش مدل" />
+                </div>
+                {% if form.picture.errors %}
+                  <div class="text-danger small mt-1">{{ form.picture.errors.0 }}</div>
+                {% else %}
+                  <div class="form-text">فرمت‌های مجاز: JPG, PNG | حداکثر 5MB</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Technical -->
+        <div class="card neo-card mt-4">
+          <div class="card-header border-0 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <span class="step-index">2</span>
+              <h5 class="mb-0">مشخصات فنی</h5>
+            </div>
+            <span class="text-muted small">فیلامنت، زمان و ابعاد</span>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="id_filament_used_mm" class="form-label fw-semibold">فیلامنت مصرفی</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text"><i class="fas fa-ruler"></i></span>
+                  {{ form.filament_used_mm }}
+                  <span class="input-group-text">mm</span>
+                </div>
+                {% if form.filament_used_mm.errors %}
+                  <div class="text-danger small mt-1">{{ form.filament_used_mm.errors.0 }}</div>
+                {% else %}
+                  <div class="form-text">هر 1000mm = 1m. مثال: 15000</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label for="id_print_time_hours" class="form-label fw-semibold">زمان پرینت</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                  {{ form.print_time_hours }}
+                  <span class="input-group-text">h</span>
+                </div>
+                {% if form.print_time_hours.errors %}
+                  <div class="text-danger small mt-1">{{ form.print_time_hours.errors.0 }}</div>
+                {% else %}
+                  <div class="form-text">مثال: 3.5</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+              <div class="col-md-4">
+                <label for="id_size_x" class="form-label fw-semibold">طول (X)</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text">X</span>
+                  {{ form.size_x }}
+                  <span class="input-group-text">mm</span>
+                </div>
+                {% if form.size_x.errors %}
+                  <div class="text-danger small mt-1">{{ form.size_x.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label for="id_size_y" class="form-label fw-semibold">عرض (Y)</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text">Y</span>
+                  {{ form.size_y }}
+                  <span class="input-group-text">mm</span>
+                </div>
+                {% if form.size_y.errors %}
+                  <div class="text-danger small mt-1">{{ form.size_y.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-4">
+                <label for="id_size_z" class="form-label fw-semibold">ارتفاع (Z)</label>
+                <div class="input-group input-elevated">
+                  <span class="input-group-text">Z</span>
+                  {{ form.size_z }}
+                  <span class="input-group-text">mm</span>
+                </div>
+                {% if form.size_z.errors %}
+                  <div class="text-danger small mt-1">{{ form.size_z.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Services -->
+        <div class="card neo-card mt-4">
+          <div class="card-header border-0 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <span class="step-index">3</span>
+              <h5 class="mb-0">خدمات اضافی</h5>
+            </div>
+            <span class="text-muted small">اختیاری</span>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="service-check">
+                  <div class="form-check m-0">
+                    {{ form.post_processing_enabled }}
+                    <label class="form-check-label" for="post_processing_enabled">
+                      <i class="fas fa-hammer me-2"></i>پست‌پروسسینگ
+                      <small class="text-muted d-block">پرداخت، سنباده، حذف ساپورت</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="service-check">
+                  <div class="form-check m-0">
+                    {{ form.painting_enabled }}
+                    <label class="form-check-label" for="painting_enabled">
+                      <i class="fas fa-palette me-2"></i>رنگ‌آمیزی
+                      <small class="text-muted d-block">محاسبه بر اساس حجم</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-info-soft mt-3 mb-0">
+              <i class="fas fa-info-circle me-2"></i>
+              می‌توانید هر زمان این گزینه‌ها را تغییر دهید. هزینه‌ها به‌صورت زنده بروزرسانی می‌شوند.
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <button type="submit" class="btn btn-success btn-lg flex-fill">
+            <i class="fas fa-save me-2"></i>ذخیره مدل
+          </button>
+          <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>بازگشت
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Cost preview sidebar -->
+    <div class="col-12 col-xl-4">
+      <div class="sticky-top" style="top: 90px;">
+        <div class="card cost-card neo-card">
+          <div class="card-header border-0 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fas fa-calculator text-primary"></i>
+              <h6 class="mb-0">پیش‌نمایش محاسبات</h6>
+            </div>
+            <small id="preview-status" class="text-muted">آماده محاسبه</small>
+          </div>
+          <div class="card-body">
+            <div id="calc-empty" class="empty-state">
+              <div class="empty-icon"><i class="fas fa-info-circle"></i></div>
+              <div class="empty-text">برای مشاهده محاسبات، مقادیر فنی را وارد کنید</div>
+            </div>
+
+            <div id="cost-preview" class="d-none">
+              <div class="list-group list-group-flush cost-list">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-weight text-info me-2"></i>وزن فیلامنت</span>
+                  <strong id="filament-weight">0 گرم</strong>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-spool text-success me-2"></i>هزینه مواد</span>
+                  <strong id="material-cost">0 تومان</strong>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-bolt text-warning me-2"></i>هزینه برق</span>
+                  <strong id="electricity-cost">0 تومان</strong>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-tools text-secondary me-2"></i>استهلاک دستگاه</span>
+                  <strong id="depreciation-cost">0 تومان</strong>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center d-none" id="post-processing-row">
+                  <span><i class="fas fa-hammer text-info me-2"></i>پست‌پروسسینگ</span>
+                  <strong id="post-processing-cost">0 تومان</strong>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center d-none" id="painting-row">
+                  <span><i class="fas fa-palette text-danger me-2"></i>رنگ‌آمیزی</span>
+                  <strong id="painting-cost">0 تومان</strong>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center total-row">
+                  <span><i class="fas fa-equals text-dark me-2"></i>کل هزینه</span>
+                  <strong id="total-cost">0 تومان</strong>
+                </div>
+              </div>
+
+              <div class="pricing-highlight mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="label">قیمت پیشنهادی فروش</div>
+                    <small id="profit-margin" class="text-light opacity-75">سود: 0 تومان</small>
+                  </div>
+                  <div class="price" id="selling-price">0 تومان</div>
+                </div>
+              </div>
+
+              <div class="text-center mt-2">
+                <small class="text-muted">محاسبات بر اساس تنظیمات پیش‌فرض انجام می‌شود</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filament summary -->
+        <div class="card neo-card mt-3">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">{{ filament.name }}</div>
+              <small class="text-muted">{{ filament.material }} | {{ filament.color }}</small>
+            </div>
+            <span class="badge bg-warning-soft text-dark">{{ filament.remaining_amount|floatformat:1 }} m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Elements
+  const filamentUsed = document.getElementById('id_filament_used_mm');
+  const printTime = document.getElementById('id_print_time_hours');
+  const sizeX = document.getElementById('id_size_x');
+  const sizeY = document.getElementById('id_size_y');
+  const sizeZ = document.getElementById('id_size_z');
+  const postProcessing = document.getElementById('post_processing_enabled') || document.getElementById('id_post_processing_enabled');
+  const painting = document.getElementById('painting_enabled') || document.getElementById('id_painting_enabled');
+
+  const previewStatus = document.getElementById('preview-status');
+  const costPreview = document.getElementById('cost-preview');
+  const emptyState = document.getElementById('calc-empty');
+
+  const filamentCostPerKg = {{ filament.cost_per_kg|default:25000 }};
+
+  // Upload tile preview
+  (function initUploadTile() {
+    const input = document.getElementById('id_picture');
+    const tile = document.getElementById('upload-tile');
+    const img = document.getElementById('previewImg');
+    if (!input || !tile || !img) return;
+    // Make whole tile clickable
+    tile.addEventListener('click', () => input.click());
+    input.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        img.src = '';
+        img.classList.remove('show');
+        tile.classList.remove('has-image');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        img.src = ev.target.result;
+        img.classList.add('show');
+        tile.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    });
+  })();
+
+  function fmt(n) {
+    return new Intl.NumberFormat('fa-IR').format(Math.round(n || 0));
+  }
+
+  function hasInputs() {
+    return (
+      parseFloat(filamentUsed?.value || 0) > 0 &&
+      parseFloat(printTime?.value || 0) > 0 &&
+      parseFloat(sizeX?.value || 0) > 0 &&
+      parseFloat(sizeY?.value || 0) > 0 &&
+      parseFloat(sizeZ?.value || 0) > 0
+    );
+  }
+
+  let isCalculating = false;
+
+  function updateCalculationPreview() {
+    if (!hasInputs()) {
+      costPreview.classList.add('d-none');
+      emptyState.classList.remove('d-none');
+      if (previewStatus) { previewStatus.textContent = 'آماده محاسبه'; previewStatus.className = 'text-muted'; }
+      return;
+    }
+    if (isCalculating) return;
+    isCalculating = true;
+
+    if (previewStatus) { previewStatus.textContent = 'در حال محاسبه...'; previewStatus.className = 'text-warning pulse'; }
+
+    const data = {
+      filament_used_mm: parseFloat(filamentUsed.value),
+      print_time_hours: parseFloat(printTime.value),
+      size_x: parseFloat(sizeX.value),
+      size_y: parseFloat(sizeY.value),
+      size_z: parseFloat(sizeZ.value),
+      filament_cost_per_kg: filamentCostPerKg,
+      post_processing_enabled: !!(postProcessing && postProcessing.checked),
+      painting_enabled: !!(painting && painting.checked),
+      packaging_cost: 0
+    };
+
+    fetch('{% url "calculator:calculate_preview" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) throw new Error(d.error);
+
+      // Show section
+      costPreview.classList.remove('d-none');
+      emptyState.classList.add('d-none');
+
+      setText('filament-weight', fmt(d.filament_weight) + ' گرم');
+      setText('material-cost', fmt(d.material_cost) + ' تومان');
+      setText('electricity-cost', fmt(d.electricity_cost) + ' تومان');
+      setText('depreciation-cost', fmt(d.depreciation_cost) + ' تومان');
+      setText('total-cost', fmt(d.total_cost) + ' تومان');
+      setText('selling-price', fmt(d.selling_price) + ' تومان');
+
+      toggleRow('post-processing-row', d.post_processing_cost > 0, 'post-processing-cost', d.post_processing_cost);
+      toggleRow('painting-row', d.painting_cost > 0, 'painting-cost', d.painting_cost);
+
+      const profit = (d.selling_price || 0) - (d.total_cost || 0);
+      setText('profit-margin', 'سود: ' + fmt(profit) + ' تومان');
+
+      if (previewStatus) { previewStatus.textContent = 'محاسبه شد ✅'; previewStatus.className = 'text-success'; }
+    })
+    .catch(err => {
+      if (previewStatus) { previewStatus.textContent = 'خطا در محاسبه'; previewStatus.className = 'text-danger'; }
+      console.error(err);
+    })
+    .finally(() => { isCalculating = false; });
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function toggleRow(rowId, show, valueId, value) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    if (show) {
+      row.classList.remove('d-none');
+      const el = document.getElementById(valueId);
+      if (el) el.textContent = fmt(value) + ' تومان';
+      row.classList.add('glow-once');
+      setTimeout(() => row.classList.remove('glow-once'), 600);
+    } else {
+      row.classList.add('d-none');
+    }
+  }
+
+  // Debounce
+  function debounce(fn, wait) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), wait); }; }
+  const debounced = debounce(updateCalculationPreview, 300);
+
+  [filamentUsed, printTime, sizeX, sizeY, sizeZ].forEach(el => {
+    if (!el) return;
+    el.addEventListener('input', debounced);
+    el.addEventListener('blur', updateCalculationPreview);
+  });
+
+  if (postProcessing) postProcessing.addEventListener('change', () => setTimeout(updateCalculationPreview, 10));
+  if (painting) painting.addEventListener('change', () => setTimeout(updateCalculationPreview, 10));
+
+  // Initial calculation
+  setTimeout(updateCalculationPreview, 500);
+
+  // Prevent submit while calculating
+  const form = document.getElementById('model-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      if (isCalculating) {
+        e.preventDefault();
+        alert('لطفاً منتظر تکمیل محاسبات باشید');
+      }
+    });
+  }
+});
+</script>
+
+<style>
+/* Hero */
+.hero-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 18px 18px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(1200px 400px at 100% -10%, rgba(32,201,151,0.10), transparent),
+              radial-gradient(600px 300px at -10% 120%, rgba(13,110,253,0.10), transparent);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-icon {
+  display: inline-flex; width: 40px; height: 40px;
+  border-radius: 10px; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0d6efd, #20c997); color: #fff;
+  box-shadow: 0 6px 14px rgba(13,110,253,0.25);
+}
+.hero-title { font-size: 1.4rem; font-weight: 800; }
+.hero-subtitle { color: #5f6b7a; font-size: .95rem; }
+.bg-primary-soft { background: rgba(13,110,253,.12); }
+.bg-success-soft { background: rgba(25,135,84,.12); }
+.bg-warning-soft { background: rgba(255,193,7,.18); }
+
+/* Cards */
+.neo-card {
+  border: 1px solid #e9ecef;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.step-index {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #20c997, #0d6efd); color: #fff; font-weight: 700;
+  box-shadow: 0 4px 10px rgba(32,201,151,0.35);
+}
+.input-elevated .input-group-text { background: #f8fafc; }
+.input-elevated .form-control { border-right: 0; }
+
+/* Upload tile */
+.upload-tile {
+  position: relative;
+  border: 2px dashed rgba(0,0,0,0.15);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  background: #fbfdff;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s, background .2s;
+}
+.upload-tile:hover { border-color: #0d6efd; transform: translateY(-1px); }
+.upload-icon { font-size: 28px; color: #0d6efd; margin-bottom: 6px; }
+.upload-hint { color: #6c757d; font-size: .875rem; }
+#id_picture {
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+}
+#previewImg {
+  display: block;
+  width: 100%; height: 180px; object-fit: cover;
+  border-radius: 10px; margin-top: 10px; opacity: 0; transition: opacity .25s ease;
+}
+#previewImg.show { opacity: 1; }
+.upload-tile.has-image { background: #f7fbff; }
+
+/* Services */
+.service-check {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 14px;
+  transition: .2s;
+  background: #fff;
+}
+.service-check:hover { border-color: #cfe2ff; box-shadow: 0 6px 16px rgba(13,110,253,0.08); }
+.form-check-input:checked + .form-check-label { color: #198754; font-weight: 600; }
+.form-check-input:checked { background-color: #198754; border-color: #198754; }
+
+/* Sidebar cost card */
+.cost-card .list-group-item { background: transparent; border-color: rgba(0,0,0,.06); }
+.total-row { background: linear-gradient(90deg, rgba(32,201,151,.08), transparent); border-radius: 10px; }
+.pricing-highlight {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border-radius: 12px; color: #fff; padding: 14px 16px;
+  box-shadow: 0 12px 26px rgba(32,201,151,.25);
+}
+.pricing-highlight .label { font-weight: 600; font-size: .95rem; opacity: .95; }
+.pricing-highlight .price { font-size: 1.35rem; font-weight: 800; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 18px 8px; color: #6c757d; }
+.empty-icon { font-size: 36px; color: #6ea8fe; }
+.glow-once { animation: glow 0.6s ease; }
+@keyframes glow {
+  0% { box-shadow: 0 0 0 rgba(13,110,253,0); }
+  100% { box-shadow: 0 0 0 rgba(13,110,253,0); }
+}
+
+/* Small polish */
+.input-group-text { border-color: #e1e5ea; }
+.form-control:focus { border-color: #86b7fe; box-shadow: 0 0 0 .2rem rgba(13,110,253,.15); }
+.pulse { animation: pulse 1.4s ease-in-out infinite alternate; }
+@keyframes pulse { from { opacity: 1; } to { opacity: .55; } }
+
+/* Mobile tweaks */
+@media (max-width: 991.98px) {
+  .hero-title { font-size: 1.2rem; }
+  .sticky-top { position: static !important; top: auto !important; }
+}
+</style>
+{% endblock %}

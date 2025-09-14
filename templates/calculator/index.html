@@ -1,0 +1,218 @@
+<!-- templates/calculator/index.html -->
+{% extends "calculator/base.html" %}
+
+{% block title %}داشبورد - محاسبگر پرینت سه‌بعدی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-cube me-3"></i>
+            داشبورد مدیریت
+        </h1>
+        <p class="page-subtitle">مدیریت کامل مدل‌های پرینت سه‌بعدی و فروش</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-info);">
+                <div class="stats-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stats-number">{{ filaments|length }}</div>
+                <div class="stats-label">نوع فیلامنت</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-success);">
+                <div class="stats-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="stats-number">{{ project_stats.count|default:0 }}</div>
+                <div class="stats-label">کل مدل‌ها</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-warning);">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-number">{{ sales_stats.count|default:0 }}</div>
+                <div class="stats-label">فروش این ماه</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-danger);">
+                <div class="stats-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stats-number">{{ sales_stats.total_revenue|default:0|floatformat:0|add:"K" }}</div>
+                <div class="stats-label">درآمد این ماه (تومان)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Filaments Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        فیلامنت‌های موجود
+                    </h5>
+                    <a href="{% url 'calculator:add_filament' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus me-1"></i>
+                        جدید
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if filaments %}
+                        <div class="row">
+                            {% for filament in filaments %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-0" style="background: linear-gradient(135deg, #f8f9ff 0%, #e8eeff 100%);">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0 text-primary">{{ filament.name }}</h6>
+                                            <span class="badge" style="background: #{{ filament.color|default:'6c757d' }}; color: white;">
+                                                {{ filament.color|default:'بدون رنگ' }}
+                                            </span>
+                                        </div>
+                                        <p class="card-text small text-muted mb-2">
+                                            <i class="fas fa-cube me-1"></i>
+                                            {{ filament.material }}
+                                        </p>
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">باقی‌مانده</small>
+                                                <strong class="text-success">{{ filament.remaining_amount|floatformat:1 }}m</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">قیمت</small>
+                                                <strong class="text-info">{{ filament.cost_per_kg|floatformat:0|add:"K" }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{% url 'calculator:view_filament' filament.pk %}" 
+                                               class="btn btn-primary btn-sm flex-fill">
+                                                <i class="fas fa-eye me-1"></i>
+                                                مشاهده
+                                            </a>
+                                            <a href="{% url 'calculator:add_project' filament.pk %}" 
+                                               class="btn btn-success btn-sm flex-fill">
+                                                <i class="fas fa-plus me-1"></i>
+                                                مدل
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-layer-group fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">هنوز فیلامنتی اضافه نشده</h6>
+                            <a href="{% url 'calculator:add_filament' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>
+                                اولین فیلامنت را اضافه کنید
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Projects Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        مدل‌های اخیر
+                    </h5>
+                    <a href="{% url 'calculator:reports' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-chart-bar me-1"></i>
+                        همه گزارش‌ها
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                        <div class="list-group list-group-flush">
+                            {% for project in recent_projects %}
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-3">
+                                        {% if project.has_image %}
+                                            <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" 
+                                                 class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                 style="width: 50px; height: 50px;">
+                                                <i class="fas fa-cube text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <span class="badge bg-primary me-2">{{ project.code }}</span>
+                                            {{ project.model_name }}
+                                        </h6>
+                                        <p class="mb-1 small text-muted">
+                                            <i class="fas fa-palette me-1"></i>
+                                            {{ project.filament.name }} - {{ project.filament.color }}
+                                        </p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ project.print_time_hours }} ساعت پرینت
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success font-weight-bold">
+                                            {{ project.selling_price|floatformat:0 }} تومان
+                                        </div>
+                                        <small class="text-muted">قیمت پیشنهادی</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">هنوز مدل‌ای ثبت نشده</h6>
+                            <p class="text-muted small">برای شروع، ابتدا یک فیلامنت اضافه کنید</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action">
+    <div class="dropdown dropup">
+        <button class="btn btn-primary rounded-circle p-3" type="button" data-bs-toggle="dropdown" style="width: 60px; height: 60px;">
+            <i class="fas fa-plus fa-lg"></i>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'calculator:add_filament' %}">
+                <i class="fas fa-layer-group me-2"></i>فیلامنت جدید
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'calculator:sales' %}">
+                <i class="fas fa-shopping-cart me-2"></i>ثبت فروش
+            </a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

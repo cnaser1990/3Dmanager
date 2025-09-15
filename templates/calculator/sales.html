@@ -1,304 +1,363 @@
+<!-- templates/calculator/sales.html -->
 {% extends "calculator/base.html" %}
 
 {% block title %}ثبت فروش جدید{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="page-header">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-plus-circle me-3"></i>
-                    ثبت فروش جدید
-                </h1>
-                <p class="page-subtitle">فروش محصولات پرینت سه‌بعدی</p>
-            </div>
-            <div>
-                <a href="{% url 'calculator:sales_history' %}" class="btn btn-primary">
-                    <i class="fas fa-history me-2"></i>تاریخچه فروش
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-xl-8">
-        <div class="card fade-in">
-            <div class="card-header">
-                <h5><i class="fas fa-shopping-cart me-2"></i>اطلاعات فروش</h5>
-            </div>
-            <div class="card-body">
-                <!-- Tab Navigation -->
-                <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="pills-select-tab" data-bs-toggle="pill" 
-                                data-bs-target="#pills-select" type="button" role="tab">
-                            <i class="fas fa-mouse-pointer me-2"></i>انتخاب از لیست
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="pills-code-tab" data-bs-toggle="pill" 
-                                data-bs-target="#pills-code" type="button" role="tab">
-                            <i class="fas fa-keyboard me-2"></i>وارد کردن کد
-                        </button>
-                    </li>
-                </ul>
-
-                <div class="tab-content" id="pills-tabContent">
-                    <!-- Select from List Tab -->
-                    <div class="tab-pane fade show active" id="pills-select" role="tabpanel">
-                        <form method="POST" action="{% url 'calculator:sales' %}" id="selectSaleForm">
-                            {% csrf_token %}
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="{{ form.project.id_for_label }}" class="form-label">
-                                            <i class="fas fa-list me-2"></i>انتخاب محصول
-                                        </label>
-                                        {{ form.project }}
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label for="{{ form.quantity.id_for_label }}" class="form-label">
-                                            <i class="fas fa-hashtag me-2"></i>تعداد
-                                        </label>
-                                        {{ form.quantity }}
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="{{ form.unit_price.id_for_label }}" class="form-label">
-                                            <i class="fas fa-money-bill me-2"></i>قیمت واحد
-                                        </label>
-                                        {{ form.unit_price }}
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="{{ form.packaging_cost.id_for_label }}" class="form-label">
-                                            <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
-                                        </label>
-                                        {{ form.packaging_cost }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Product Preview -->
-                            <div id="product_preview" class="cost-preview" style="display: none;">
-                                <div class="alert alert-info">
-                                    <h6 class="mb-3"><i class="fas fa-eye me-2"></i>پیش‌نمایش فروش</h6>
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="cost-item">
-                                                <span>هزینه تولید واحد:</span>
-                                                <span id="preview_unit_cost" class="text-danger fw-bold">-</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="cost-item">
-                                                <span>قیمت پیشنهادی واحد:</span>
-                                                <span id="preview_suggested" class="text-success fw-bold">-</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="cost-item">
-                                                <span>قیمت کل:</span>
-                                                <span id="preview_total_price" class="text-primary fw-bold">-</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="cost-item">
-                                                <span>سود کل:</span>
-                                                <span id="preview_total_profit" class="text-success fw-bold">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="{{ form.customer_name.id_for_label }}" class="form-label">
-                                            <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
-                                        </label>
-                                        {{ form.customer_name }}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="{{ form.customer_phone.id_for_label }}" class="form-label">
-                                            <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
-                                        </label>
-                                        {{ form.customer_phone }}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="{{ form.notes.id_for_label }}" class="form-label">
-                                    <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
-                                </label>
-                                {{ form.notes }}
-                            </div>
-                            
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check me-2"></i>ثبت فروش
-                                </button>
-                            </div>
-                        </form>
+<div class="container-fluid px-2 px-md-4">
+    <!-- Modern Hero Section -->
+    <div class="modern-hero-card mb-4">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="hero-icon-modern"><i class="fas fa-shopping-cart"></i></span>
+                    <div>
+                        <h1 class="hero-title-modern mb-0">ثبت فروش جدید</h1>
+                        <div class="hero-subtitle-modern mt-1">فروش محصولات پرینت سه‌بعدی</div>
                     </div>
-
-                    <!-- Enter Code Tab -->
-                    <div class="tab-pane fade" id="pills-code" role="tabpanel">
-                        <form method="POST" action="{% url 'calculator:sales' %}" id="codeSaleForm">
-                            {% csrf_token %}
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label for="{{ form.project_code.id_for_label }}" class="form-label">
-                                            <i class="fas fa-hashtag me-2"></i>کد محصول
-                                        </label>
-                                        {{ form.project_code }}
-                                        <div class="form-text">کد عددی محصول را وارد کنید</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-hashtag me-2"></i>تعداد
-                                        </label>
-                                        <input type="number" class="form-control" name="quantity" value="1" min="1" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-money-bill me-2"></i>قیمت واحد
-                                        </label>
-                                        <input type="number" class="form-control" name="unit_price" required placeholder="150000">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
-                                        </label>
-                                        <input type="number" class="form-control" name="packaging_cost" value="0" min="0" placeholder="0">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
-                                        </label>
-                                        <input type="text" class="form-control" name="customer_name" placeholder="نام و نام خانوادگی">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">
-                                            <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
-                                        </label>
-                                        <input type="text" class="form-control" name="customer_phone" placeholder="09123456789">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
-                                </label>
-                                <textarea class="form-control" name="notes" rows="3" 
-                                          placeholder="توضیحات اضافی در مورد فروش..."></textarea>
-                            </div>
-                            
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check me-2"></i>ثبت فروش
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'calculator:sales_history' %}" class="btn btn-primary">
+                        <i class="fas fa-history me-2"></i>تاریخچه فروش
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-xl-4">
-        <!-- Available Projects -->
-        <div class="card fade-in">
-            <div class="card-header">
-                <h6><i class="fas fa-list me-2"></i>فهرست محصولات</h6>
-            </div>
-            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                {% if all_projects %}
-                    {% for project in all_projects|slice:":10" %}
-                    <div class="border rounded-3 p-3 mb-3" 
-                         style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05)); cursor: pointer;"
-                         onclick="selectProject({{ project.pk }}, '{{ project.model_name|escapejs }}', {{ project.selling_price }}, {{ project.total_cost }})">
-                        
-                        <!-- Project Image -->
-                        <div class="row">
-                            <div class="col-4">
-                                {% if project.has_image %}
-                                    <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" 
-                                         class="img-fluid rounded" 
-                                         style="height: 60px; width: 100%; object-fit: cover;">
-                                {% else %}
-                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                         style="height: 60px;">
-                                        <i class="fas fa-cube text-muted"></i>
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card modern-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-shopping-cart me-2"></i>اطلاعات فروش</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-select-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#pills-select" type="button" role="tab">
+                                <i class="fas fa-mouse-pointer me-2"></i>انتخاب از لیست
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-code-tab" data-bs-toggle="pill" 
+                                    data-bs-target="#pills-code" type="button" role="tab">
+                                <i class="fas fa-keyboard me-2"></i>وارد کردن کد
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+                        <!-- Select from List Tab -->
+                        <div class="tab-pane fade show active" id="pills-select" role="tabpanel">
+                            <form method="POST" action="{% url 'calculator:sales' %}" id="selectSaleForm">
+                                {% csrf_token %}
+                                
+                                <!-- Product Selection Section -->
+                                <div class="section-header">
+                                    <div class="section-icon">
+                                        <i class="fas fa-cube"></i>
                                     </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-8">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge bg-primary">{{ project.code }}</span>
-                                    <small class="text-muted">{{ project.created_date|date:"Y/m/d" }}</small>
+                                    <h6 class="section-title">انتخاب محصول</h6>
                                 </div>
-                                <h6 class="mb-1">{{ project.model_name }}</h6>
-                                <p class="text-muted mb-2">
-                                    <small>{{ project.filament.name }} - {{ project.filament.color }}</small>
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-success fw-bold">
-                                        {{ project.selling_price|floatformat:0 }} تومان
-                                    </small>
-                                    <small class="text-primary">
-                                        سود: {{ project.profit|floatformat:0 }}
-                                    </small>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.project.id_for_label }}" class="form-label">
+                                                <i class="fas fa-list me-2"></i>انتخاب محصول
+                                            </label>
+                                            {{ form.project }}
+                                            {% if form.project.errors %}
+                                                <div class="text-danger small mt-1">{{ form.project.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                                                <i class="fas fa-hashtag me-2"></i>تعداد
+                                            </label>
+                                            {{ form.quantity }}
+                                            {% if form.quantity.errors %}
+                                                <div class="text-danger small mt-1">{{ form.quantity.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.unit_price.id_for_label }}" class="form-label">
+                                                <i class="fas fa-money-bill me-2"></i>قیمت واحد
+                                            </label>
+                                            {{ form.unit_price }}
+                                            {% if form.unit_price.errors %}
+                                                <div class="text-danger small mt-1">{{ form.unit_price.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.packaging_cost.id_for_label }}" class="form-label">
+                                                <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
+                                            </label>
+                                            {{ form.packaging_cost }}
+                                            {% if form.packaging_cost.errors %}
+                                                <div class="text-danger small mt-1">{{ form.packaging_cost.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Product Preview -->
+                                <div id="product_preview" class="preview-section" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <h6 class="mb-3"><i class="fas fa-eye me-2"></i>پیش‌نمایش فروش</h6>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="cost-item">
+                                                    <span>هزینه تولید واحد:</span>
+                                                    <span id="preview_unit_cost" class="text-danger fw-bold">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="cost-item">
+                                                    <span>قیمت پیشنهادی واحد:</span>
+                                                    <span id="preview_suggested" class="text-success fw-bold">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="cost-item">
+                                                    <span>قیمت کل:</span>
+                                                    <span id="preview_total_price" class="text-primary fw-bold">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="cost-item">
+                                                    <span>سود کل:</span>
+                                                    <span id="preview_total_profit" class="text-success fw-bold">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Customer Information Section -->
+                                <div class="section-header">
+                                    <div class="section-icon">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h6 class="section-title">اطلاعات مشتری</h6>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.customer_name.id_for_label }}" class="form-label">
+                                                <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
+                                            </label>
+                                            {{ form.customer_name }}
+                                            {% if form.customer_name.errors %}
+                                                <div class="text-danger small mt-1">{{ form.customer_name.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.customer_phone.id_for_label }}" class="form-label">
+                                                <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
+                                            </label>
+                                            {{ form.customer_phone }}
+                                            {% if form.customer_phone.errors %}
+                                                <div class="text-danger small mt-1">{{ form.customer_phone.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                        <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
+                                    </label>
+                                    {{ form.notes }}
+                                    {% if form.notes.errors %}
+                                        <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check me-2"></i>ثبت فروش
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Enter Code Tab -->
+                        <div class="tab-pane fade" id="pills-code" role="tabpanel">
+                            <form method="POST" action="{% url 'calculator:sales' %}" id="codeSaleForm">
+                                {% csrf_token %}
+                                
+                                <!-- Code Entry Section -->
+                                <div class="section-header">
+                                    <div class="section-icon">
+                                        <i class="fas fa-keyboard"></i>
+                                    </div>
+                                    <h6 class="section-title">ورود اطلاعات با کد</h6>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="{{ form.project_code.id_for_label }}" class="form-label">
+                                                <i class="fas fa-hashtag me-2"></i>کد محصول
+                                            </label>
+                                            {{ form.project_code }}
+                                            {% if form.project_code.errors %}
+                                                <div class="text-danger small mt-1">{{ form.project_code.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="form-text">کد عددی محصول را وارد کنید</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-hashtag me-2"></i>تعداد
+                                            </label>
+                                            <input type="number" class="form-control" name="quantity" value="1" min="1" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-money-bill me-2"></i>قیمت واحد
+                                            </label>
+                                            <input type="number" class="form-control" name="unit_price" required placeholder="150000">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-box me-2"></i>هزینه بسته‌بندی
+                                            </label>
+                                            <input type="number" class="form-control" name="packaging_cost" value="0" min="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Customer Information Section -->
+                                <div class="section-header">
+                                    <div class="section-icon">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h6 class="section-title">اطلاعات مشتری</h6>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-user me-2"></i>نام مشتری (اختیاری)
+                                            </label>
+                                            <input type="text" class="form-control" name="customer_name" placeholder="نام و نام خانوادگی">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">
+                                                <i class="fas fa-phone me-2"></i>شماره تماس (اختیاری)
+                                            </label>
+                                            <input type="text" class="form-control" name="customer_phone" placeholder="09123456789">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-sticky-note me-2"></i>یادداشت (اختیاری)
+                                    </label>
+                                    <textarea class="form-control" name="notes" rows="3" 
+                                              placeholder="توضیحات اضافی در مورد فروش..."></textarea>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check me-2"></i>ثبت فروش
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <!-- Available Projects -->
+            <div class="card modern-card">
+                <div class="card-header">
+                    <h6><i class="fas fa-list me-2"></i>فهرست محصولات</h6>
+                </div>
+                <div class="card-body projects-list">
+                    {% if all_projects %}
+                        {% for project in all_projects|slice:":10" %}
+                        <div class="project-card" 
+                             onclick="selectProject({{ project.pk }}, '{{ project.model_name|escapejs }}', {{ project.selling_price }}, {{ project.total_cost }})">
+                            
+                            <!-- Project Image -->
+                            <div class="row">
+                                <div class="col-4">
+                                    {% if project.has_image %}
+                                        <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" 
+                                             class="img-fluid rounded project-image">
+                                    {% else %}
+                                        <div class="project-placeholder">
+                                            <i class="fas fa-cube text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-8">
+                                    <div class="project-header">
+                                        <span class="badge bg-primary">{{ project.code }}</span>
+                                        <small class="text-muted">{{ project.created_date|date:"Y/m/d" }}</small>
+                                    </div>
+                                    <h6 class="project-name">{{ project.model_name }}</h6>
+                                    <p class="project-filament">
+                                        <small>{{ project.filament.name }} - {{ project.filament.color }}</small>
+                                    </p>
+                                    <div class="project-footer">
+                                        <small class="text-success fw-bold">
+                                            {{ project.selling_price|floatformat:0 }} تومان
+                                        </small>
+                                        <small class="text-primary">
+                                            سود: {{ project.profit|floatformat:0 }}
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                    
-                    {% if all_projects|length > 10 %}
-                    <div class="text-center">
-                        <small class="text-muted">و {{ all_projects|length|add:"-10" }} محصول دیگر...</small>
-                        <br>
-                        <a href="{% url 'calculator:projects' %}" class="btn btn-outline-primary btn-sm mt-2">
-                            <i class="fas fa-eye me-1"></i>مشاهده همه
-                        </a>
-                    </div>
+                        {% endfor %}
+                        
+                        {% if all_projects|length > 10 %}
+                        <div class="text-center mt-3">
+                            <small class="text-muted">و {{ all_projects|length|add:"-10" }} محصول دیگر...</small>
+                            <br>
+                            <a href="{% url 'calculator:projects' %}" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="fas fa-eye me-1"></i>مشاهده همه
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">هیچ محصولی موجود نیست</p>
+                            <a href="{% url 'calculator:add_filament' %}" class="btn btn-primary btn-sm">
+                                شروع کنید
+                            </a>
+                        </div>
                     {% endif %}
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
-                        <p class="text-muted">هیچ محصولی موجود نیست</p>
-                        <a href="{% url 'calculator:add_filament' %}" class="btn btn-primary btn-sm">
-                            شروع کنید
-                        </a>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -321,7 +380,6 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Include the same JavaScript from the previous sales.html -->
 <script>
 // Store project data
 let projectsData = {};
@@ -477,4 +535,158 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<style>
+/* Modern Hero */
+.modern-hero-card {
+    position: relative;
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    padding: var(--spacing-xl);
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--primary-200);
+    box-shadow: var(--shadow-lg);
+}
+.hero-background {
+    position: absolute; inset: 0;
+    background: radial-gradient(1200px 400px at 100% -10%, var(--success-100), transparent),
+                radial-gradient(600px 300px at -10% 120%, var(--primary-100), transparent);
+    pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-icon-modern {
+    display: inline-flex; width: 40px; height: 40px;
+    border-radius: var(--border-radius-md); align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary-500), var(--success-500)); 
+    color: #fff;
+    box-shadow: var(--shadow-md);
+}
+.hero-title-modern { font-size: 1.4rem; font-weight: 800; color: var(--secondary-800); }
+.hero-subtitle-modern { color: var(--secondary-600); font-size: .95rem; }
+
+/* Modern Cards */
+.modern-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+/* Section Headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-100);
+}
+
+.section-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.section-title {
+    margin: 0;
+    color: var(--secondary-800);
+    font-weight: 600;
+}
+
+/* Preview Section */
+.preview-section {
+    margin-bottom: 1.5rem;
+}
+
+.cost-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Projects List */
+.projects-list {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.project-card {
+    border: 1px solid var(--secondary-200);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-color: var(--primary-300);
+}
+
+.project-image {
+    height: 60px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.project-placeholder {
+    height: 60px;
+    background: var(--surface-100);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.project-name {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.project-filament {
+    margin-bottom: 0.5rem;
+    color: var(--secondary-600);
+}
+
+.project-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .hero-title-modern { font-size: 1.2rem; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .section-icon { margin-bottom: 0.25rem; }
+}
+
+@media (max-width: 767.98px) {
+    .project-card { padding: 0.75rem; }
+    .project-image { height: 50px; }
+    .project-placeholder { height: 50px; }
+}
+</style>
 {% endblock %}

@@ -4,68 +4,231 @@
 {% block title %}ویرایش فیلامنت{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-edit me-2"></i>ویرایش فیلامنت</h5>
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">
+                <i class="fas fa-edit me-3"></i>
+                ویرایش فیلامنت
+            </h1>
+            <p class="page-subtitle">{{ filament.name }} - {{ filament.color }}</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">نام فیلامنت</label>
-                                {{ form.name }}
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5><i class="fas fa-edit me-2"></i>ویرایش اطلاعات فیلامنت</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="editFilamentForm">
+                        {% csrf_token %}
+                        
+                        <!-- Hidden field for initial_amount (shouldn't change during edit) -->
+                        <input type="hidden" name="initial_amount" value="{{ filament.initial_amount }}">
+                        
+                        <!-- Display form errors if any -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="fas fa-tag me-2 text-primary"></i>نام فیلامنت
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <label for="{{ form.color.id_for_label }}" class="form-label">
+                                        <i class="fas fa-palette me-2 text-success"></i>رنگ
+                                    </label>
+                                    {{ form.color }}
+                                    {% if form.color.errors %}
+                                        <div class="text-danger small mt-1">{{ form.color.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="{{ form.color.id_for_label }}" class="form-label fw-bold">رنگ</label>
-                                {{ form.color }}
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-4">
+                                    <label for="{{ form.material.id_for_label }}" class="form-label">
+                                        <i class="fas fa-atom me-2 text-info"></i>نوع ماده
+                                    </label>
+                                    {{ form.material }}
+                                    {% if form.material.errors %}
+                                        <div class="text-danger small mt-1">{{ form.material.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-4">
+                                    <label for="{{ form.remaining_amount.id_for_label }}" class="form-label">
+                                        <i class="fas fa-ruler me-2 text-warning"></i>مقدار باقی‌مانده (متر)
+                                    </label>
+                                    {{ form.remaining_amount }}
+                                    {% if form.remaining_amount.errors %}
+                                        <div class="text-danger small mt-1">{{ form.remaining_amount.errors.0 }}</div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        مقدار فعلی فیلامنت موجود (حداکثر: {{ filament.initial_amount }} متر)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-4">
+                                    <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label">
+                                        <i class="fas fa-money-bill me-2 text-danger"></i>قیمت (تومان/کیلو)
+                                    </label>
+                                    {{ form.cost_per_kg }}
+                                    {% if form.cost_per_kg.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cost_per_kg.errors.0 }}</div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        قیمت خرید هر کیلوگرم
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.material.id_for_label }}" class="form-label fw-bold">نوع ماده</label>
-                                {{ form.material }}
+                        
+                        <!-- Information Alert -->
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-3"></i>
+                                <div>
+                                    <strong>مقدار اولیه:</strong> {{ filament.initial_amount|floatformat:1 }} متر (غیرقابل تغییر)<br>
+                                    <strong>مصرف شده:</strong> <span id="consumedAmount">0.0</span> متر<br>
+                                    <strong>تاریخ خرید:</strong> {{ filament.created_date|date:"Y/m/d" }}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">مقدار باقی‌مانده (متر)</label>
-                                <input type="number" step="0.1" class="form-control" 
-                                       name="remaining_amount" value="{{ filament.remaining_amount }}" required>
+                        
+                        <!-- Live Preview -->
+                        <div class="cost-preview" id="filamentPreview">
+                            <h6 class="mb-3">
+                                <i class="fas fa-eye me-2"></i>پیش‌نمایش تغییرات
+                            </h6>
+                            <div class="cost-item">
+                                <span>نام کامل:</span>
+                                <span id="previewName" class="fw-bold">-</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>قیمت هر متر:</span>
+                                <span id="previewPrice" class="fw-bold text-primary">-</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>ارزش باقی‌مانده:</span>
+                                <span id="previewTotal" class="fw-bold text-success">-</span>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label fw-bold">قیمت (تومان/کیلو)</label>
-                                {{ form.cost_per_kg }}
-                            </div>
+                        
+                        <div class="d-flex gap-3 justify-content-end mt-4">
+                            <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>انصراف
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save me-2"></i>بروزرسانی
+                            </button>
                         </div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>مقدار اولیه:</strong> {{ filament.initial_amount }} متر
-                    </div>
-                    
-                    <div class="d-flex gap-3 justify-content-end mt-4">
-                        <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>انصراف
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>بروزرسانی
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Get initial values from Django
+const initialData = {
+    initialAmount: {{ filament.initial_amount|default:0 }},
+    remainingAmount: {{ filament.remaining_amount|default:0 }},
+    costPerKg: {{ filament.cost_per_kg|default:0 }},
+    name: "{{ filament.name|default:'' }}",
+    color: "{{ filament.color|default:'' }}",
+    material: "{{ filament.material|default:'' }}"
+};
+
+// Format number with Persian digits and commas
+function formatNumber(num) {
+    return new Intl.NumberFormat('fa-IR').format(Math.round(num || 0));
+}
+
+// Calculate consumed amount
+function calculateConsumedAmount() {
+    const initialAmount = initialData.initialAmount;
+    const remainingAmount = parseFloat(document.getElementById('{{ form.remaining_amount.id_for_label }}').value) || 0;
+    const consumed = Math.max(0, initialAmount - remainingAmount);
+    document.getElementById('consumedAmount').textContent = consumed.toFixed(1);
+    return consumed;
+}
+
+function updatePreview() {
+    const name = document.getElementById('{{ form.name.id_for_label }}').value || initialData.name;
+    const color = document.getElementById('{{ form.color.id_for_label }}').value || initialData.color;
+    const material = document.getElementById('{{ form.material.id_for_label }}').value || initialData.material;
+    const amount = parseFloat(document.getElementById('{{ form.remaining_amount.id_for_label }}').value) || 0;
+    const cost = parseFloat(document.getElementById('{{ form.cost_per_kg.id_for_label }}').value) || 0;
+    
+    // Full name
+    const fullName = `${name} ${color} ${material}`.trim();
+    document.getElementById('previewName').textContent = fullName || '-';
+    
+    // Price per meter (1kg = 330m for PLA)
+    const pricePerMeter = cost / 330;
+    document.getElementById('previewPrice').textContent = pricePerMeter > 0 ? 
+        `${formatNumber(pricePerMeter)} تومان` : '-';
+    
+    // Total value of remaining filament
+    const totalValue = amount * pricePerMeter;
+    document.getElementById('previewTotal').textContent = totalValue > 0 ? 
+        `${formatNumber(totalValue)} تومان` : '-';
+    
+    // Update consumed amount
+    calculateConsumedAmount();
+}
+
+// Add form submission handling
+document.getElementById('editFilamentForm').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال بروزرسانی...';
+});
+
+// Add event listeners
+document.querySelectorAll('#editFilamentForm input, #editFilamentForm select').forEach(input => {
+    input.addEventListener('input', updatePreview);
+    input.addEventListener('change', updatePreview);
+});
+
+// Initial calculations when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    calculateConsumedAmount();
+    updatePreview();
+});
+</script>
 {% endblock %}

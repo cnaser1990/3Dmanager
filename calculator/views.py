@@ -126,12 +126,20 @@ def view_filament(request, pk):
 
 def edit_filament(request, pk):
     filament = get_object_or_404(Filament, pk=pk)
+    print(f"Method: {request.method}")  # Debug line
+    
     if request.method == 'POST':
+        print(f"POST data: {request.POST}")  # Debug line
         form = FilamentForm(request.POST, instance=filament)
+        print(f"Form valid: {form.is_valid()}")  # Debug line
+        
         if form.is_valid():
             form.save()
+            print("Form saved successfully!")  # Debug line
             messages.success(request, 'اطلاعات فیلامنت بروزرسانی شد')
             return redirect('calculator:view_filament', pk=filament.pk)
+        else:
+            print(f"Form errors: {form.errors}")  # Debug line
     else:
         form = FilamentForm(instance=filament)
     

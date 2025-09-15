@@ -1,17 +1,19 @@
+<!-- templates/calculator/pricing_settings.html -->
 {% extends "calculator/base.html" %}
 {% block title %}تنظیمات قیمت‌گذاری{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-2 px-md-4">
-  <div class="hero-card mb-4">
-    <div class="hero-bg"></div>
+  <!-- Modern Hero Section -->
+  <div class="modern-hero-card mb-4">
+    <div class="hero-background"></div>
     <div class="hero-content">
       <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div class="d-flex align-items-center gap-2">
-          <span class="hero-icon"><i class="fas fa-sliders-h"></i></span>
+          <span class="hero-icon-modern"><i class="fas fa-sliders-h"></i></span>
           <div>
-            <h1 class="hero-title mb-0">تنظیمات قیمت‌گذاری</h1>
-            <div class="hero-subtitle mt-1">قیمت برق، درصد سود، استهلاک و سرویس‌ها را مدیریت کنید</div>
+            <h1 class="hero-title-modern mb-0">تنظیمات قیمت‌گذاری</h1>
+            <div class="hero-subtitle-modern mt-1">قیمت برق، درصد سود، استهلاک و سرویس‌ها را مدیریت کنید</div>
           </div>
         </div>
         <div class="text-muted small">
@@ -33,81 +35,127 @@
     {% csrf_token %}
 
     <div class="col-12 col-xl-8">
-      <div class="card neo-card">
+      <!-- Base Costs Section -->
+      <div class="card modern-card">
         <div class="card-header border-0">
-          <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>هزینه‌های پایه</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span class="setting-icon bg-warning">
+              <i class="fas fa-bolt"></i>
+            </span>
+            <h5 class="mb-0">هزینه‌های پایه</h5>
+          </div>
         </div>
         <div class="card-body">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">قیمت برق (تومان/کیلووات‌ساعت)</label>
+              <label class="form-label">
+                <i class="fas fa-bolt me-2 text-warning"></i>قیمت برق (تومان/کیلووات‌ساعت)
+              </label>
               {{ form.power_price_per_kwh }}
               {% for e in form.power_price_per_kwh.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">قیمت هر کیلووات‌ساعت برق مصرفی</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">استهلاک دستگاه (تومان/ساعت)</label>
+              <label class="form-label">
+                <i class="fas fa-tools me-2 text-secondary"></i>استهلاک دستگاه (تومان/ساعت)
+              </label>
               {{ form.depreciation_per_hour }}
               {% for e in form.depreciation_per_hour.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">هزینه استهلاک دستگاه در هر ساعت</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">درصد پرت فیلامنت (%)</label>
+              <label class="form-label">
+                <i class="fas fa-percent me-2 text-info"></i>درصد پرت فیلامنت (%)
+              </label>
               {{ form.filament_waste_percent }}
               {% for e in form.filament_waste_percent.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">درصد فیلامنت هدر رفته در فرآیند</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">هزینه بسته‌بندی (تومان)</label>
+              <label class="form-label">
+                <i class="fas fa-box me-2 text-primary"></i>هزینه بسته‌بندی (تومان)
+              </label>
               {{ form.packaging_cost }}
               {% for e in form.packaging_cost.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">هزینه پیش‌فرض بسته‌بندی</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card neo-card mt-4">
+      <!-- Services Section -->
+      <div class="card modern-card mt-4">
         <div class="card-header border-0">
-          <h5 class="mb-0"><i class="fas fa-tools me-2 text-info"></i>خدمات</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span class="setting-icon bg-info">
+              <i class="fas fa-tools"></i>
+            </span>
+            <h5 class="mb-0">خدمات اضافی</h5>
+          </div>
         </div>
         <div class="card-body">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">نرخ پست‌پروسسینگ (تومان)</label>
+              <label class="form-label">
+                <i class="fas fa-hammer me-2 text-info"></i>نرخ پست‌پروسسینگ (تومان)
+              </label>
               {{ form.post_processing_rate }}
               {% for e in form.post_processing_rate.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">هزینه پرداخت و تمیزکاری</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">نرخ رنگ‌آمیزی (تومان/سانتی‌متر مربع)</label>
+              <label class="form-label">
+                <i class="fas fa-palette me-2 text-danger"></i>نرخ رنگ‌آمیزی (تومان/سانتی‌متر مربع)
+              </label>
               {{ form.painting_rate_per_cm2 }}
               {% for e in form.painting_rate_per_cm2.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">قیمت رنگ‌آمیزی هر سانتی‌متر مربع</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card neo-card mt-4">
+      <!-- Pricing Policy Section -->
+      <div class="card modern-card mt-4">
         <div class="card-header border-0">
-          <h5 class="mb-0"><i class="fas fa-percentage me-2 text-success"></i>سیاست قیمت‌گذاری</h5>
+          <div class="d-flex align-items-center gap-2">
+            <span class="setting-icon bg-success">
+              <i class="fas fa-percentage"></i>
+            </span>
+            <h5 class="mb-0">سیاست قیمت‌گذاری</h5>
+          </div>
         </div>
         <div class="card-body">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">درصد سود (%)</label>
+              <label class="form-label">
+                <i class="fas fa-chart-line me-2 text-success"></i>درصد سود (%)
+              </label>
               {{ form.profit_percent }}
               {% for e in form.profit_percent.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">درصد سود اضافه شده به هزینه‌ها</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">گرد کردن قیمت (تومان)</label>
+              <label class="form-label">
+                <i class="fas fa-calculator me-2 text-secondary"></i>گرد کردن قیمت (تومان)
+              </label>
               {{ form.round_to_nearest }}
               {% for e in form.round_to_nearest.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+              <div class="form-text">قیمت‌ها به این مقدار گرد می‌شوند</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card neo-card mt-4">
+      <!-- Action Section -->
+      <div class="card modern-card mt-4" style="background: var(--surface-50);">
         <div class="card-body d-flex align-items-center justify-content-between gap-3 flex-wrap">
           <div class="form-check m-0">
-            <input class="form-check-input" type="checkbox" id="confirm_apply" name="confirm_apply">
-            <label class="form-check-label" for="confirm_apply">تایید اعمال تغییرات</label>
+            <input class="form-check-input" type="checkbox" id="confirm_apply" name="confirm_apply" required>
+            <label class="form-check-label fw-semibold" for="confirm_apply">
+              تایید اعمال تغییرات
+            </label>
+            <small class="d-block text-muted">این تنظیمات بر تمام محاسبات آینده تأثیر خواهد گذاشت</small>
           </div>
           <div class="d-flex gap-2 ms-auto">
             <a href="{% url 'calculator:pricing_settings' %}" class="btn btn-outline-secondary">
@@ -121,41 +169,72 @@
       </div>
     </div>
 
+    <!-- Preview Sidebar -->
     <div class="col-12 col-xl-4">
-      <div class="card neo-card sticky-top" style="top: 90px;">
-        <div class="card-header border-0">
-          <h6 class="mb-0"><i class="fas fa-eye me-2 text-primary"></i>پیش‌نمایش سریع</h6>
-        </div>
-        <div class="card-body">
-          <ul class="list-unstyled mb-0">
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><i class="fas fa-bolt me-2 text-warning"></i>قیمت برق</span>
-              <strong>{{ form.power_price_per_kwh.value|default:settings_obj.power_price_per_kwh }} ت</strong>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><i class="fas fa-tools me-2 text-secondary"></i>استهلاک</span>
-              <strong>{{ form.depreciation_per_hour.value|default:settings_obj.depreciation_per_hour }} ت/س</strong>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><i class="fas fa-box-open me-2 text-info"></i>بسته‌بندی</span>
-              <strong>{{ form.packaging_cost.value|default:settings_obj.packaging_cost }} ت</strong>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><i class="fas fa-hammer me-2 text-info"></i>پست‌پروسسینگ</span>
-              <strong>{{ form.post_processing_rate.value|default:settings_obj.post_processing_rate }} ت</strong>
-            </li>
-            <li class="d-flex justify-content-between py-2 border-bottom">
-              <span><i class="fas fa-palette me-2 text-danger"></i>رنگ‌آمیزی</span>
-              <strong>{{ form.painting_rate_per_cm2.value|default:settings_obj.painting_rate_per_cm2 }} ت/سانتی‌متر²</strong>
-            </li>
-            <li class="d-flex justify-content-between py-2">
-              <span><i class="fas fa-percentage me-2 text-success"></i>سود</span>
-              <strong>{{ form.profit_percent.value|default:settings_obj.profit_percent }}%</strong>
-            </li>
-          </ul>
-          <div class="alert alert-info-soft mt-3 mb-0">
-            <i class="fas fa-info-circle me-2"></i>
-            این تنظیمات در محاسبات صفحه افزودن مدل به صورت زنده استفاده می‌شود.
+      <div class="sticky-top" style="top: 90px;">
+        <div class="card modern-card">
+          <div class="card-header border-0">
+            <h6 class="mb-0"><i class="fas fa-eye me-2"></i>پیش‌نمایش تنظیمات</h6>
+          </div>
+          <div class="card-body">
+            <div class="settings-preview">
+              <div class="preview-section">
+                <h6 class="text-warning mb-3">
+                  <i class="fas fa-bolt me-2"></i>هزینه‌های پایه
+                </h6>
+                <div class="preview-grid">
+                  <div class="preview-item">
+                    <span class="preview-label">قیمت برق</span>
+                    <strong class="preview-value">{{ form.power_price_per_kwh.value|default:settings_obj.power_price_per_kwh }} ت</strong>
+                  </div>
+                  <div class="preview-item">
+                    <span class="preview-label">استهلاک</span>
+                    <strong class="preview-value">{{ form.depreciation_per_hour.value|default:settings_obj.depreciation_per_hour }} ت/س</strong>
+                  </div>
+                  <div class="preview-item">
+                    <span class="preview-label">بسته‌بندی</span>
+                    <strong class="preview-value">{{ form.packaging_cost.value|default:settings_obj.packaging_cost }} ت</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preview-section">
+                <h6 class="text-info mb-3">
+                  <i class="fas fa-tools me-2"></i>خدمات
+                </h6>
+                <div class="preview-grid">
+                  <div class="preview-item">
+                    <span class="preview-label">پست‌پروسسینگ</span>
+                    <strong class="preview-value">{{ form.post_processing_rate.value|default:settings_obj.post_processing_rate }} ت</strong>
+                  </div>
+                  <div class="preview-item">
+                    <span class="preview-label">رنگ‌آمیزی</span>
+                    <strong class="preview-value">{{ form.painting_rate_per_cm2.value|default:settings_obj.painting_rate_per_cm2 }} ت/سم²</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preview-section">
+                <h6 class="text-success mb-3">
+                  <i class="fas fa-percentage me-2"></i>سیاست قیمت
+                </h6>
+                <div class="preview-grid">
+                  <div class="preview-item">
+                    <span class="preview-label">درصد سود</span>
+                    <strong class="preview-value text-success">{{ form.profit_percent.value|default:settings_obj.profit_percent }}%</strong>
+                  </div>
+                  <div class="preview-item">
+                    <span class="preview-label">گرد کردن</span>
+                    <strong class="preview-value">{{ form.round_to_nearest.value|default:settings_obj.round_to_nearest }} ت</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="alert alert-info mt-3 mb-0" style="background: var(--info-50); border: 1px solid var(--info-200); color: var(--info-800);">
+              <i class="fas fa-info-circle me-2"></i>
+              این تنظیمات در محاسبات صفحه افزودن مدل به صورت زنده استفاده می‌شود.
+            </div>
           </div>
         </div>
       </div>
@@ -166,13 +245,108 @@
 
 {% block scripts %}
 <style>
-.hero-card{position:relative;border-radius:16px;overflow:hidden;padding:18px;background:rgba(255,255,255,.6);backdrop-filter:blur(6px);border:1px solid rgba(0,0,0,.06)}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(1200px 400px at 100% -10%,rgba(32,201,151,.10),transparent),radial-gradient(600px 300px at -10% 120%,rgba(13,110,253,.10),transparent)}
-.hero-content{position:relative;z-index:1}
-.hero-icon{display:inline-flex;width:40px;height:40px;border-radius:10px;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d6efd,#20c997);color:#fff;box-shadow:0 6px 14px rgba(13,110,253,.25)}
-.hero-title{font-size:1.3rem;font-weight:800}.hero-subtitle{color:#5f6b7a}
-.neo-card{border:1px solid #e9ecef;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);overflow:hidden}
-.alert-info-soft{background:rgba(13,110,253,.08);border:1px solid rgba(13,110,253,.18)}
-@media (max-width: 991.98px){.hero-title{font-size:1.15rem}}
+/* Modern Hero */
+.modern-hero-card {
+  position: relative;
+  border-radius: var(--border-radius-xl);
+  overflow: hidden;
+  padding: var(--spacing-xl);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--primary-200);
+  box-shadow: var(--shadow-lg);
+}
+.hero-background {
+  position: absolute; inset: 0;
+  background: radial-gradient(1200px 400px at 100% -10%, var(--success-100), transparent),
+              radial-gradient(600px 300px at -10% 120%, var(--primary-100), transparent);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-icon-modern {
+  display: inline-flex; width: 40px; height: 40px;
+  border-radius: var(--border-radius-md); align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--primary-500), var(--success-500)); 
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+.hero-title-modern { font-size: 1.4rem; font-weight: 800; color: var(--secondary-800); }
+.hero-subtitle-modern { color: var(--secondary-600); font-size: .95rem; }
+
+/* Modern Cards */
+.modern-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* Setting Icons */
+.setting-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+  color: white;
+  font-size: 0.9rem;
+}
+
+.setting-icon.bg-warning { background: var(--warning-500); }
+.setting-icon.bg-info { background: var(--info-500); }
+.setting-icon.bg-success { background: var(--success-500); }
+
+/* Preview Styling */
+.settings-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.preview-section {
+  padding: 1rem;
+  background: var(--surface-50);
+  border: 1px solid var(--secondary-200);
+  border-radius: var(--border-radius-lg);
+}
+
+.preview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-item {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--secondary-200);
+}
+
+.preview-item:last-child {
+  border-bottom: none;
+}
+
+.preview-label {
+  font-size: 0.85rem;
+  color: var(--secondary-600);
+  flex: 1;
+}
+
+.preview-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-800);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .hero-title-modern { font-size: 1.2rem; }
+  .sticky-top { position: static !important; top: auto !important; }
+}
 </style>
 {% endblock %}

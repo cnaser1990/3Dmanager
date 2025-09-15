@@ -1,78 +1,88 @@
+<!-- templates/calculator/sales_history.html -->
 {% extends "calculator/base.html" %}
 
 {% block title %}تاریخچه فروش{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="page-header">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="page-title">
-                    <i class="fas fa-history me-3"></i>
-                    تاریخچه فروش
-                </h1>
-                <p class="page-subtitle">{{ period_name }} - {{ total_sales }} فروش</p>
-            </div>
-            <div>
-                <a href="{% url 'calculator:sales' %}" class="btn btn-success">
-                    <i class="fas fa-plus me-2"></i>فروش جدید
-                </a>
+<div class="container-fluid px-2 px-md-4">
+    <!-- Modern Hero Section -->
+    <div class="modern-hero-card mb-4">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="hero-icon-modern"><i class="fas fa-history"></i></span>
+                    <div>
+                        <h1 class="hero-title-modern mb-0">تاریخچه فروش</h1>
+                        <div class="hero-subtitle-modern mt-1">{{ period_name|default:"همه" }} - {{ total_sales|default:0 }} فروش</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'calculator:sales' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>فروش جدید
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="container">
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card" style="background: var(--gradient-info);">
-                <div class="stats-icon">
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-info">
+                <div class="metric-icon">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
-                <div class="stats-number">{{ total_sales }}</div>
-                <div class="stats-label">تعداد فروش</div>
+                <div class="metric-content">
+                    <div class="metric-value">{{ total_sales|default:0 }}</div>
+                    <div class="metric-label">تعداد فروش</div>
+                </div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card" style="background: var(--gradient-success);">
-                <div class="stats-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-success">
+                <div class="metric-icon">
                     <i class="fas fa-coins"></i>
                 </div>
-                <div class="stats-number">{{ total_revenue|floatformat:0 }}</div>
-                <div class="stats-label">کل درآمد (تومان)</div>
+                <div class="metric-content">
+                    <div class="metric-value">{{ total_revenue|default:0|floatformat:0 }}</div>
+                    <div class="metric-label">کل درآمد (تومان)</div>
+                </div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card" style="background: var(--gradient-warning);">
-                <div class="stats-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-warning">
+                <div class="metric-icon">
                     <i class="fas fa-boxes"></i>
                 </div>
-                <div class="stats-number">{{ total_quantity }}</div>
-                <div class="stats-label">تعداد محصولات</div>
+                <div class="metric-content">
+                    <div class="metric-value">{{ total_quantity|default:0 }}</div>
+                    <div class="metric-label">تعداد محصولات</div>
+                </div>
             </div>
         </div>
         
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-card" style="background: var(--gradient-danger);">
-                <div class="stats-icon">
+        <div class="col-lg-3 col-md-6">
+            <div class="metric-card metric-primary">
+                <div class="metric-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="stats-number">{{ total_profit|floatformat:0}}</div>
-                <div class="stats-label">کل سود (تومان)</div>
+                <div class="metric-content">
+                    <div class="metric-value">{{ total_profit|default:0|floatformat:0 }}</div>
+                    <div class="metric-label">کل سود (تومان)</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="card mb-4">
+    <div class="card modern-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">دوره زمانی</label>
+                    <label class="form-label"><i class="fas fa-calendar me-1"></i>دوره زمانی</label>
                     <select name="period" class="form-select">
                         <option value="all" {% if period == 'all' %}selected{% endif %}>همه</option>
                         <option value="today" {% if period == 'today' %}selected{% endif %}>امروز</option>
@@ -83,13 +93,13 @@
                 </div>
                 
                 <div class="col-md-3">
-                    <label class="form-label">جستجو</label>
-                    <input type="text" name="search" class="form-control" value="{{ search }}" 
+                    <label class="form-label"><i class="fas fa-search me-1"></i>جستجو</label>
+                    <input type="text" name="search" class="form-control" value="{{ search|default:'' }}" 
                            placeholder="نام محصول، کد، نام مشتری، شماره تماس">
                 </div>
                 
                 <div class="col-md-2">
-                    <label class="form-label">مشتری</label>
+                    <label class="form-label"><i class="fas fa-user me-1"></i>مشتری</label>
                     <select name="customer" class="form-select">
                         <option value="">همه مشتریان</option>
                         {% for customer_name in customers %}
@@ -101,7 +111,7 @@
                 </div>
                 
                 <div class="col-md-2">
-                    <label class="form-label">مرتب‌سازی</label>
+                    <label class="form-label"><i class="fas fa-sort me-1"></i>مرتب‌سازی</label>
                     <select name="sort" class="form-select">
                         <option value="-sale_date" {% if sort == '-sale_date' %}selected{% endif %}>جدیدترین</option>
                         <option value="sale_date" {% if sort == 'sale_date' %}selected{% endif %}>قدیمی‌ترین</option>
@@ -125,11 +135,11 @@
     </div>
 
     <!-- Sales Table -->
-    <div class="card">
+    <div class="card modern-card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="fas fa-list me-2"></i>
-                لیست فروش‌ها ({{ page_obj.paginator.count }} مورد)
+                لیست فروش‌ها {% if page_obj %}({{ page_obj.paginator.count }} مورد){% endif %}
             </h5>
             <div class="btn-group" role="group">
                 <a href="{% url 'calculator:reports' %}" class="btn btn-success btn-sm">
@@ -138,30 +148,30 @@
             </div>
         </div>
         <div class="card-body p-0">
-            {% if page_obj %}
+            {% if page_obj and page_obj|length > 0 %}
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead class="table-dark">
+                        <thead class="table-light">
                             <tr>
-                                <th>کد</th>
-                                <th>تصویر</th>
-                                <th>نام محصول</th>
-                                <th>فیلامنت</th>
-                                <th>تعداد</th>
-                                <th>قیمت واحد</th>
-                                <th>بسته‌بندی</th>
-                                <th>قیمت کل</th>
-                                <th>سود</th>
-                                <th>مشتری</th>
-                                <th>تاریخ</th>
-                                <th>عملیات</th>
+                                <th><i class="fas fa-hashtag me-1"></i>کد</th>
+                                <th><i class="fas fa-image me-1"></i>تصویر</th>
+                                <th><i class="fas fa-cube me-1"></i>نام محصول</th>
+                                <th><i class="fas fa-spool me-1"></i>فیلامنت</th>
+                                <th><i class="fas fa-sort-numeric-up me-1"></i>تعداد</th>
+                                <th><i class="fas fa-tag me-1"></i>قیمت واحد</th>
+                                <th><i class="fas fa-box me-1"></i>بسته‌بندی</th>
+                                <th><i class="fas fa-money-bill me-1"></i>قیمت کل</th>
+                                <th><i class="fas fa-chart-line me-1"></i>سود</th>
+                                <th><i class="fas fa-user me-1"></i>مشتری</th>
+                                <th><i class="fas fa-calendar me-1"></i>تاریخ</th>
+                                <th><i class="fas fa-cogs me-1"></i>عملیات</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for sale in page_obj %}
-                            <tr>
+                            <tr class="sale-row">
                                 <td>
-                                    <span class="badge bg-primary fs-6">{{ sale.project_code }}</span>
+                                    <span class="badge bg-primary fs-6">{{ sale.project_code|default:"N/A" }}</span>
                                 </td>
                                 <td>
                                     {% if sale.project.has_image %}
@@ -186,14 +196,14 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-info fs-6">{{ sale.quantity }} عدد</span>
+                                    <span class="badge bg-info fs-6">{{ sale.quantity|default:1 }} عدد</span>
                                 </td>
                                 <td class="text-primary fw-bold">
-                                    {{ sale.unit_price|floatformat:0 }}
+                                    {{ sale.unit_price|default:0|floatformat:0 }}
                                     <br><small class="text-muted">تومان</small>
                                 </td>
                                 <td class="text-secondary">
-                                    {% if sale.packaging_cost > 0 %}
+                                    {% if sale.packaging_cost and sale.packaging_cost > 0 %}
                                         {{ sale.packaging_cost|floatformat:0 }}
                                         <br><small class="text-muted">تومان</small>
                                     {% else %}
@@ -201,11 +211,11 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-success fw-bold">
-                                    {{ sale.total_price|floatformat:0 }}
+                                    {{ sale.total_price|default:0|floatformat:0 }}
                                     <br><small class="text-muted">تومان</small>
                                 </td>
-                                <td class="{% if sale.total_profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
-                                    {{ sale.total_profit|floatformat:0 }}
+                                <td class="{% if sale.total_profit|default:0 >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                    {{ sale.total_profit|default:0|floatformat:0 }}
                                     <br><small class="text-muted">تومان</small>
                                 </td>
                                 <td>
@@ -220,8 +230,8 @@
                                 </td>
                                 <td>
                                     <small>
-                                        {{ sale.sale_date|date:"Y/m/d" }}<br>
-                                        {{ sale.sale_date|date:"H:i" }}
+                                        {{ sale.sale_date|date:"Y/m/d"|default:"نامشخص" }}<br>
+                                        {{ sale.sale_date|date:"H:i"|default:"" }}
                                     </small>
                                 </td>
                                 <td>
@@ -329,5 +339,180 @@ document.querySelectorAll('select[name="period"], select[name="customer"], selec
         this.form.submit();
     });
 });
+
+// Format numbers in metric cards
+document.addEventListener('DOMContentLoaded', function() {
+    const metricValues = document.querySelectorAll('.metric-value');
+    metricValues.forEach(element => {
+        const value = parseFloat(element.textContent.replace(/[^\d.-]/g, ''));
+        if (!isNaN(value) && value !== 0) {
+            element.textContent = value.toLocaleString('fa-IR');
+        }
+    });
+
+    // Add hover effects to table rows
+    const tableRows = document.querySelectorAll('.sale-row');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'var(--primary-50)';
+            this.style.transform = 'scale(1.005)';
+            this.style.transition = 'all 0.2s ease';
+        });
+
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+            this.style.transform = '';
+        });
+    });
+});
 </script>
+
+<style>
+/* Modern Hero */
+.modern-hero-card {
+    position: relative;
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    padding: var(--spacing-xl);
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--primary-200);
+    box-shadow: var(--shadow-lg);
+}
+.hero-background {
+    position: absolute; inset: 0;
+    background: radial-gradient(1200px 400px at 100% -10%, var(--success-100), transparent),
+                radial-gradient(600px 300px at -10% 120%, var(--primary-100), transparent);
+    pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; }
+.hero-icon-modern {
+    display: inline-flex; width: 40px; height: 40px;
+    border-radius: var(--border-radius-md); align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary-500), var(--success-500)); 
+    color: #fff;
+    box-shadow: var(--shadow-md);
+}
+.hero-title-modern { font-size: 1.4rem; font-weight: 800; color: var(--secondary-800); }
+.hero-subtitle-modern { color: var(--secondary-600); font-size: .95rem; }
+
+/* Modern Cards */
+.modern-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+/* Metric Cards */
+.metric-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius-xl);
+    padding: 1.5rem;
+    border: 1px solid var(--secondary-200);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    min-height: 120px;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+.metric-primary { border-left: 4px solid var(--primary-500); }
+.metric-success { border-left: 4px solid var(--success-500); }
+.metric-warning { border-left: 4px solid var(--warning-500); }
+.metric-info { border-left: 4px solid var(--info-500); }
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-lg);
+    font-size: 1.25rem;
+    color: white;
+}
+
+.metric-primary .metric-icon { background: var(--primary-500); }
+.metric-success .metric-icon { background: var(--success-500); }
+.metric-warning .metric-icon { background: var(--warning-500); }
+.metric-info .metric-icon { background: var(--info-500); }
+
+.metric-content {
+    flex: 1;
+}
+
+.metric-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--secondary-800);
+    line-height: 1;
+}
+
+.metric-label {
+    color: var(--secondary-600);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* Table Enhancements */
+.table {
+    font-size: 0.875rem;
+}
+
+.table th {
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--secondary-200);
+    font-size: 0.8rem;
+    background: var(--surface-50);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+.sale-row {
+    transition: all 0.2s ease;
+}
+
+.project-image {
+    border: 2px solid var(--primary-200);
+    transition: all 0.3s ease;
+}
+
+.project-image:hover {
+    border-color: var(--primary-400);
+    transform: scale(1.1);
+}
+
+.image-placeholder {
+    background: var(--surface-100);
+    border-radius: var(--border-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-400);
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+    .hero-title-modern { font-size: 1.2rem; }
+    .metric-card { padding: 1rem; min-height: 100px; }
+    .metric-value { font-size: 1.5rem; }
+    .metric-icon { width: 40px; height: 40px; font-size: 1rem; }
+    .table { font-size: 0.8rem; }
+    .table th, .table td { padding: 0.5rem 0.25rem; }
+}
+</style>
 {% endblock %}

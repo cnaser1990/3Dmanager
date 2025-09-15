@@ -1,14 +1,33 @@
-<!-- templates/calculator/sales.html -->
 {% extends "calculator/base.html" %}
 
-{% block title %}مدیریت فروش{% endblock %}
+{% block title %}ثبت فروش جدید{% endblock %}
 
 {% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-plus-circle me-3"></i>
+                    ثبت فروش جدید
+                </h1>
+                <p class="page-subtitle">فروش محصولات پرینت سه‌بعدی</p>
+            </div>
+            <div>
+                <a href="{% url 'calculator:sales_history' %}" class="btn btn-primary">
+                    <i class="fas fa-history me-2"></i>تاریخچه فروش
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-xl-8">
         <div class="card fade-in">
             <div class="card-header">
-                <h5><i class="fas fa-shopping-cart me-2"></i>ثبت فروش جدید</h5>
+                <h5><i class="fas fa-shopping-cart me-2"></i>اطلاعات فروش</h5>
             </div>
             <div class="card-body">
                 <!-- Tab Navigation -->
@@ -211,96 +230,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Recent Sales -->
-        <div class="card slide-in-right mt-4">
-            <div class="card-header">
-                <h5><i class="fas fa-history me-2"></i>فروش‌های اخیر</h5>
-            </div>
-            <div class="card-body">
-                {% if recent_sales %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>کد</th>
-                                    <th>تصویر</th>
-                                    <th>نام محصول</th>
-                                    <th>فیلامنت</th>
-                                    <th>تعداد</th>
-                                    <th>قیمت واحد</th>
-                                    <th>بسته‌بندی</th>
-                                    <th>قیمت کل</th>
-                                    <th>مشتری</th>
-                                    <th>تاریخ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sale in recent_sales %}
-                                <tr>
-                                    <td>
-                                        <span class="badge bg-primary fs-6">{{ sale.project_code }}</span>
-                                    </td>
-                                    <td>
-                                        {% if sale.project.has_image %}
-                                            <img src="{{ sale.project.picture.url }}" alt="{{ sale.project.model_name }}" 
-                                                 class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
-                                        {% else %}
-                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                                                 style="width: 40px; height: 40px;">
-                                                <i class="fas fa-cube text-muted"></i>
-                                            </div>
-                                        {% endif %}
-                                    </td>
-                                    <td><strong>{{ sale.project.model_name|default:'نامشخص' }}</strong></td>
-                                    <td>
-                                        <small class="text-muted">
-                                            {{ sale.project.filament.name|default:'نامشخص' }} - {{ sale.project.filament.color|default:'' }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ sale.quantity }} عدد</span>
-                                    </td>
-                                    <td class="text-primary">
-                                        {{ sale.unit_price|floatformat:0 }} تومان
-                                    </td>
-                                    <td class="text-secondary">
-                                        {% if sale.packaging_cost > 0 %}
-                                            {{ sale.packaging_cost|floatformat:0 }} تومان
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-success fw-bold">
-                                        {{ sale.total_price|floatformat:0 }} تومان
-                                    </td>
-                                    <td>
-                                        {% if sale.customer_name %}
-                                            {{ sale.customer_name }}
-                                            {% if sale.customer_phone %}
-                                                <br><small class="text-muted">{{ sale.customer_phone }}</small>
-                                            {% endif %}
-                                        {% else %}
-                                            <span class="text-muted">ناشناس</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <small>{{ sale.sale_date|date:"Y/m/d H:i" }}</small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center py-5">
-                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">هنوز فروشی ثبت نشده است</h5>
-                        <p class="text-muted">اولین فروش خود را ثبت کنید</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
     </div>
 
     <div class="col-xl-4">
@@ -355,12 +284,19 @@
                     {% if all_projects|length > 10 %}
                     <div class="text-center">
                         <small class="text-muted">و {{ all_projects|length|add:"-10" }} محصول دیگر...</small>
+                        <br>
+                        <a href="{% url 'calculator:projects' %}" class="btn btn-outline-primary btn-sm mt-2">
+                            <i class="fas fa-eye me-1"></i>مشاهده همه
+                        </a>
                     </div>
                     {% endif %}
                 {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
                         <p class="text-muted">هیچ محصولی موجود نیست</p>
+                        <a href="{% url 'calculator:add_filament' %}" class="btn btn-primary btn-sm">
+                            شروع کنید
+                        </a>
                     </div>
                 {% endif %}
             </div>
@@ -385,6 +321,7 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Include the same JavaScript from the previous sales.html -->
 <script>
 // Store project data
 let projectsData = {};

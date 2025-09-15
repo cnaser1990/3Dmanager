@@ -232,7 +232,96 @@ def sales(request):
     }
     return render(request, 'calculator/sales.html', context)
 
-# views.py - Update the reports function
+def sales_history(request):
+    # Get filter parameters
+    period = request.GET.get('period', 'all')
+    search = request.GET.get('search', '').strip()
+    customer = request.GET.get('customer', '').strip()
+    sort = request.GET.get('sort', '-sale_date')
+    page = request.GET.get('page', 1)
+    
+    # Base queryset
+    sales_qs = Sale.objects.select_related('project__filament').all()
+    
+    # Date filtering
+    if period == 'today':
+        date_filter = timezone.now().date()
+        sales_qs = sales_qs.filter(sale_date__date=date_filter)
+        period_name = "امروز"
+    elif period == 'week':
+        date_filter = timezone.now() - timedelta(days=7)
+        sales_qs = sales_qs.filter(sale_date__gte=date_filter)
+        period_name = "هفته گذشته"
+    elif period == 'month':
+        date_filter = timezone.now() - timedelta(days=30)
+        sales_qs = sales_qs.filter(sale_date__gte=date_filter)
+        period_name = "ماه گذشته"
+    elif period == 'year':
+        date_filter = timezone.now() - timedelta(days=365)
+        sales_qs = sales_qs.filter(sale_date__gte=date_filter)
+        period_name = "سال گذشته"
+    else:
+        period_name = "همه فروش‌ها"
+    
+    # Search filtering (project name, code, customer name)
+    if search:
+        sales_qs = sales_qs.filter(
+            Q(project__model_name__icontains=search) |
+            Q(project_code__icontains=search) |
+            Q(customer_name__icontains=search) |
+            Q(customer_phone__icontains=search)
+        )
+    
+    # Customer filtering
+    if customer:
+        sales_qs = sales_qs.filter(customer_name__icontains=customer)
+    
+    # Sorting
+    allowed_sorts = ['-sale_date', 'sale_date', '-total_price', 'total_price', 
+                     '-quantity', 'quantity', 'customer_name', '-customer_name']
+    if sort in allowed_sorts:
+        sales_qs = sales_qs.order_by(sort)
+    else:
+        sales_qs = sales_qs.order_by('-sale_date')
+    
+    # Calculate statistics
+    total_sales = sales_qs.count()
+    total_revenue = sales_qs.aggregate(Sum('total_price'))['total_price__sum'] or 0
+    total_quantity = sales_qs.aggregate(Sum('quantity'))['quantity__sum'] or 0
+    total_profit = sum(sale.total_profit for sale in sales_qs)
+    
+    # Pagination
+    paginator = Paginator(sales_qs, 20)
+    page_obj = paginator.get_page(page)
+    
+    # Get unique customers for filter dropdown
+    customers = (Sale.objects.exclude(customer_name='')
+                .values_list('customer_name', flat=True)
+                .distinct()
+                .order_by('customer_name'))
+    
+    context = {
+        'page_obj': page_obj,
+        'period': period,
+        'period_name': period_name,
+        'search': search,
+        'customer': customer,
+        'sort': sort,
+        'customers': customers,
+        'total_sales': total_sales,
+        'total_revenue': total_revenue,
+        'total_quantity': total_quantity,
+        'total_profit': total_profit,
+    }
+    return render(request, 'calculator/sales_history.html', context)
+
+def delete_sale(request, pk):
+    sale = get_object_or_404(Sale, pk=pk)
+    if request.method == 'POST':
+        sale.delete()
+        messages.success(request, 'فروش حذف شد')
+        return redirect('calculator:sales_history')
+    return render(request, 'calculator/confirm_delete_sale.html', {'sale': sale})
 
 def reports(request):
     period = request.GET.get('period', 'month')
@@ -303,7 +392,6 @@ def reports(request):
         'item_filter': item_filter,
     }
     return render(request, 'calculator/reports.html', context)
-
 
 def _D(val, default='0'):
     try:

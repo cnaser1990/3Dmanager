@@ -394,11 +394,19 @@
                             مدل ها
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'calculator:sales' %}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="salesDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-shopping-cart me-1"></i>
                             فروش
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'calculator:sales' %}">
+                                <i class="fas fa-plus me-2"></i>فروش جدید
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'calculator:sales_history' %}">
+                                <i class="fas fa-history me-2"></i>تاریخچه فروش
+                            </a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'calculator:reports' %}">

@@ -2,7 +2,11 @@
 __pycache__/
 *.py[codz]
 *$py.class
-migrations/__pycache__/
+**/migrations/__pycache__/
+**/templatetags/__pycache__/
+
+__pycache__/
+
 # C extensions
 *.so
 

@@ -53,7 +53,7 @@
                 <div class="stats-icon">
                     <i class="fas fa-coins"></i>
                 </div>
-                <div class="stats-number">{{ sales_stats.total_revenue|default:0|floatformat:0|add:"K" }}</div>
+                <div class="stats-number">{{ sales_stats.total_revenue|default:0|floatformat:0}}</div>
                 <div class="stats-label">درآمد این ماه (تومان)</div>
             </div>
         </div>
@@ -98,7 +98,7 @@
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">قیمت</small>
-                                                <strong class="text-info">{{ filament.cost_per_kg|floatformat:0|add:"K" }}</strong>
+                                                <strong class="text-info">{{ filament.cost_per_kg|floatformat:0}}</strong>
                                             </div>
                                         </div>
                                         <div class="d-flex gap-2 mt-3">
@@ -211,6 +211,9 @@
             </a></li>
             <li><a class="dropdown-item" href="{% url 'calculator:sales' %}">
                 <i class="fas fa-shopping-cart me-2"></i>ثبت فروش
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'calculator:sales_history' %}">
+                <i class="fas fa-history me-2"></i>تاریخچه فروش
             </a></li>
         </ul>
     </div>

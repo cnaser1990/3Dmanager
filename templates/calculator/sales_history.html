@@ -1,0 +1,333 @@
+{% extends "calculator/base.html" %}
+
+{% block title %}تاریخچه فروش{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-history me-3"></i>
+                    تاریخچه فروش
+                </h1>
+                <p class="page-subtitle">{{ period_name }} - {{ total_sales }} فروش</p>
+            </div>
+            <div>
+                <a href="{% url 'calculator:sales' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>فروش جدید
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-info);">
+                <div class="stats-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stats-number">{{ total_sales }}</div>
+                <div class="stats-label">تعداد فروش</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-success);">
+                <div class="stats-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stats-number">{{ total_revenue|floatformat:0 }}</div>
+                <div class="stats-label">کل درآمد (تومان)</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-warning);">
+                <div class="stats-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stats-number">{{ total_quantity }}</div>
+                <div class="stats-label">تعداد محصولات</div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card" style="background: var(--gradient-danger);">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-number">{{ total_profit|floatformat:0}}</div>
+                <div class="stats-label">کل سود (تومان)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">دوره زمانی</label>
+                    <select name="period" class="form-select">
+                        <option value="all" {% if period == 'all' %}selected{% endif %}>همه</option>
+                        <option value="today" {% if period == 'today' %}selected{% endif %}>امروز</option>
+                        <option value="week" {% if period == 'week' %}selected{% endif %}>هفته گذشته</option>
+                        <option value="month" {% if period == 'month' %}selected{% endif %}>ماه گذشته</option>
+                        <option value="year" {% if period == 'year' %}selected{% endif %}>سال گذشته</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">جستجو</label>
+                    <input type="text" name="search" class="form-control" value="{{ search }}" 
+                           placeholder="نام محصول، کد، نام مشتری، شماره تماس">
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">مشتری</label>
+                    <select name="customer" class="form-select">
+                        <option value="">همه مشتریان</option>
+                        {% for customer_name in customers %}
+                        <option value="{{ customer_name }}" {% if customer == customer_name %}selected{% endif %}>
+                            {{ customer_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">مرتب‌سازی</label>
+                    <select name="sort" class="form-select">
+                        <option value="-sale_date" {% if sort == '-sale_date' %}selected{% endif %}>جدیدترین</option>
+                        <option value="sale_date" {% if sort == 'sale_date' %}selected{% endif %}>قدیمی‌ترین</option>
+                        <option value="-total_price" {% if sort == '-total_price' %}selected{% endif %}>بیشترین قیمت</option>
+                        <option value="total_price" {% if sort == 'total_price' %}selected{% endif %}>کمترین قیمت</option>
+                        <option value="-quantity" {% if sort == '-quantity' %}selected{% endif %}>بیشترین تعداد</option>
+                        <option value="customer_name" {% if sort == 'customer_name' %}selected{% endif %}>نام مشتری</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>فیلتر
+                    </button>
+                    <a href="{% url 'calculator:sales_history' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>پاک کردن
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sales Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                لیست فروش‌ها ({{ page_obj.paginator.count }} مورد)
+            </h5>
+            <div class="btn-group" role="group">
+                <a href="{% url 'calculator:reports' %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-chart-bar me-1"></i>گزارش تفصیلی
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>کد</th>
+                                <th>تصویر</th>
+                                <th>نام محصول</th>
+                                <th>فیلامنت</th>
+                                <th>تعداد</th>
+                                <th>قیمت واحد</th>
+                                <th>بسته‌بندی</th>
+                                <th>قیمت کل</th>
+                                <th>سود</th>
+                                <th>مشتری</th>
+                                <th>تاریخ</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in page_obj %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-primary fs-6">{{ sale.project_code }}</span>
+                                </td>
+                                <td>
+                                    {% if sale.project.has_image %}
+                                        <img src="{{ sale.project.picture.url }}" alt="{{ sale.project.model_name }}" 
+                                             class="rounded project-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="image-placeholder" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-cube"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ sale.project.model_name|default:'نامشخص' }}</strong>
+                                    {% if sale.notes %}
+                                        <br><small class="text-muted">{{ sale.notes|truncatechars:50 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ sale.project.filament.name|default:'نامشخص' }}<br>
+                                        {{ sale.project.filament.color|default:'' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info fs-6">{{ sale.quantity }} عدد</span>
+                                </td>
+                                <td class="text-primary fw-bold">
+                                    {{ sale.unit_price|floatformat:0 }}
+                                    <br><small class="text-muted">تومان</small>
+                                </td>
+                                <td class="text-secondary">
+                                    {% if sale.packaging_cost > 0 %}
+                                        {{ sale.packaging_cost|floatformat:0 }}
+                                        <br><small class="text-muted">تومان</small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-success fw-bold">
+                                    {{ sale.total_price|floatformat:0 }}
+                                    <br><small class="text-muted">تومان</small>
+                                </td>
+                                <td class="{% if sale.total_profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                    {{ sale.total_profit|floatformat:0 }}
+                                    <br><small class="text-muted">تومان</small>
+                                </td>
+                                <td>
+                                    {% if sale.customer_name %}
+                                        <strong>{{ sale.customer_name }}</strong>
+                                        {% if sale.customer_phone %}
+                                            <br><small class="text-muted">{{ sale.customer_phone }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">ناشناس</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ sale.sale_date|date:"Y/m/d" }}<br>
+                                        {{ sale.sale_date|date:"H:i" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group-vertical btn-group-sm">
+                                        <button class="btn btn-outline-danger" 
+                                                onclick="confirmDelete({{ sale.pk }}, '{{ sale.project.model_name|escapejs }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="card-footer">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">قبلی</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">بعدی</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">هیچ فروشی یافت نشد</h5>
+                    <p class="text-muted">فیلترهای خود را تغییر دهید یا فروش جدیدی ثبت کنید</p>
+                    <a href="{% url 'calculator:sales' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>فروش جدید
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تایید حذف فروش</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>آیا مطمئن هستید که می‌خواهید این فروش را حذف کنید؟</p>
+                <div class="alert alert-warning">
+                    <strong>محصول:</strong> <span id="deleteProductName"></span><br>
+                    <strong>توجه:</strong> این عمل قابل برگشت نیست!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <form method="POST" id="deleteForm" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>حذف فروش
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(saleId, productName) {
+    document.getElementById('deleteProductName').textContent = productName;
+    document.getElementById('deleteForm').action = '{% url "calculator:delete_sale" 0 %}'.replace('0', saleId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Auto-submit form on filter change
+document.querySelectorAll('select[name="period"], select[name="customer"], select[name="sort"]').forEach(element => {
+    element.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+</script>
+{% endblock %}

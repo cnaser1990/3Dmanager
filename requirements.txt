@@ -1,3 +1,6 @@
 Django==4.2.7
 Pillow==10.1.0
 python-jose[cryptography]
+tzdata>=2023.3
+pyinstaller
+pyinstaller-hooks-contrib

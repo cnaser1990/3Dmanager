@@ -13,3 +13,20 @@ pyinstaller --onefile `
   --add-data "static;static" `
   --add-data "calculator;calculator" `
   app.py
+
+
+pyinstaller ^
+  --clean ^
+  --noconfirm ^
+  --onefile ^
+  --console ^
+  --name calculator ^
+  --hidden-import=config.settings ^
+  --hidden-import=config.urls ^
+  --collect-all django ^
+  --collect-all tzdata ^
+  --collect-all calculator ^
+  --collect-all jose ^
+  --add-data "templates;templates" ^
+  --add-data "static;static" ^
+  run_app.py

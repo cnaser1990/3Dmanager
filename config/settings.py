@@ -1,30 +1,55 @@
 import os
+import sys
 from pathlib import Path
-from calculator.licenseing import get_data_dir
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# --------------------------------------------------------------------------------------
+# Paths and runtime environment
+# --------------------------------------------------------------------------------------
+SOURCE_BASE_DIR = Path(__file__).resolve().parent.parent  # project root (source)
+FROZEN = getattr(sys, "frozen", False)
+MEIPASS_DIR = Path(getattr(sys, "_MEIPASS", SOURCE_BASE_DIR))  # PyInstaller extraction dir
 
-# Safe default; overridden if licenseing is importable
-DATA_DIR = Path.home() / ".local" / "share" / "Calculator"
+# Where assets (templates/static) are read from at runtime
+RUNTIME_ASSETS_ROOT = MEIPASS_DIR if FROZEN else SOURCE_BASE_DIR
 
+# --------------------------------------------------------------------------------------
+# Writable data directory (DB, media, etc.) – safe per OS and packaging
+# --------------------------------------------------------------------------------------
+def default_data_dir(app="Calculator"):
+    if sys.platform.startswith("win"):
+        base = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        base = Path(os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share"))
+    return base / app
+
+# Prefer your app's function if available; otherwise fall back to a safe default
 try:
     from calculator.licenseing import get_data_dir as _get_dd
-    DATA_DIR = Path(_get_dd())
 except Exception:
-    # During PyInstaller analysis or if jose isn’t importable here,
-    # fall back to a writable path so the hook doesn’t crash.
-    pass
+    _get_dd = None
 
-os.makedirs(DATA_DIR, exist_ok=True)
+DATA_DIR = Path((_get_dd() if _get_dd else default_data_dir())).expanduser()
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# --------------------------------------------------------------------------------------
+# Core Django settings
+# --------------------------------------------------------------------------------------
 SECRET_KEY = 'django-insecure-)z-k8&$xxmp_pg5s1kv0x12)8qg(7t*)c_dxxty!o3!2fn1t7a'
-
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-# Application definition
+# If you post to the dev server from the browser, these help avoid CSRF issues locally
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8765",
+    "http://localhost:8765",
+]
 
+# --------------------------------------------------------------------------------------
+# Applications
+# --------------------------------------------------------------------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,10 +73,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# --------------------------------------------------------------------------------------
+# Templates
+# When frozen, templates are included in the bundle and extracted under sys._MEIPASS.
+# --------------------------------------------------------------------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [RUNTIME_ASSETS_ROOT / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,29 +92,21 @@ TEMPLATES = [
     },
 ]
 
-
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
-TEMPLATES[0]["APP_DIRS"] = True
-
-
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+# --------------------------------------------------------------------------------------
+# Database (SQLite stored in user-writable DATA_DIR)
+# --------------------------------------------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(DATA_DIR, "calculator.sqlite3"),
+        "NAME": str(DATA_DIR / "calculator.sqlite3"),
     }
 }
 
-
-
+# --------------------------------------------------------------------------------------
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
+# --------------------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -101,32 +122,41 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
+# --------------------------------------------------------------------------------------
+# Internationalization / Time
+# --------------------------------------------------------------------------------------
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 USE_TZ = True
 
+# Ensure tzdata is referenced so PyInstaller bundles it on Windows (no-op otherwise)
+try:
+    import tzdata  # noqa: F401
+except Exception:
+    pass
 
-# Static files (CSS, JavaScript, Images)
+# --------------------------------------------------------------------------------------
+# Static and media files
+# - STATICFILES_DIRS points to bundled static when frozen
+# - MEDIA_ROOT uses DATA_DIR so it's writable in packaged builds
+# --------------------------------------------------------------------------------------
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR,'static_root')
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [RUNTIME_ASSETS_ROOT / 'static']
+STATIC_ROOT = SOURCE_BASE_DIR / 'static_root'  # if you ever run collectstatic
 
-# Media files configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = DATA_DIR / 'media'
+MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
-# Create media directory structure
+# Optional app-specific media path
 PROJECT_IMAGES_DIR = 'project_images'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# Custom settings for the calculator
+# --------------------------------------------------------------------------------------
+# App-specific defaults
+# --------------------------------------------------------------------------------------
 DEFAULT_SETTINGS = {
     'filament_density': 1.24,
     'filament_diameter': 1.75,
@@ -138,7 +168,10 @@ DEFAULT_SETTINGS = {
     'profit_margin': 70
 }
 
-LICENSE_PUBLIC_KEY_PEM ="""-----BEGIN PUBLIC KEY-----
+# --------------------------------------------------------------------------------------
+# Licensing public key
+# --------------------------------------------------------------------------------------
+LICENSE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmJU91mU/KwhAlRGHn3ic
 LLVgk52ptb/1hh0rz3TZvU3O67gzBNZL+fT/ffaqMEe6SqCPwOlIlSOwXTF9mJVt
 bosqAXzKA+vm0b0172kMhFi386n89RcMLiDw8FqnZvKBoLFGi7mv7TXOzp7uQe5L

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
-from calculator.licenseing import get_data_dir
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Safe default; overridden if licenseing is importable
@@ -11,20 +11,21 @@ try:
     from calculator.licenseing import get_data_dir as _get_dd
     DATA_DIR = Path(_get_dd())
 except Exception:
-    # During PyInstaller analysis or if jose isn’t importable here,
-    # fall back to a writable path so the hook doesn’t crash.
+    # During PyInstaller analysis or if jose isn't importable here,
+    # fall back to a writable path so the hook doesn't crash.
     pass
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)z-k8&$xxmp_pg5s1kv0x12)8qg(7t*)c_dxxty!o3!2fn1t7a'
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "*"]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,6 +56,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -63,17 +65,9 @@ TEMPLATES = [
     },
 ]
 
-
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
-TEMPLATES[0]["APP_DIRS"] = True
-
-
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -81,11 +75,7 @@ DATABASES = {
     }
 }
 
-
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -101,30 +91,31 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR,'static_root')
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Media files configuration
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(os.path.join(MEDIA_ROOT, 'project_images'), exist_ok=True)
 
 # Create media directory structure
 PROJECT_IMAGES_DIR = 'project_images'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 # Custom settings for the calculator
 DEFAULT_SETTINGS = {
@@ -138,7 +129,7 @@ DEFAULT_SETTINGS = {
     'profit_margin': 70
 }
 
-LICENSE_PUBLIC_KEY_PEM ="""-----BEGIN PUBLIC KEY-----
+LICENSE_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmJU91mU/KwhAlRGHn3ic
 LLVgk52ptb/1hh0rz3TZvU3O67gzBNZL+fT/ffaqMEe6SqCPwOlIlSOwXTF9mJVt
 bosqAXzKA+vm0b0172kMhFi386n89RcMLiDw8FqnZvKBoLFGi7mv7TXOzp7uQe5L

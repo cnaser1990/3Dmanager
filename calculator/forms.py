@@ -1,4 +1,4 @@
-# forms.py
+# calculator/forms.py
 
 from django import forms
 from .models import Filament, PricingSettings, Project, Sale
@@ -56,9 +56,34 @@ class FilamentForm(forms.ModelForm):
 
 
 class ProjectForm(forms.ModelForm):
+    # Custom fields for hours and minutes
+    print_hours = forms.IntegerField(
+        min_value=0,
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control calc-input',
+            'placeholder': '0',
+            'min': '0'
+        }),
+        label='ساعت'
+    )
+    
+    print_minutes = forms.IntegerField(
+        min_value=0,
+        max_value=59,
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control calc-input',
+            'placeholder': '0',
+            'min': '0',
+            'max': '59'
+        }),
+        label='دقیقه'
+    )
+    
     class Meta:
         model = Project
-        fields = ['model_name', 'picture', 'filament_used_mm', 'print_time_hours', 
+        fields = ['model_name', 'picture', 'filament_used_mm', 
                  'size_x', 'size_y', 'size_z', 'post_processing_enabled', 'painting_enabled']
         widgets = {
             'model_name': forms.TextInput(attrs={
@@ -73,11 +98,6 @@ class ProjectForm(forms.ModelForm):
                 'class': 'form-control calc-input',
                 'step': '0.1',
                 'placeholder': 'مثال: 15000'
-            }),
-            'print_time_hours': forms.NumberInput(attrs={
-                'class': 'form-control calc-input',
-                'step': '0.1',
-                'placeholder': 'مثال: 3.5'
             }),
             'size_x': forms.NumberInput(attrs={
                 'class': 'form-control calc-input',
@@ -103,6 +123,43 @@ class ProjectForm(forms.ModelForm):
                 'id': 'painting_enabled'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # If editing existing project, split the hours into hours and minutes
+        if self.instance.pk and hasattr(self.instance, 'print_time_hours'):
+            total_hours = float(self.instance.print_time_hours or 0)
+            hours = int(total_hours)
+            minutes = int((total_hours - hours) * 60)
+            
+            self.fields['print_hours'].initial = hours
+            self.fields['print_minutes'].initial = minutes
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Convert hours and minutes to decimal hours
+        hours = cleaned_data.get('print_hours', 0) or 0
+        minutes = cleaned_data.get('print_minutes', 0) or 0
+        
+        # Calculate total hours as decimal
+        total_hours = hours + (minutes / 60.0)
+        cleaned_data['print_time_hours'] = total_hours
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Set the calculated print_time_hours
+        hours = self.cleaned_data.get('print_hours', 0) or 0
+        minutes = self.cleaned_data.get('print_minutes', 0) or 0
+        instance.print_time_hours = hours + (minutes / 60.0)
+        
+        if commit:
+            instance.save()
+        return instance
 
 
 class SaleForm(forms.ModelForm):

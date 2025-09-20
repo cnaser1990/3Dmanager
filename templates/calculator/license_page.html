@@ -8,8 +8,9 @@
     {% endif %}
     <title>مدیریت مجوز - Calculator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% load static %}
+    <link href="{% static 'css/bootstrap.rtl.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/fontawesome.min.css' %}" rel="stylesheet">
     
     <style>
         :root {
@@ -72,6 +73,46 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Font Awesome Local CSS */
+        @font-face {
+            font-family: "Font Awesome 6 Free";
+            src: url("{% static 'fonts/fontawesome/fa-solid-900.woff2' %}") format("woff2");
+            font-weight: 900;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: "Font Awesome 6 Free";
+            src: url("{% static 'fonts/fontawesome/fa-regular-400.woff2' %}") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        @font-face {
+            font-family: "Font Awesome 6 Brands";
+            src: url("{% static 'fonts/fontawesome/fa-brands-400.woff2' %}") format("woff2");
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .fa, .fas {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+        }
+
+        .far {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 400;
+        }
+
+        .fab {
+            font-family: "Font Awesome 6 Brands";
+            font-weight: 400;
         }
 
         * {
@@ -580,8 +621,8 @@
                 </div>
                 
                 <div class="text-center">
-                    <button type="submit" class="btn-modern">
-                        <i class="fas fa-upload me-2"></i>آپلود فایل مجوز
+                    <button type="submit" class="btn-modern btn-success">
+                        <i class="fas fa-upload me-2"></i>آپلود فایل 
                     </button>
                 </div>
                 
@@ -620,7 +661,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script>
         // Countdown timer for redirect (changed to 15 seconds)
         {% if auto_redirect %}

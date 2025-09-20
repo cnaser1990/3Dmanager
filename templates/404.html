@@ -1,0 +1,178 @@
+<!-- templates/404.html -->
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحه پیدا نشد - 404</title>
+    
+    <!-- Bootstrap 5 RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Vazir -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #fdfdfd 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            color: #27272a;
+        }
+
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .error-icon {
+            font-size: 8rem;
+            color: #0ea5e9;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .error-code {
+            font-size: 6rem;
+            font-weight: 800;
+            color: #0369a1;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #27272a;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            font-size: 1.1rem;
+            color: #52525b;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.39);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(14, 165, 233, 0.5);
+            color: white;
+            text-decoration: none;
+        }
+
+        .error-details {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #0369a1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand:hover {
+            color: #0ea5e9;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .error-code { font-size: 4rem; }
+            .error-title { font-size: 1.5rem; }
+            .error-icon { font-size: 5rem; }
+            .error-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'calculator:index' %}" class="navbar-brand">
+        <i class="fas fa-cube"></i>
+        محاسبگر پرینت سه‌بعدی
+    </a>
+
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        
+        <div class="error-code">404</div>
+        
+        <h1 class="error-title">صفحه پیدا نشد!</h1>
+        
+        <p class="error-message">
+            متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.
+            <br>
+            لطفاً آدرس را بررسی کنید یا به صفحه اصلی بازگردید.
+        </p>
+
+        <a href="{% url 'calculator:index' %}" class="btn-home">
+            <i class="fas fa-home"></i>
+            بازگشت به صفحه اصلی
+        </a>
+
+        <div class="error-details">
+            <h6 class="mb-3">
+                <i class="fas fa-info-circle me-2 text-primary"></i>
+                اطلاعات اضافی
+            </h6>
+            <p class="mb-2"><strong>درخواست شده:</strong> {{ request.path }}</p>
+            <p class="mb-0"><strong>زمان:</strong> <span id="current-time"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // Show current time
+        document.getElementById('current-time').textContent = new Date().toLocaleString('fa-IR');
+        
+        // Add some animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.error-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(30px)';
+            container.style.transition = 'all 0.6s ease';
+            
+            setTimeout(() => {
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

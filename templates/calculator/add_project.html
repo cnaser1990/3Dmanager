@@ -1,4 +1,3 @@
-<!-- templates/calculator/add_project.html -->
 {% extends "calculator/base.html" %}
 
 {% block title %}مدل جدید - {{ filament.name }}{% endblock %}
@@ -106,17 +105,39 @@
                 {% endif %}
               </div>
               <div class="col-md-6">
-                <label for="id_print_time_hours" class="form-label">زمان پرینت</label>
-                <div class="input-group modern-input">
-                  <span class="input-group-text"><i class="fas fa-clock"></i></span>
-                  {{ form.print_time_hours }}
-                  <span class="input-group-text">h</span>
+                <label class="form-label">زمان پرینت</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="input-group modern-input">
+                      <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                      {{ form.print_hours }}
+                      <span class="input-group-text">h</span>
+                    </div>
+                    {% if form.print_hours.errors %}
+                      <div class="text-danger small mt-1">{{ form.print_hours.errors.0 }}</div>
+                    {% endif %}
+                  </div>
+                  <div class="col-6">
+                    <div class="input-group modern-input">
+                      <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                      {{ form.print_minutes }}
+                      <span class="input-group-text">m</span>
+                    </div>
+                    {% if form.print_minutes.errors %}
+                      <div class="text-danger small mt-1">{{ form.print_minutes.errors.0 }}</div>
+                    {% endif %}
+                  </div>
                 </div>
-                {% if form.print_time_hours.errors %}
-                  <div class="text-danger small mt-1">{{ form.print_time_hours.errors.0 }}</div>
-                {% else %}
-                  <div class="form-text">مثال: 3.5</div>
-                {% endif %}
+                <!-- Time Display -->
+                <div class="time-display-container mt-2">
+                  <div id="time-display" class="time-display d-none">
+                    <i class="fas fa-calculator me-1"></i>
+                    <span id="time-readable">0h 0m</span>
+                    <span class="time-separator">←</span>
+                    <span id="time-decimal" class="text-primary fw-bold">0.0 ساعت</span>
+                  </div>
+                </div>
+                <div class="form-text">مثال: 3 ساعت و 30 دقیقه</div>
               </div>
             </div>
 
@@ -340,9 +361,35 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Elements
+  // === IMAGE UPLOAD HANDLING ===
+  const input = document.getElementById('id_picture');
+  const img = document.getElementById('previewImg');
+  const tile = document.getElementById('upload-tile');
+  
+  if (input && img && tile) {
+    input.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        img.src = '';
+        img.classList.remove('show');
+        tile.classList.remove('has-image');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        img.src = ev.target.result;
+        img.classList.add('show');
+        tile.classList.add('has-image');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // === CALCULATION PREVIEW ===
   const filamentUsed = document.getElementById('id_filament_used_mm');
-  const printTime = document.getElementById('id_print_time_hours');
+  const printHours = document.getElementById('id_print_hours');
+  const printMinutes = document.getElementById('id_print_minutes');
   const sizeX = document.getElementById('id_size_x');
   const sizeY = document.getElementById('id_size_y');
   const sizeZ = document.getElementById('id_size_z');
@@ -352,66 +399,75 @@ document.addEventListener('DOMContentLoaded', function() {
   const previewStatus = document.getElementById('preview-status');
   const costPreview = document.getElementById('cost-preview');
   const emptyState = document.getElementById('calc-empty');
+  
+  const timeDisplay = document.getElementById('time-display');
+  const timeReadable = document.getElementById('time-readable');
+  const timeDecimal = document.getElementById('time-decimal');
 
   const filamentCostPerKg = {{ filament.cost_per_kg|default:25000 }};
-
-  // Upload tile preview
-  (function initUploadTile() {
-    const input = document.getElementById('id_picture');
-    const tile = document.getElementById('upload-tile');
-    const img = document.getElementById('previewImg');
-    if (!input || !tile || !img) return;
-    // Make whole tile clickable
-    tile.addEventListener('click', () => input.click());
-    input.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) {
-        img.src = '';
-        img.classList.remove('show');
-        tile.classList.remove('has-image');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = ev => {
-        img.src = ev.target.result;
-        img.classList.add('show');
-        tile.classList.add('has-image');
-      };
-      reader.readAsDataURL(file);
-    });
-  })();
 
   function fmt(n) {
     return new Intl.NumberFormat('fa-IR').format(Math.round(n || 0));
   }
 
+  function getPrintTimeHours() {
+    const hours = parseFloat(printHours?.value || 0);
+    const minutes = parseFloat(printMinutes?.value || 0);
+    return hours + (minutes / 60.0);
+  }
+
+  function updateTimeDisplay() {
+    const hours = parseInt(printHours?.value || 0);
+    const minutes = parseInt(printMinutes?.value || 0);
+    const totalHours = getPrintTimeHours();
+    
+    if (hours > 0 || minutes > 0) {
+      timeReadable.textContent = `${hours}h ${minutes}m`;
+      timeDecimal.textContent = `${totalHours.toFixed(1)} ساعت`;
+      timeDisplay.classList.remove('d-none');
+      timeDisplay.classList.add('show-animation');
+    } else {
+      timeDisplay.classList.add('d-none');
+      timeDisplay.classList.remove('show-animation');
+    }
+  }
+
   function hasInputs() {
-    return (
-      parseFloat(filamentUsed?.value || 0) > 0 &&
-      parseFloat(printTime?.value || 0) > 0 &&
-      parseFloat(sizeX?.value || 0) > 0 &&
-      parseFloat(sizeY?.value || 0) > 0 &&
-      parseFloat(sizeZ?.value || 0) > 0
-    );
+    const filamentValue = parseFloat(filamentUsed?.value || 0);
+    const timeValue = getPrintTimeHours();
+    const sizeXValue = parseFloat(sizeX?.value || 0);
+    const sizeYValue = parseFloat(sizeY?.value || 0);
+    const sizeZValue = parseFloat(sizeZ?.value || 0);
+    
+    return filamentValue > 0 && timeValue > 0 && sizeXValue > 0 && sizeYValue > 0 && sizeZValue > 0;
   }
 
   let isCalculating = false;
 
   function updateCalculationPreview() {
     if (!hasInputs()) {
-      costPreview.classList.add('d-none');
-      emptyState.classList.remove('d-none');
-      if (previewStatus) { previewStatus.textContent = 'آماده محاسبه'; previewStatus.className = 'text-light opacity-75'; }
+      costPreview?.classList.add('d-none');
+      emptyState?.classList.remove('d-none');
+      if (previewStatus) { 
+        previewStatus.textContent = 'آماده محاسبه'; 
+        previewStatus.className = 'text-light opacity-75'; 
+      }
       return;
     }
+    
     if (isCalculating) return;
     isCalculating = true;
 
-    if (previewStatus) { previewStatus.textContent = 'در حال محاسبه...'; previewStatus.className = 'text-warning pulse'; }
+    if (previewStatus) { 
+      previewStatus.textContent = 'در حال محاسبه...'; 
+      previewStatus.className = 'text-warning pulse'; 
+    }
 
+    const printTimeHours = getPrintTimeHours();
+    
     const data = {
       filament_used_mm: parseFloat(filamentUsed.value),
-      print_time_hours: parseFloat(printTime.value),
+      print_time_hours: printTimeHours,
       size_x: parseFloat(sizeX.value),
       size_y: parseFloat(sizeY.value),
       size_z: parseFloat(sizeZ.value),
@@ -433,9 +489,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(d => {
       if (d.error) throw new Error(d.error);
 
-      // Show section
-      costPreview.classList.remove('d-none');
-      emptyState.classList.add('d-none');
+      costPreview?.classList.remove('d-none');
+      emptyState?.classList.add('d-none');
 
       setText('filament-weight', fmt(d.filament_weight) + ' گرم');
       setText('material-cost', fmt(d.material_cost) + ' تومان');
@@ -450,13 +505,21 @@ document.addEventListener('DOMContentLoaded', function() {
       const profit = (d.selling_price || 0) - (d.total_cost || 0);
       setText('profit-margin', 'سود: ' + fmt(profit) + ' تومان');
 
-      if (previewStatus) { previewStatus.textContent = 'محاسبه شد ✅'; previewStatus.className = 'text-success'; }
+      if (previewStatus) { 
+        previewStatus.textContent = 'محاسبه شد ✅'; 
+        previewStatus.className = 'text-success'; 
+      }
     })
     .catch(err => {
-      if (previewStatus) { previewStatus.textContent = 'خطا در محاسبه'; previewStatus.className = 'text-danger'; }
-      console.error(err);
+      console.error('Calculation error:', err);
+      if (previewStatus) { 
+        previewStatus.textContent = 'خطا در محاسبه'; 
+        previewStatus.className = 'text-danger'; 
+      }
     })
-    .finally(() => { isCalculating = false; });
+    .finally(() => { 
+      isCalculating = false; 
+    });
   }
 
   function setText(id, val) {
@@ -471,39 +534,54 @@ document.addEventListener('DOMContentLoaded', function() {
       row.classList.remove('d-none');
       const el = document.getElementById(valueId);
       if (el) el.textContent = fmt(value) + ' تومان';
-      row.classList.add('glow-once');
-      setTimeout(() => row.classList.remove('glow-once'), 600);
     } else {
       row.classList.add('d-none');
     }
   }
 
-  // Debounce
-  function debounce(fn, wait) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), wait); }; }
-  const debounced = debounce(updateCalculationPreview, 300);
+  function debounce(fn, wait) { 
+    let t; 
+    return (...a) => { 
+      clearTimeout(t); 
+      t = setTimeout(() => fn(...a), wait); 
+    }; 
+  }
+  const debounced = debounce(updateCalculationPreview, 500);
 
-  [filamentUsed, printTime, sizeX, sizeY, sizeZ].forEach(el => {
+  function handleTimeChange() {
+    updateTimeDisplay();
+    debounced();
+  }
+
+  // Event listeners
+  [filamentUsed, sizeX, sizeY, sizeZ].forEach(el => {
     if (!el) return;
     el.addEventListener('input', debounced);
     el.addEventListener('blur', updateCalculationPreview);
   });
 
-  if (postProcessing) postProcessing.addEventListener('change', () => setTimeout(updateCalculationPreview, 10));
-  if (painting) painting.addEventListener('change', () => setTimeout(updateCalculationPreview, 10));
-
-  // Initial calculation
-  setTimeout(updateCalculationPreview, 500);
-
-  // Prevent submit while calculating
-  const form = document.getElementById('model-form');
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      if (isCalculating) {
-        e.preventDefault();
-        alert('لطفاً منتظر تکمیل محاسبات باشید');
-      }
+  [printHours, printMinutes].forEach(el => {
+    if (!el) return;
+    el.addEventListener('input', handleTimeChange);
+    el.addEventListener('blur', function() {
+      updateTimeDisplay();
+      updateCalculationPreview();
     });
+  });
+
+  if (postProcessing) {
+    postProcessing.addEventListener('change', updateCalculationPreview);
   }
+  
+  if (painting) {
+    painting.addEventListener('change', updateCalculationPreview);
+  }
+
+  // Initial updates
+  setTimeout(function() {
+    updateTimeDisplay();
+    updateCalculationPreview();
+  }, 500);
 });
 </script>
 
@@ -576,7 +654,55 @@ document.addEventListener('DOMContentLoaded', function() {
   border-left: 0; 
 }
 
-/* Upload Tile */
+/* Time Display Styling */
+.time-display-container {
+  margin-top: 0.5rem;
+}
+
+.time-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, var(--primary-50), var(--success-50));
+  border: 1px solid var(--primary-200);
+  border-radius: var(--border-radius-md);
+  font-size: 0.85rem;
+  color: var(--secondary-700);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.time-display.show-animation {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.time-display i {
+  color: var(--primary-500);
+  font-size: 0.8rem;
+}
+
+.time-separator {
+  color: var(--secondary-400);
+  font-weight: 600;
+  margin: 0 0.25rem;
+}
+
+#time-readable {
+  color: var(--secondary-600);
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+#time-decimal {
+  color: var(--primary-600) !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem;
+}
+
+/* Upload Tile - FIXED */
 .upload-modern {
   position: relative;
   border: 2px dashed var(--primary-300);
@@ -586,31 +712,68 @@ document.addEventListener('DOMContentLoaded', function() {
   background: var(--primary-50);
   cursor: pointer;
   transition: all 0.3s ease;
+  user-select: none;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
 .upload-modern:hover { 
   border-color: var(--primary-500); 
   background: var(--primary-100);
 }
+
 .upload-icon-modern { 
   font-size: 28px; 
   color: var(--primary-500); 
   margin-bottom: var(--spacing-sm); 
+  pointer-events: none;
 }
 .upload-hint-modern { 
   color: var(--secondary-600); 
   font-size: .875rem; 
+  pointer-events: none;
 }
+
 #id_picture {
-  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+  position: absolute !important; 
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important; 
+  height: 100% !important; 
+  opacity: 0 !important; 
+  cursor: pointer !important;
+  z-index: 2 !important;
+  border: none !important;
+  background: transparent !important;
 }
+
 .preview-image-modern {
   display: block;
-  width: 100%; height: 180px; object-fit: cover;
-  border-radius: var(--border-radius-md); margin-top: var(--spacing-sm); 
-  opacity: 0; transition: opacity .25s ease;
+  width: 100%; 
+  height: 180px; 
+  object-fit: cover;
+  border-radius: var(--border-radius-md); 
+  margin-top: var(--spacing-sm); 
+  opacity: 0; 
+  transition: opacity .25s ease;
+  pointer-events: none;
 }
-.preview-image-modern.show { opacity: 1; }
-.upload-modern.has-image { background: var(--surface-100); }
+
+.preview-image-modern.show { 
+  opacity: 1; 
+}
+
+.upload-modern.has-image { 
+  background: var(--surface-100); 
+}
+
+.upload-modern.has-image .upload-icon-modern,
+.upload-modern.has-image .upload-hint-modern {
+  display: none;
+}
 
 /* Services */
 .service-modern {
@@ -625,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
   box-shadow: var(--shadow-sm); 
 }
 
-/* Fixed Cost Card Styling */
+/* Cost Card Styling */
 .cost-card-modern {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -781,27 +944,7 @@ document.addEventListener('DOMContentLoaded', function() {
   color: var(--secondary-600);
 }
 
-/* Glow Animation for New Items */
-.glow-once {
-  animation: glow 0.6s ease;
-}
-
-@keyframes glow {
-  0% { 
-    box-shadow: 0 0 0 rgba(34, 197, 94, 0); 
-    border-color: var(--secondary-200);
-  }
-  50% { 
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); 
-    border-color: var(--success-400);
-  }
-  100% { 
-    box-shadow: 0 0 0 rgba(34, 197, 94, 0); 
-    border-color: var(--secondary-200);
-  }
-}
-
-/* Pulse Animation for Status */
+/* Pulse Animation */
 .pulse {
   animation: pulse 1.4s ease-in-out infinite alternate;
 }
@@ -836,6 +979,21 @@ document.addEventListener('DOMContentLoaded', function() {
   
   .price-modern {
     font-size: 1.1rem;
+  }
+  
+  .time-display {
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .time-separator {
+    display: none;
+  }
+  
+  #time-decimal {
+    font-size: 0.8rem;
   }
 }
 </style>

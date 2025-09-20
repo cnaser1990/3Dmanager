@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Count, Sum, Q
+from django.urls import reverse
 from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
@@ -161,7 +162,16 @@ def add_project(request, filament_id):
     filament = get_object_or_404(Filament, pk=filament_id)
     
     if request.method == 'POST':
+        # Debug: Check if file is in request
+        print(f"FILES in request: {bool(request.FILES)}")
+        print(f"FILES keys: {list(request.FILES.keys()) if request.FILES else 'None'}")
+        if 'picture' in request.FILES:
+            print(f"Picture file: {request.FILES['picture'].name}, size: {request.FILES['picture'].size}")
+        
         form = ProjectForm(request.POST, request.FILES)
+        print(f"Form bound with files: {form.is_bound}")
+        print(f"Form files: {form.files}")
+        
         if form.is_valid():
             project = form.save(commit=False)
             project.filament = filament
@@ -172,7 +182,10 @@ def add_project(request, filament_id):
                 messages.error(request, f'فیلامنت کافی نیست! باقی‌مانده: {filament.remaining_amount:.1f} متر')
                 return render(request, 'calculator/add_project.html', {'form': form, 'filament': filament})
             
+            # Debug: Check if picture is being saved
+            print(f"Project picture before save: {project.picture}")
             project.save()
+            print(f"Project picture after save: {project.picture}")
             
             # Update filament remaining amount
             filament.remaining_amount -= filament_used_m
@@ -180,6 +193,9 @@ def add_project(request, filament_id):
             
             messages.success(request, f'مدل جدید با کد {project.code} ثبت شد')
             return redirect('calculator:view_filament', pk=filament.pk)
+        else:
+            print(f"Form errors: {form.errors}")
+            print(f"Form non-field errors: {form.non_field_errors()}")
     else:
         form = ProjectForm()
     
@@ -407,22 +423,24 @@ def _D(val, default='0'):
     except (InvalidOperation, TypeError, ValueError):
         return Decimal(default)
 
-# ---------- Pricing Settings UI (public) ----------
 @require_http_methods(["GET", "POST"])
 def pricing_settings_view(request):
     settings_obj = PricingSettings.get_solo()
+    
     if request.method == 'POST':
-        if request.POST.get('confirm_apply') != 'on':
-            messages.error(request, 'برای ذخیره، تیک «تایید اعمال تغییرات» را بزنید.')
-            form = PricingSettingsForm(request.POST, instance=settings_obj)
+        # Clear any existing messages to prevent duplicates
+        storage = messages.get_messages(request)
+        for _ in storage:
+            pass  # This consumes/clears existing messages
+        
+        form = PricingSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'تنظیمات با موفقیت ذخیره شد.')
+            # Redirect to prevent form resubmission
+            return redirect(reverse('calculator:pricing_settings') + f'?updated={timezone.now().timestamp()}')
         else:
-            form = PricingSettingsForm(request.POST, instance=settings_obj)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'تنظیمات با موفقیت ذخیره شد.')
-                return redirect('calculator:pricing_settings')
-            else:
-                messages.error(request, 'لطفاً خطاهای فرم را بررسی کنید.')
+            messages.error(request, 'لطفاً خطاهای فرم را بررسی کنید.')
     else:
         form = PricingSettingsForm(instance=settings_obj)
 

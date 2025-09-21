@@ -1,8 +1,16 @@
+#settings.py
 import os
 from pathlib import Path
+import sys
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+# When packaged by PyInstaller, resources are extracted to sys._MEIPASS
+if getattr(sys, "frozen", False):
+    # use the extracted temp folder as base
+    BASE_DIR = Path(getattr(sys, "_MEIPASS"))
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # Safe default; overridden if licenseing is importable
 DATA_DIR = Path.home() / ".local" / "share" / "Calculator"

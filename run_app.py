@@ -6,11 +6,17 @@ import time
 import webbrowser
 
 def configure_paths_for_frozen():
-    # When running as a PyInstaller bundle, resources are extracted to sys._MEIPASS.
     if getattr(sys, "frozen", False):
         meipass = getattr(sys, "_MEIPASS", None)
-        if meipass and meipass not in sys.path:
-            sys.path.insert(0, meipass)
+        if meipass:
+            if meipass not in sys.path:
+                sys.path.insert(0, meipass)
+            # make the extracted resources the current working directory
+            try:
+                os.chdir(meipass)
+            except Exception:
+                pass
+
 
 def main():
     # Ensure project modules (config, calculator) are importable

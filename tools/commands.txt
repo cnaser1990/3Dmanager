@@ -8,3 +8,26 @@ pyinstaller --clean --onefile --noconsole --name app   --add-data "templates:tem
 
 
 pyinstaller --clean --onefile --name app --add-data "templates;templates" --add-data "media;media" --add-data "static;static" --add-data "staticfiles;staticfiles" --add-data "config;config" --collect-all django --collect-all asgiref --collect-all sqlparse --collect-all jose --hidden-import "jose.backends.cryptography_backend" run_app.py
+
+
+# 1) activate venv
+source venv/bin/activate
+
+# 2) confirm django is available in this Python
+python -c "import django; print('Django at', django.__file__)"
+
+# 3) install pyinstaller in the venv (if not installed)
+pip install --upgrade pyinstaller
+
+# 4) build using python -m PyInstaller
+python -m PyInstaller --clean --onefile --name app \
+  --add-data "templates:templates" \
+  --add-data "static:static" \
+  --add-data "staticfiles:staticfiles" \
+  --add-data "config:config" \
+  --collect-submodules django \
+  --collect-submodules asgiref \
+  --collect-submodules sqlparse \
+  --collect-submodules jose \
+  --hidden-import "jose.backends.cryptography_backend" \
+  run_app.py

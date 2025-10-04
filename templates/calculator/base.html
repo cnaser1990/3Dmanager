@@ -992,7 +992,7 @@
                         <i class="fas fa-info-circle me-2"></i>
                     {% endif %}
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="بستن"></button>
                 </div>
             {% endfor %}
         </div>
@@ -1006,28 +1006,41 @@
     <!-- Scripts -->
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script>
-        // Enhanced loading animation for buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prevent double submit & show loading state
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function(e) {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                if (submitBtn && !submitBtn.disabled) {
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<span class="loading me-2"></span> در حال پردازش...';
-                    submitBtn.disabled = true;
-                    
-                    // Re-enable button after 5 seconds (safety measure)
-                    setTimeout(() => {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    }, 5000);
+                const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (!submitBtn) return;
+
+                // if already submitting, block
+                if (submitBtn.dataset.submitting === '1') {
+                    e.preventDefault();
+                    return;
                 }
+
+                // mark as submitting
+                submitBtn.dataset.submitting = '1';
+                const originalHTML = submitBtn.innerHTML;
+                try {
+                    submitBtn.innerHTML = '<span class="loading me-2" aria-hidden="true"></span> در حال پردازش...';
+                } catch (err) {}
+
+                submitBtn.disabled = true;
+
+                // Safety fallback: re-enable after 15s if something goes wrong (server دیر پاسخ داد)
+                setTimeout(() => {
+                    submitBtn.dataset.submitting = '0';
+                    try { submitBtn.innerHTML = originalHTML; } catch(e){}
+                    submitBtn.disabled = false;
+                }, 15000);
             });
         });
 
-        // Enhanced auto-hide alerts
+        // Auto-hide only non-critical alerts
         setTimeout(() => {
             document.querySelectorAll('.alert').forEach(alert => {
-                if (alert.classList.contains('show')) {
+                if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
                     alert.style.transition = 'all 0.3s ease';
                     alert.style.opacity = '0';
                     alert.style.transform = 'translateY(-10px)';
@@ -1036,40 +1049,40 @@
             });
         }, 5000);
 
-        // Add smooth scroll behavior
+        // Smooth scroll (keep)
         document.documentElement.style.scrollBehavior = 'smooth';
 
-        // Enhanced card hover effects
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add stagger animation to cards
-            const cards = document.querySelectorAll('.card');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-            });
-
-            // Add active class to current nav item
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-            
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
+        // Nav link active detection (normalize trailing slash)
+        const currentPath = window.location.pathname.replace(/\/$/, '');
+        document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            try {
+                const linkPath = new URL(href, window.location.origin).pathname.replace(/\/$/, '');
+                if (linkPath === currentPath) {
                     link.classList.add('active');
                 }
-            });
-
-            // Enhanced floating button interaction
-            const supportBtn = document.querySelector('.telegram-support');
-            if (supportBtn) {
-                supportBtn.addEventListener('click', function() {
-                    // Add a quick success animation
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-                });
+            } catch (e) {
+                // fallback: compare raw hrefs
+                if (href.replace(/\/$/, '') === currentPath) link.classList.add('active');
             }
         });
+
+        // Enhanced floating support button animation (safe)
+        const supportBtn = document.querySelector('.telegram-support');
+        if (supportBtn) {
+            supportBtn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => { this.style.transform = ''; }, 150);
+            });
+        }
+
+        // Stagger card animations
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => { card.style.animationDelay = `${index * 0.08}s`; });
+    });
     </script>
+
     
     {% block scripts %}{% endblock %}
 </body>

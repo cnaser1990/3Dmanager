@@ -1,7 +1,7 @@
 # calculator/forms.py
 
 from django import forms
-from .models import Filament, PricingSettings, Project, Sale
+from .models import Filament, PricingSettings, Project, Sale, FilamentUsage
 
 class FilamentForm(forms.ModelForm):
     remaining_amount = forms.FloatField(
@@ -22,8 +22,9 @@ class FilamentForm(forms.ModelForm):
                 'placeholder': 'مثال: SUNLU PLA+ Premium'
             }),
             'color': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'مثال: قرمز، آبی، سفید، شفاف'
+                'type': 'color',  # HTML5 color picker
+                'class': 'form-control color-picker-input',
+                'value': '#6c757d'  # Default gray color
             }),
             'material': forms.Select(attrs={'class': 'form-select'}),
             'initial_amount': forms.NumberInput(attrs={
@@ -33,30 +34,71 @@ class FilamentForm(forms.ModelForm):
             }),
             'cost_per_kg': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'value': '25000'
+                'value': '1500000'
             }),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Set initial remaining_amount
         if self.instance.pk:
             self.fields['remaining_amount'].initial = self.instance.remaining_amount
         else:
             self.fields['remaining_amount'].initial = self.initial.get('initial_amount', 330)
+        
+        # If editing existing filament, set color value with # prefix
+        if self.instance.pk and self.instance.color:
+            color_value = self.instance.color
+            # Ensure it has # prefix for color picker
+            if not color_value.startswith('#'):
+                color_value = f'#{color_value}'
+            self.fields['color'].widget.attrs['value'] = color_value
+    
+    def clean_color(self):
+        """Validate and clean color value"""
+        color = self.cleaned_data.get('color', '').strip()
+        
+        # Remove # if present
+        color = color.replace('#', '').upper()
+        
+        # Default color if empty
+        if not color:
+            return '6c757d'
+        
+        # Expand 3-char hex to 6-char (e.g., F00 -> FF0000)
+        if len(color) == 3:
+            color = ''.join([c*2 for c in color])
+        
+        # Validate length
+        if len(color) != 6:
+            raise forms.ValidationError('کد رنگ باید 6 کاراکتر باشد (مثال: FF5733)')
+        
+        # Validate hex characters
+        try:
+            int(color, 16)
+        except ValueError:
+            raise forms.ValidationError('کد رنگ نامعتبر است. فقط اعداد 0-9 و حروف A-F مجاز هستند')
+        
+        return color
     
     def save(self, commit=True):
         instance = super().save(commit=False)
-        if not instance.pk:  # New filament
+        
+        # Set remaining_amount
+        if not instance.pk:
             instance.remaining_amount = instance.initial_amount
-        else:  # Editing existing filament
+        else:
             instance.remaining_amount = self.cleaned_data.get('remaining_amount', instance.remaining_amount)
+        
         if commit:
             instance.save()
         return instance
 
 
+
 class ProjectForm(forms.ModelForm):
-    # Custom fields for hours and minutes
+    """Form for creating independent projects"""
     print_hours = forms.IntegerField(
         min_value=0,
         initial=0,
@@ -127,7 +169,6 @@ class ProjectForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # If editing existing project, split the hours into hours and minutes
         if self.instance.pk and hasattr(self.instance, 'print_time_hours'):
             total_hours = float(self.instance.print_time_hours or 0)
             hours = int(total_hours)
@@ -139,11 +180,9 @@ class ProjectForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         
-        # Convert hours and minutes to decimal hours
         hours = cleaned_data.get('print_hours', 0) or 0
         minutes = cleaned_data.get('print_minutes', 0) or 0
         
-        # Calculate total hours as decimal
         total_hours = hours + (minutes / 60.0)
         cleaned_data['print_time_hours'] = total_hours
         
@@ -152,7 +191,6 @@ class ProjectForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Set the calculated print_time_hours
         hours = self.cleaned_data.get('print_hours', 0) or 0
         minutes = self.cleaned_data.get('print_minutes', 0) or 0
         instance.print_time_hours = hours + (minutes / 60.0)
@@ -160,6 +198,68 @@ class ProjectForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class FilamentUsageForm(forms.ModelForm):
+    """Form for assigning a project to a filament"""
+    project_code = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'کد مدل را وارد کنید',
+            'min': '1'
+        }),
+        label='کد مدل'
+    )
+    
+    class Meta:
+        model = FilamentUsage
+        fields = ['project', 'quantity']
+        widgets = {
+            'project': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'project-select'
+            }),
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'value': '1',
+                'placeholder': 'تعداد'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.filament = kwargs.pop('filament', None)
+        super().__init__(*args, **kwargs)
+        
+        # UPDATED: Don't filter out already assigned projects - allow multiple batches
+        if self.filament:
+            self.fields['project'].queryset = Project.objects.all().order_by('-created_date')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        project = cleaned_data.get('project')
+        project_code = cleaned_data.get('project_code')
+        quantity = cleaned_data.get('quantity', 1)
+        
+        # Try to find project by code if provided
+        if not project and project_code:
+            try:
+                project = Project.objects.get(code=project_code)
+                cleaned_data['project'] = project
+            except Project.DoesNotExist:
+                raise forms.ValidationError('پروژه با این کد یافت نشد!')
+        
+        # Check if enough filament available for quantity
+        if project and self.filament:
+            filament_needed_m = (project.filament_used_mm / 1000) * quantity
+            if filament_needed_m > self.filament.remaining_amount:
+                raise forms.ValidationError(
+                    f'فیلامنت کافی نیست! مورد نیاز: {filament_needed_m:.1f} متر ({quantity} عدد)، '
+                    f'موجودی: {self.filament.remaining_amount:.1f} متر'
+                )
+        
+        return cleaned_data
 
 
 class SaleForm(forms.ModelForm):
@@ -173,11 +273,18 @@ class SaleForm(forms.ModelForm):
         label='کد مدل'
     )
     
+    filament_id = forms.IntegerField(
+        required=False,
+        widget=forms.HiddenInput(),
+        label='شناسه فیلامنت'
+    )
+    
     class Meta:
         model = Sale
-        fields = ['project', 'quantity', 'customer_name', 'customer_phone', 'unit_price', 'packaging_cost', 'notes']
+        fields = ['filament_usage', 'quantity', 'customer_name', 'customer_phone', 
+                 'unit_price', 'packaging_cost', 'notes']
         widgets = {
-            'project': forms.Select(attrs={'class': 'form-select'}),
+            'filament_usage': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'value': '1',
@@ -211,15 +318,26 @@ class SaleForm(forms.ModelForm):
     
     def clean(self):
         cleaned_data = super().clean()
-        project = cleaned_data.get('project')
+        filament_usage = cleaned_data.get('filament_usage')
         project_code = cleaned_data.get('project_code')
+        filament_id = cleaned_data.get('filament_id')
         
-        if not project and project_code:
+        if not filament_usage and project_code:
             try:
-                project = Project.objects.get(code=project_code)
-                cleaned_data['project'] = project
-            except Project.DoesNotExist:
-                raise forms.ValidationError('کد وارد شده یافت نشد!')
+                # Find FilamentUsage by project code (and optionally filament)
+                query = FilamentUsage.objects.filter(project__code=project_code)
+                
+                if filament_id:
+                    query = query.filter(filament_id=filament_id)
+                
+                filament_usage = query.first()
+                
+                if not filament_usage:
+                    raise forms.ValidationError('ترکیب پروژه و فیلامنت یافت نشد!')
+                
+                cleaned_data['filament_usage'] = filament_usage
+            except FilamentUsage.DoesNotExist:
+                raise forms.ValidationError('استفاده از فیلامنت یافت نشد!')
         
         return cleaned_data
 

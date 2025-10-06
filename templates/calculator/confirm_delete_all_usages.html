@@ -1,0 +1,726 @@
+<!-- templates/calculator/confirm_delete_all_usages.html -->
+{% extends "calculator/base.html" %}
+
+{% block title %}تأیید حذف همه اختصاص‌ها{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4 py-4">
+    
+    <!-- Modern Warning Header -->
+    <div class="warning-header">
+        <div class="warning-icon-wrapper">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+        </div>
+        <div class="warning-content">
+            <h1 class="warning-title">تأیید حذف همه اختصاص‌ها</h1>
+            <p class="warning-subtitle">
+                در حال حذف <strong>{{ usage_count }}</strong> اختصاص از فیلامنت 
+                <strong>{{ filament.name }} ({{ filament.color }})</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="delete-confirmation-card">
+        
+        <!-- Critical Warning Banner -->
+        <div class="critical-warning">
+            <div class="critical-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="critical-text">
+                <h3>هشدار مهم!</h3>
+                <p>این عملیات قابل بازگشت نیست. همه اختصاص‌ها حذف می‌شوند و فیلامنت به موجودی بازمی‌گردد.</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="delete-stats-grid">
+            <div class="delete-stat-card delete-stat-danger">
+                <div class="stat-icon-wrapper">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">تعداد حذف</div>
+                    <div class="stat-value">{{ usage_count }}</div>
+                    <div class="stat-unit">اختصاص</div>
+                </div>
+            </div>
+
+            <div class="delete-stat-card delete-stat-success">
+                <div class="stat-icon-wrapper">
+                    <i class="fas fa-undo"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">فیلامنت بازگشتی</div>
+                    <div class="stat-value">{{ total_filament|floatformat:2 }}</div>
+                    <div class="stat-unit">متر</div>
+                </div>
+            </div>
+
+            <div class="delete-stat-card delete-stat-info">
+                <div class="stat-icon-wrapper">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">موجودی جدید</div>
+                    <div class="stat-value">{{ filament.remaining_amount|add:total_filament|floatformat:2 }}</div>
+                    <div class="stat-unit">متر</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usages List Section -->
+        <div class="usages-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fas fa-list"></i>
+                    <h2>لیست اختصاص‌های در حال حذف</h2>
+                </div>
+                <div class="section-badge">
+                    <span>{{ usage_count }} مورد</span>
+                </div>
+            </div>
+
+            <div class="usages-list">
+                {% for usage in usages %}
+                <div class="usage-item">
+                    <div class="usage-main">
+                        <div class="usage-code">
+                            <span class="code-badge">{{ usage.project.code }}</span>
+                        </div>
+                        <div class="usage-details">
+                            <h3 class="usage-name">{{ usage.project.model_name }}</h3>
+                            <div class="usage-meta">
+                                <span class="meta-item">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ usage.assigned_date|date:"Y/m/d" }}
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-boxes"></i>
+                                    {{ usage.quantity }} عدد
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="usage-filament">
+                        <div class="filament-value">{{ usage.total_filament_used|floatformat:2 }}</div>
+                        <div class="filament-label">متر فیلامنت</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Final Warning -->
+        <div class="final-warning">
+            <div class="warning-box">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>
+                    <strong>آخرین هشدار!</strong>
+                    <p>با تأیید این عملیات، تمام {{ usage_count }} اختصاص به صورت دائمی حذف خواهند شد.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <form method="post" class="action-form">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn-confirm-delete">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>بله، همه حذف شوند</span>
+                </button>
+                <a href="{% url 'calculator:delete_filament' filament.pk %}" class="btn-cancel">
+                    <i class="fas fa-times"></i>
+                    <span>انصراف و بازگشت</span>
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate items on load
+    const usageItems = document.querySelectorAll('.usage-item');
+    usageItems.forEach((item, index) => {
+        setTimeout(() => {
+            item.classList.add('visible');
+        }, index * 50);
+    });
+
+    // Confirm before delete
+    const deleteForm = document.querySelector('.action-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            const confirmed = confirm('آیا کاملاً مطمئن هستید که می‌خواهید همه اختصاص‌ها حذف شوند؟');
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light-gray: #f3f4f6;
+    --border: #e5e7eb;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== WARNING HEADER ========== */
+.warning-header {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.warning-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: translate(30%, -30%);
+}
+
+.warning-icon-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.warning-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+}
+
+.warning-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.warning-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.warning-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+}
+
+.warning-subtitle strong {
+    color: white;
+    font-weight: 700;
+}
+
+/* ========== MAIN CARD ========== */
+.delete-confirmation-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem;
+    border: 1px solid var(--border);
+}
+
+/* ========== CRITICAL WARNING ========== */
+.critical-warning {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.critical-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--danger);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.critical-text h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0 0 0.5rem 0;
+}
+
+.critical-text p {
+    font-size: 1rem;
+    color: #7f1d1d;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ========== DELETE STATISTICS ========== */
+.delete-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.delete-stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    border: 2px solid;
+    transition: var(--transition);
+}
+
+.delete-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.delete-stat-danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, #fef2f2 0%, white 100%);
+}
+
+.delete-stat-success {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #ecfdf5 0%, white 100%);
+}
+
+.delete-stat-info {
+    border-color: rgba(6, 182, 212, 0.3);
+    background: linear-gradient(135deg, #ecfeff 0%, white 100%);
+}
+
+.delete-stat-card .stat-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.delete-stat-danger .stat-icon-wrapper {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.delete-stat-success .stat-icon-wrapper {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.delete-stat-info .stat-icon-wrapper {
+    background: rgba(6, 182, 212, 0.1);
+    color: var(--info);
+}
+
+.delete-stat-card .stat-content {
+    flex: 1;
+}
+
+.delete-stat-card .stat-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.delete-stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.delete-stat-card .stat-unit {
+    font-size: 0.875rem;
+    color: var(--gray);
+    font-weight: 600;
+}
+
+/* ========== USAGES SECTION ========== */
+.usages-section {
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--light-gray), white);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+.section-title h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.section-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.usages-list {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.usage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.usage-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.usage-item:last-child {
+    border-bottom: none;
+}
+
+.usage-item:hover {
+    background: linear-gradient(135deg, #fff7ed 0%, white 100%);
+    transform: translateX(4px);
+}
+
+.usage-main {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.usage-code {
+    flex-shrink: 0;
+}
+
+.code-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 0.875rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+.usage-details {
+    flex: 1;
+}
+
+.usage-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 0.5rem 0;
+}
+
+.usage-meta {
+    display: flex;
+    gap: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--gray);
+}
+
+.meta-item i {
+    font-size: 0.75rem;
+}
+
+.usage-filament {
+    text-align: left;
+    flex-shrink: 0;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+    border-radius: var(--radius);
+}
+
+.filament-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--danger);
+    line-height: 1;
+}
+
+.filament-label {
+    font-size: 0.75rem;
+    color: var(--gray);
+    margin-top: 0.25rem;
+    font-weight: 600;
+}
+
+/* ========== FINAL WARNING ========== */
+.final-warning {
+    margin-bottom: 2rem;
+}
+
+.warning-box {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+}
+
+.warning-box i {
+    font-size: 1.5rem;
+    color: var(--danger);
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.warning-box strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #991b1b;
+    margin-bottom: 0.5rem;
+}
+
+.warning-box p {
+    font-size: 0.95rem;
+    color: #7f1d1d;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ========== ACTION BUTTONS ========== */
+.action-form {
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-confirm-delete,
+.btn-cancel {
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    flex: 1;
+    justify-content: center;
+    min-width: 200px;
+}
+
+.btn-confirm-delete {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-confirm-delete:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-cancel {
+    background: var(--light-gray);
+    color: var(--dark);
+    border: 2px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: var(--border);
+    color: var(--dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .warning-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .warning-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+
+    .warning-title {
+        font-size: 1.5rem;
+    }
+
+    .warning-subtitle {
+        font-size: 1rem;
+    }
+
+    .delete-confirmation-card {
+        padding: 1.5rem;
+    }
+
+    .critical-warning {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .critical-icon {
+        margin: 0 auto;
+    }
+
+    .delete-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .usage-item {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .usage-filament {
+        width: 100%;
+        text-align: center;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-confirm-delete,
+    .btn-cancel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .usage-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .usage-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

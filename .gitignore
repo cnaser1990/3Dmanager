@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 **/migrations/__pycache__/
 **/templatetags/__pycache__/
-
+migrations/
 __pycache__/
 
 # C extensions

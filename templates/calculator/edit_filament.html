@@ -4,158 +4,257 @@
 {% block title %}ویرایش فیلامنت{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">
-                <i class="fas fa-edit me-3"></i>
-                ویرایش فیلامنت
-            </h1>
-            <p class="page-subtitle">{{ filament.name }} - {{ filament.color }}</p>
+<div class="container-fluid px-2 px-md-4 py-4">
+    
+    <!-- Modern Edit Header -->
+    <div class="edit-header">
+        <div class="header-icon-wrapper">
+            <div class="header-icon">
+                <i class="fas fa-edit"></i>
+            </div>
         </div>
+        <div class="header-content">
+            <h1 class="header-title">ویرایش فیلامنت</h1>
+            <p class="header-subtitle">
+                <strong>{{ filament.name }}</strong> - {{ filament.color }} - {{ filament.material }}
+            </p>
+        </div>
+        <div class="header-color-preview" style="background: #{{ filament.color|default:'6c757d' }};"></div>
     </div>
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
+    <!-- Main Edit Form -->
+    <div class="edit-wrapper">
+        <div class="row g-4">
+            
+            <!-- Form Section -->
+            <div class="col-lg-8">
+                <div class="edit-card">
+                    <div class="card-header">
+                        <i class="fas fa-sliders-h"></i>
+                        <h2>اطلاعات فیلامنت</h2>
+                    </div>
+                    
+                    <div class="card-body">
+                        <form method="POST" id="editFilamentForm">
+                            {% csrf_token %}
+                            
+                            <!-- Hidden field -->
+                            <input type="hidden" name="initial_amount" value="{{ filament.initial_amount }}">
+                            
+                            <!-- Form Errors -->
+                            {% if form.non_field_errors %}
+                                <div class="form-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>{{ form.non_field_errors }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Basic Info Section -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    اطلاعات پایه
+                                </h3>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                                <i class="fas fa-tag"></i>
+                                                نام فیلامنت
+                                            </label>
+                                            {{ form.name }}
+                                            {% if form.name.errors %}
+                                                <div class="field-error">{{ form.name.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.color.id_for_label }}" class="form-label">
+                                                <i class="fas fa-palette"></i>
+                                                رنگ
+                                            </label>
+                                            {{ form.color }}
+                                            {% if form.color.errors %}
+                                                <div class="field-error">{{ form.color.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="{{ form.material.id_for_label }}" class="form-label">
+                                                <i class="fas fa-atom"></i>
+                                                نوع ماده
+                                            </label>
+                                            {{ form.material }}
+                                            {% if form.material.errors %}
+                                                <div class="field-error">{{ form.material.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card fade-in">
-                <div class="card-header">
-                    <h5><i class="fas fa-edit me-2"></i>ویرایش اطلاعات فیلامنت</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" id="editFilamentForm">
-                        {% csrf_token %}
-                        
-                        <!-- Hidden field for initial_amount (shouldn't change during edit) -->
-                        <input type="hidden" name="initial_amount" value="{{ filament.initial_amount }}">
-                        
-                        <!-- Display form errors if any -->
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-4">
-                                    <label for="{{ form.name.id_for_label }}" class="form-label">
-                                        <i class="fas fa-tag me-2 text-primary"></i>نام فیلامنت
-                                    </label>
-                                    {{ form.name }}
-                                    {% if form.name.errors %}
-                                        <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-4">
-                                    <label for="{{ form.color.id_for_label }}" class="form-label">
-                                        <i class="fas fa-palette me-2 text-success"></i>رنگ
-                                    </label>
-                                    {{ form.color }}
-                                    {% if form.color.errors %}
-                                        <div class="text-danger small mt-1">{{ form.color.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-4">
-                                    <label for="{{ form.material.id_for_label }}" class="form-label">
-                                        <i class="fas fa-atom me-2 text-info"></i>نوع ماده
-                                    </label>
-                                    {{ form.material }}
-                                    {% if form.material.errors %}
-                                        <div class="text-danger small mt-1">{{ form.material.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-4">
-                                    <label for="{{ form.remaining_amount.id_for_label }}" class="form-label">
-                                        <i class="fas fa-ruler me-2 text-warning"></i>مقدار باقی‌مانده (متر)
-                                    </label>
-                                    {{ form.remaining_amount }}
-                                    {% if form.remaining_amount.errors %}
-                                        <div class="text-danger small mt-1">{{ form.remaining_amount.errors.0 }}</div>
-                                    {% endif %}
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        مقدار فعلی فیلامنت موجود (حداکثر: {{ filament.initial_amount }} متر)
+                            <!-- Quantity & Price Section -->
+                            <div class="form-section">
+                                <h3 class="section-title">
+                                    <i class="fas fa-calculator"></i>
+                                    مقادیر و قیمت
+                                </h3>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.remaining_amount.id_for_label }}" class="form-label">
+                                                <i class="fas fa-ruler"></i>
+                                                مقدار باقی‌مانده (متر)
+                                            </label>
+                                            {{ form.remaining_amount }}
+                                            {% if form.remaining_amount.errors %}
+                                                <div class="field-error">{{ form.remaining_amount.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="field-hint">
+                                                <i class="fas fa-info-circle"></i>
+                                                حداکثر: {{ filament.initial_amount }} متر
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                                قیمت (تومان/کیلو)
+                                            </label>
+                                            {{ form.cost_per_kg }}
+                                            {% if form.cost_per_kg.errors %}
+                                                <div class="field-error">{{ form.cost_per_kg.errors.0 }}</div>
+                                            {% endif %}
+                                            <div class="field-hint">
+                                                <i class="fas fa-chart-line"></i>
+                                                قیمت خرید هر کیلوگرم
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="mb-4">
-                                    <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label">
-                                        <i class="fas fa-money-bill me-2 text-danger"></i>قیمت (تومان/کیلو)
-                                    </label>
-                                    {{ form.cost_per_kg }}
-                                    {% if form.cost_per_kg.errors %}
-                                        <div class="text-danger small mt-1">{{ form.cost_per_kg.errors.0 }}</div>
-                                    {% endif %}
-                                    <div class="form-text">
-                                        <i class="fas fa-chart-line me-1"></i>
-                                        قیمت خرید هر کیلوگرم
+
+                            <!-- Original Info Card -->
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <i class="fas fa-database"></i>
+                                    <span>اطلاعات اولیه (غیرقابل تغییر)</span>
+                                </div>
+                                <div class="info-card-body">
+                                    <div class="info-row">
+                                        <span class="info-label">مقدار اولیه:</span>
+                                        <span class="info-value">{{ filament.initial_amount|floatformat:1 }} متر</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">مقدار مصرف شده:</span>
+                                        <span class="info-value text-danger" id="consumedAmount">0.0 متر</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">تاریخ خرید:</span>
+                                        <span class="info-value">{{ filament.created_date|date:"Y/m/d" }}</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Information Alert -->
-                        <div class="alert alert-info mb-4">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-info-circle me-3"></i>
-                                <div>
-                                    <strong>مقدار اولیه:</strong> {{ filament.initial_amount|floatformat:1 }} متر (غیرقابل تغییر)<br>
-                                    <strong>مصرف شده:</strong> <span id="consumedAmount">0.0</span> متر<br>
-                                    <strong>تاریخ خرید:</strong> {{ filament.created_date|date:"Y/m/d" }}
-                                </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-actions">
+                                <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn-cancel">
+                                    <i class="fas fa-times"></i>
+                                    <span>انصراف</span>
+                                </a>
+                                <button type="submit" class="btn-submit" id="submitBtn">
+                                    <i class="fas fa-save"></i>
+                                    <span>بروزرسانی</span>
+                                </button>
                             </div>
-                        </div>
-                        
-                        <!-- Live Preview -->
-                        <div class="cost-preview" id="filamentPreview">
-                            <h6 class="mb-3">
-                                <i class="fas fa-eye me-2"></i>پیش‌نمایش تغییرات
-                            </h6>
-                            <div class="cost-item">
-                                <span>نام کامل:</span>
-                                <span id="previewName" class="fw-bold">-</span>
-                            </div>
-                            <div class="cost-item">
-                                <span>قیمت هر متر:</span>
-                                <span id="previewPrice" class="fw-bold text-primary">-</span>
-                            </div>
-                            <div class="cost-item">
-                                <span>ارزش باقی‌مانده:</span>
-                                <span id="previewTotal" class="fw-bold text-success">-</span>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex gap-3 justify-content-end mt-4">
-                            <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>انصراف
-                            </a>
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <i class="fas fa-save me-2"></i>بروزرسانی
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
+
+            <!-- Preview Section -->
+            <div class="col-lg-4">
+                <div class="preview-card sticky-preview">
+                    <div class="preview-header">
+                        <i class="fas fa-eye"></i>
+                        <h2>پیش‌نمایش زنده</h2>
+                    </div>
+                    
+                    <div class="preview-body">
+                        <!-- Filament Preview -->
+                        <div class="filament-preview">
+                            <div class="preview-color" id="previewColorBox" style="background: #{{ filament.color|default:'6c757d' }};"></div>
+                            <div class="preview-name">
+                                <h3 id="previewName">{{ filament.name }}</h3>
+                                <p id="previewDetails">{{ filament.color }} - {{ filament.material }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div class="preview-stats">
+                            <div class="stat-card stat-primary">
+                                <div class="stat-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">قیمت هر متر</div>
+                                    <div class="stat-value" id="previewPricePerMeter">-</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card stat-success">
+                                <div class="stat-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">ارزش کل باقی‌مانده</div>
+                                    <div class="stat-value" id="previewTotalValue">-</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card stat-info">
+                                <div class="stat-icon">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">موجودی</div>
+                                    <div class="stat-value" id="previewRemaining">-</div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card stat-warning">
+                                <div class="stat-icon">
+                                    <i class="fas fa-burn"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="stat-label">مصرف شده</div>
+                                    <div class="stat-value" id="previewConsumed">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="usage-progress">
+                            <div class="progress-header">
+                                <span>میزان استفاده</span>
+                                <span id="usagePercentage">0%</span>
+                            </div>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar-fill" id="progressBarFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -178,57 +277,688 @@ function formatNumber(num) {
     return new Intl.NumberFormat('fa-IR').format(Math.round(num || 0));
 }
 
-// Calculate consumed amount
-function calculateConsumedAmount() {
-    const initialAmount = initialData.initialAmount;
-    const remainingAmount = parseFloat(document.getElementById('{{ form.remaining_amount.id_for_label }}').value) || 0;
-    const consumed = Math.max(0, initialAmount - remainingAmount);
-    document.getElementById('consumedAmount').textContent = consumed.toFixed(1);
-    return consumed;
-}
-
+// Calculate and update everything
 function updatePreview() {
+    // Get form values
     const name = document.getElementById('{{ form.name.id_for_label }}').value || initialData.name;
     const color = document.getElementById('{{ form.color.id_for_label }}').value || initialData.color;
     const material = document.getElementById('{{ form.material.id_for_label }}').value || initialData.material;
-    const amount = parseFloat(document.getElementById('{{ form.remaining_amount.id_for_label }}').value) || 0;
-    const cost = parseFloat(document.getElementById('{{ form.cost_per_kg.id_for_label }}').value) || 0;
+    const remaining = parseFloat(document.getElementById('{{ form.remaining_amount.id_for_label }}').value) || 0;
+    const costPerKg = parseFloat(document.getElementById('{{ form.cost_per_kg.id_for_label }}').value) || 0;
     
-    // Full name
-    const fullName = `${name} ${color} ${material}`.trim();
-    document.getElementById('previewName').textContent = fullName || '-';
+    // Calculate consumed amount
+    const consumed = Math.max(0, initialData.initialAmount - remaining);
     
-    // Price per meter (1kg = 330m for PLA)
-    const pricePerMeter = cost / 330;
-    document.getElementById('previewPrice').textContent = pricePerMeter > 0 ? 
+    // Update preview name and details
+    document.getElementById('previewName').textContent = name || '-';
+    document.getElementById('previewDetails').textContent = `${color} - ${material}`;
+    
+    // Update color box
+    const colorHex = color.replace('#', '');
+    document.getElementById('previewColorBox').style.background = `#${colorHex}`;
+    
+    // Calculate price per meter (1kg = 330m for PLA)
+    const pricePerMeter = costPerKg / 330;
+    document.getElementById('previewPricePerMeter').textContent = pricePerMeter > 0 ? 
         `${formatNumber(pricePerMeter)} تومان` : '-';
     
-    // Total value of remaining filament
-    const totalValue = amount * pricePerMeter;
-    document.getElementById('previewTotal').textContent = totalValue > 0 ? 
+    // Calculate total value
+    const totalValue = remaining * pricePerMeter;
+    document.getElementById('previewTotalValue').textContent = totalValue > 0 ? 
         `${formatNumber(totalValue)} تومان` : '-';
     
-    // Update consumed amount
-    calculateConsumedAmount();
+    // Update remaining and consumed
+    document.getElementById('previewRemaining').textContent = `${remaining.toFixed(1)} متر`;
+    document.getElementById('previewConsumed').textContent = `${consumed.toFixed(1)} متر`;
+    document.getElementById('consumedAmount').textContent = `${consumed.toFixed(1)} متر`;
+    
+    // Update progress bar
+    const usagePercent = initialData.initialAmount > 0 ? 
+        ((consumed / initialData.initialAmount) * 100) : 0;
+    document.getElementById('usagePercentage').textContent = `${usagePercent.toFixed(1)}%`;
+    document.getElementById('progressBarFill').style.width = `${usagePercent}%`;
+    
+    // Change progress bar color based on usage
+    const progressBar = document.getElementById('progressBarFill');
+    if (usagePercent < 50) {
+        progressBar.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (usagePercent < 80) {
+        progressBar.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    } else {
+        progressBar.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    }
 }
 
-// Add form submission handling
+// Form submission handling
 document.getElementById('editFilamentForm').addEventListener('submit', function(e) {
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال بروزرسانی...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>در حال بروزرسانی...</span>';
 });
 
-// Add event listeners
+// Add event listeners to all form inputs
 document.querySelectorAll('#editFilamentForm input, #editFilamentForm select').forEach(input => {
     input.addEventListener('input', updatePreview);
     input.addEventListener('change', updatePreview);
 });
 
-// Initial calculations when page loads
+// Initial update on page load
 document.addEventListener('DOMContentLoaded', function() {
-    calculateConsumedAmount();
     updatePreview();
+    
+    // Animate preview card
+    setTimeout(() => {
+        document.querySelector('.preview-card')?.classList.add('visible');
+    }, 200);
 });
 </script>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light-gray: #f3f4f6;
+    --border: #e5e7eb;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== EDIT HEADER ========== */
+.edit-header {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.edit-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: translate(30%, -30%);
+}
+
+.header-icon-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.header-icon {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.header-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+}
+
+.header-subtitle strong {
+    color: white;
+    font-weight: 700;
+}
+
+.header-color-preview {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========== EDIT WRAPPER ========== */
+.edit-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ========== EDIT CARD ========== */
+.edit-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.edit-card .card-header {
+    background: linear-gradient(135deg, var(--light-gray), white);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.edit-card .card-header i {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.edit-card .card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.edit-card .card-body {
+    padding: 2rem;
+}
+
+/* ========== FORM SECTIONS ========== */
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+/* ========== FORM GROUPS ========== */
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-label i {
+    font-size: 1rem;
+    color: var(--primary);
+}
+
+.form-control,
+.form-select {
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: var(--transition);
+    width: 100%;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.field-error {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.field-error::before {
+    content: '⚠';
+    font-size: 1rem;
+}
+
+.field-hint {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.field-hint i {
+    font-size: 0.75rem;
+}
+
+/* ========== INFO CARD ========== */
+.info-card {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 2px solid var(--info);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.info-card-header {
+    background: var(--info);
+    color: white;
+    padding: 0.875rem 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.info-card-header i {
+    font-size: 1.25rem;
+}
+
+.info-card-body {
+    padding: 1.25rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #155e75;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #0c4a6e;
+}
+
+/* ========== FORM ACTIONS ========== */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-cancel,
+.btn-submit {
+    padding: 0.875rem 1.75rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background: var(--light-gray);
+    color: var(--dark);
+    border: 2px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: var(--border);
+    color: var(--dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--primary), #4f46e5);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ========== PREVIEW CARD ========== */
+.preview-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition);
+}
+
+.preview-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sticky-preview {
+    position: sticky;
+    top: 100px;
+}
+
+.preview-header {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.preview-header i {
+    font-size: 1.5rem;
+}
+
+.preview-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.preview-body {
+    padding: 1.5rem;
+}
+
+/* ========== FILAMENT PREVIEW ========== */
+.filament-preview {
+    background: linear-gradient(135deg, var(--light-gray), white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.preview-color {
+    width: 70px;
+    height: 70px;
+    border-radius: 14px;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.preview-name h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 0.25rem 0;
+}
+
+.preview-name p {
+    font-size: 0.95rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+/* ========== PREVIEW STATS ========== */
+.preview-stats {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.stat-primary .stat-icon {
+    background: linear-gradient(135deg, var(--primary), #4f46e5);
+}
+
+.stat-success .stat-icon {
+    background: linear-gradient(135deg, var(--success), #059669);
+}
+
+.stat-info .stat-icon {
+    background: linear-gradient(135deg, var(--info), #0891b2);
+}
+
+.stat-warning .stat-icon {
+    background: linear-gradient(135deg, var(--warning), #d97706);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+}
+
+/* ========== USAGE PROGRESS ========== */
+.usage-progress {
+    background: linear-gradient(135deg, var(--light-gray), white);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+    height: 12px;
+    background: var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--success), #059669);
+    border-radius: 6px;
+    transition: width 0.5s ease, background 0.3s ease;
+}
+
+/* ========== FORM ERROR ========== */
+.form-error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #991b1b;
+    font-weight: 600;
+}
+
+.form-error i {
+    font-size: 1.25rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 991px) {
+    .sticky-preview {
+        position: static;
+    }
+
+    .edit-header {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .header-content {
+        order: 2;
+        width: 100%;
+    }
+
+    .header-icon-wrapper {
+        order: 1;
+    }
+
+    .header-color-preview {
+        order: 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .edit-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .preview-body {
+        padding: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .header-icon,
+    .header-color-preview {
+        width: 60px;
+        height: 60px;
+    }
+
+    .header-icon {
+        font-size: 1.5rem;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .filament-preview {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .preview-color {
+        margin: 0 auto;
+    }
+}
+</style>
 {% endblock %}

@@ -1,0 +1,754 @@
+{% extends "calculator/base.html" %}
+
+{% block title %}تأیید حذف اختصاص{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4 py-4">
+    
+    <!-- Warning Header -->
+    <div class="delete-usage-header">
+        <div class="header-icon-wrapper">
+            <div class="header-icon">
+                <i class="fas fa-unlink"></i>
+            </div>
+        </div>
+        <div class="header-content">
+            <h1 class="header-title">تأیید حذف اختصاص</h1>
+            <p class="header-subtitle">
+                آیا از حذف اختصاص پروژه <strong>{{ filament_usage.project.code }}</strong> مطمئن هستید؟
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Confirmation Card -->
+    <div class="confirmation-wrapper">
+        <div class="confirmation-card">
+            
+            <!-- Info Banner -->
+            <div class="info-banner">
+                <div class="info-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="info-text">
+                    <h3>توجه مهم!</h3>
+                    <p>با حذف این اختصاص، فیلامنت مصرف شده به موجودی بازگردانده می‌شود.</p>
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="details-section">
+                
+                <!-- Project Details -->
+                <div class="detail-box">
+                    <div class="detail-header">
+                        <i class="fas fa-project-diagram"></i>
+                        <h3>اطلاعات پروژه</h3>
+                    </div>
+                    <div class="detail-content">
+                        <div class="project-badge">{{ filament_usage.project.code }}</div>
+                        <div class="project-name">{{ filament_usage.project.model_name }}</div>
+                        {% if filament_usage.project.has_image %}
+                            <div class="project-thumbnail">
+                                <img src="{{ filament_usage.project.picture.url }}" alt="{{ filament_usage.project.model_name }}">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Filament Details -->
+                <div class="detail-box">
+                    <div class="detail-header">
+                        <i class="fas fa-layer-group"></i>
+                        <h3>اطلاعات فیلامنت</h3>
+                    </div>
+                    <div class="detail-content">
+                        <div class="filament-info">
+                            <div class="filament-color" style="background: #{{ filament_usage.filament.color|default:'6c757d' }};"></div>
+                            <div class="filament-details">
+                                <div class="filament-name">{{ filament_usage.filament.name }}</div>
+                                <div class="filament-meta">
+                                    <span class="meta-item">{{ filament_usage.filament.color }}</span>
+                                    <span class="meta-separator">•</span>
+                                    <span class="meta-item">{{ filament_usage.filament.material }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Return Amount Card -->
+            <div class="return-card">
+                <div class="return-header">
+                    <i class="fas fa-undo-alt"></i>
+                    <h3>میزان بازگشت به موجودی</h3>
+                </div>
+                <div class="return-content">
+                    <div class="return-stats">
+                        <div class="return-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-ruler"></i>
+                            </div>
+                            <div class="stat-data">
+                                <div class="stat-value">{{ filament_usage.project.filament_used_mm|floatformat:0 }}</div>
+                                <div class="stat-label">میلی‌متر</div>
+                            </div>
+                        </div>
+                        <div class="stat-divider">
+                            <i class="fas fa-equals"></i>
+                        </div>
+                        <div class="return-stat">
+                            <div class="stat-icon">
+                                <i class="fas fa-tape"></i>
+                            </div>
+                            <div class="stat-data">
+                                <div class="stat-value">{{ filament_usage.project.filament_used_mm|floatformat:3 }}</div>
+                                <div class="stat-label">متر</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="return-visualization">
+                        <div class="viz-item">
+                            <span class="viz-label">موجودی فعلی:</span>
+                            <span class="viz-value current">{{ filament_usage.filament.remaining_amount|floatformat:2 }} متر</span>
+                        </div>
+                        <div class="viz-arrow">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="viz-item">
+                            <span class="viz-label">موجودی جدید:</span>
+                            <span class="viz-value new">
+                                {% widthratio filament_usage.project.filament_used_mm 1000 1 as return_meters %}
+                                {{ filament_usage.filament.remaining_amount|add:return_meters|floatformat:2 }} متر
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Message -->
+            <div class="final-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>این عملیات قابل بازگشت نیست! آیا مطمئن هستید؟</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <form method="post" class="action-form">
+                {% csrf_token %}
+                <div class="action-buttons">
+                    <button type="submit" class="btn-confirm-delete">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>بله، حذف شود</span>
+                    </button>
+                    <a href="{% url 'calculator:filaments' %}" class="btn-cancel">
+                        <i class="fas fa-times"></i>
+                        <span>انصراف</span>
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate elements on load
+    const detailBoxes = document.querySelectorAll('.detail-box');
+    detailBoxes.forEach((box, index) => {
+        setTimeout(() => {
+            box.classList.add('visible');
+        }, index * 150);
+    });
+
+    // Animate return card
+    setTimeout(() => {
+        document.querySelector('.return-card')?.classList.add('visible');
+    }, 300);
+
+    // Confirm before delete
+    const deleteForm = document.querySelector('.action-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            const confirmed = confirm('آیا کاملاً مطمئن هستید که می‌خواهید این اختصاص حذف شود؟');
+            if (!confirmed) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light-gray: #f3f4f6;
+    --border: #e5e7eb;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== HEADER ========== */
+.delete-usage-header {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.delete-usage-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: translate(30%, -30%);
+}
+
+.header-icon-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: swing 2s infinite;
+}
+
+@keyframes swing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.header-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+}
+
+.header-subtitle strong {
+    color: white;
+    font-weight: 700;
+}
+
+/* ========== CONFIRMATION WRAPPER ========== */
+.confirmation-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.confirmation-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem;
+    border: 1px solid var(--border);
+}
+
+/* ========== INFO BANNER ========== */
+.info-banner {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 2px solid var(--info);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.info-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--info);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.info-text h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0c4a6e;
+    margin: 0 0 0.5rem 0;
+}
+
+.info-text p {
+    font-size: 0.95rem;
+    color: #155e75;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ========== DETAILS SECTION ========== */
+.details-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-box {
+    background: linear-gradient(135deg, var(--light-gray), white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: var(--transition);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.detail-box.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.detail-box:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+    transform: translateY(-4px);
+}
+
+.detail-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #4f46e5));
+    color: white;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.detail-header i {
+    font-size: 1.25rem;
+}
+
+.detail-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.detail-content {
+    padding: 1.5rem;
+}
+
+/* Project Details */
+.project-badge {
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+}
+
+.project-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 1rem;
+}
+
+.project-thumbnail {
+    width: 100%;
+    height: 150px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--light-gray);
+}
+
+.project-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Filament Details */
+.filament-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filament-color {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.filament-details {
+    flex: 1;
+}
+
+.filament-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.filament-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--gray);
+}
+
+.meta-separator {
+    color: var(--border);
+}
+
+/* ========== RETURN CARD ========== */
+.return-card {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 2px solid var(--success);
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    opacity: 0;
+    transform: scale(0.95);
+    transition: var(--transition);
+}
+
+.return-card.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.return-header {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.return-header i {
+    font-size: 1.5rem;
+}
+
+.return-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.return-content {
+    padding: 1.5rem;
+}
+
+.return-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: var(--radius);
+}
+
+.return-stat {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--success), #059669);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.stat-data {
+    text-align: right;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin-top: 0.25rem;
+    font-weight: 600;
+}
+
+.stat-divider {
+    font-size: 1.5rem;
+    color: var(--success);
+}
+
+.return-visualization {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.viz-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.viz-label {
+    font-weight: 600;
+    color: var(--gray);
+}
+
+.viz-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+}
+
+.viz-value.current {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.viz-value.new {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.viz-arrow {
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--success);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+}
+
+/* ========== FINAL WARNING ========== */
+.final-warning {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #991b1b;
+}
+
+.final-warning i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.final-warning p {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* ========== ACTION BUTTONS ========== */
+.action-form {
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-confirm-delete,
+.btn-cancel {
+    padding: 1rem 2rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    flex: 1;
+    justify-content: center;
+    min-width: 200px;
+}
+
+.btn-confirm-delete {
+    background: linear-gradient(135deg, var(--danger), #dc2626);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-confirm-delete:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.btn-cancel {
+    background: var(--light-gray);
+    color: var(--dark);
+    border: 2px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: var(--border);
+    color: var(--dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .delete-usage-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+    }
+
+    .header-subtitle {
+        font-size: 1rem;
+    }
+
+    .confirmation-card {
+        padding: 1.5rem;
+    }
+
+    .info-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .info-icon {
+        margin: 0 auto;
+    }
+
+    .details-section {
+        grid-template-columns: 1fr;
+    }
+
+    .return-stats {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .stat-divider {
+        transform: rotate(90deg);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-confirm-delete,
+    .btn-cancel {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .return-stats {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .viz-value {
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,1389 @@
+{% extends "calculator/base.html" %}
+
+{% block title %}اختصاص پروژه به فیلامنت{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4 py-4">
+    
+    <!-- Modern Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-text">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <a href="{% url 'calculator:view_filament' filament.pk %}" class="back-button">
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <div class="header-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div>
+                        <h1 class="header-title mb-1">اختصاص پروژه به فیلامنت</h1>
+                        <p class="header-subtitle mb-0">افزودن پروژه جدید به فیلامنت {{ filament.name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-11 col-xl-10">
+            
+            <!-- Filament Info Card -->
+            <div class="info-banner">
+                <div class="info-banner-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="info-banner-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-cube"></i>
+                                <span>فیلامنت</span>
+                            </div>
+                            <div class="info-value">
+                                {{ filament.name }} - {{ filament.color }}
+                                <div class="color-indicator" style="background: #{{ filament.color|default:'6c757d' }};"></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-boxes"></i>
+                                <span>موجودی فعلی</span>
+                            </div>
+                            <div class="info-value">
+                                <span class="badge-success">{{ filament.remaining_amount|floatformat:2 }} متر</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <i class="fas fa-industry"></i>
+                                <span>نوع ماده</span>
+                            </div>
+                            <div class="info-value">{{ filament.material }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Form Card -->
+            <div class="main-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-title">اطلاعات پروژه</h2>
+                            <p class="card-subtitle">پروژه مورد نظر را انتخاب و تعداد را مشخص کنید</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" id="assignProjectForm">
+                        {% csrf_token %}
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-barcode"></i>
+                                    <span>کد پروژه</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    {{ form.project_code }}
+                                </div>
+                            </div>
+
+                            <div class="form-group form-group-large">
+                                <label class="form-label">
+                                    <i class="fas fa-list"></i>
+                                    <span>انتخاب از لیست</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    {{ form.project }}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-hashtag"></i>
+                                    <span>تعداد تولید</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    {{ form.quantity }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if form.errors %}
+                            <div class="alert-danger">
+                                <div class="alert-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <strong>خطا در ورود اطلاعات:</strong>
+                                    <ul class="error-list">
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Preview Section -->
+                        <div id="projectPreview" class="preview-card">
+                            <div class="preview-header">
+                                <div class="preview-icon">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <h3 class="preview-title">پیش‌نمایش محاسبات</h3>
+                            </div>
+                            
+                            <div class="preview-body">
+                                <div class="preview-grid">
+                                    <div class="preview-section">
+                                        <h4 class="preview-section-title">اطلاعات پروژه</h4>
+                                        <div class="preview-items">
+                                            <div class="preview-item">
+                                                <span class="preview-label">نام پروژه:</span>
+                                                <span id="preview-project-name" class="preview-value">-</span>
+                                            </div>
+                                            <div class="preview-item">
+                                                <span class="preview-label">کد:</span>
+                                                <span id="preview-project-code" class="preview-value badge-secondary">-</span>
+                                            </div>
+                                            <div class="preview-item">
+                                                <span class="preview-label">تعداد:</span>
+                                                <span class="preview-value">
+                                                    <span id="preview-quantity" class="badge-info">1</span> عدد
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="preview-section">
+                                        <h4 class="preview-section-title">محاسبات مصرف</h4>
+                                        <div class="preview-items">
+                                            <div class="preview-item">
+                                                <span class="preview-label">فیلامنت هر واحد:</span>
+                                                <span id="preview-single-usage" class="preview-value">-</span>
+                                                <span class="preview-unit">متر</span>
+                                            </div>
+                                            <div class="preview-item">
+                                                <span class="preview-label">فیلامنت کل:</span>
+                                                <span id="preview-total-usage" class="preview-value highlight">-</span>
+                                                <span class="preview-unit">متر</span>
+                                            </div>
+                                            <div class="preview-item">
+                                                <span class="preview-label">وزن تقریبی:</span>
+                                                <span id="preview-weight" class="preview-value">-</span>
+                                                <span class="preview-unit">گرم</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="preview-alert" class="preview-alert">
+                                    <div class="alert-icon-wrapper">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <div>
+                                        <strong>موجودی باقی‌مانده پس از اختصاص:</strong>
+                                        <span id="preview-remaining" class="preview-remaining">-</span> متر
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" id="submitBtn">
+                                <i class="fas fa-check"></i>
+                                <span>اختصاص به فیلامنت</span>
+                            </button>
+                            <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn-secondary">
+                                <i class="fas fa-times"></i>
+                                <span>انصراف</span>
+                            </a>
+                            <a href="{% url 'calculator:add_project' %}" class="btn-outline ms-auto">
+                                <i class="fas fa-plus"></i>
+                                <span>ایجاد پروژه جدید</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Available Projects Card -->
+            <div class="main-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon card-icon-secondary">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-title">پروژه‌های موجود</h2>
+                            <p class="card-subtitle">لیست پروژه‌های آماده برای اختصاص</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% if form.project.field.queryset %}
+                        <div class="table-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>کد</th>
+                                        <th>نام پروژه</th>
+                                        <th>فیلامنت مورد نیاز</th>
+                                        <th>وزن</th>
+                                        <th>زمان پرینت</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in form.project.field.queryset %}
+                                    <tr class="table-row">
+                                        <td>
+                                            <span class="table-badge badge-primary">{{ project.code }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="project-cell">
+                                                <strong class="project-name">{{ project.model_name }}</strong>
+                                                <div class="project-tags">
+                                                    {% if project.post_processing_enabled %}
+                                                        <span class="tag tag-info">PP</span>
+                                                    {% endif %}
+                                                    {% if project.painting_enabled %}
+                                                        <span class="tag tag-warning">Paint</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="filament-cell">
+                                                <span class="filament-amount">{{ project.filament_used_mm|floatformat:0 }} mm</span>
+                                                <small class="filament-meters">({{ project.filament_used_mm|floatformat:3 }} متر)</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="table-badge badge-info">{{ project.filament_weight_grams|floatformat:1 }}g</span>
+                                        </td>
+                                        <td>
+                                            <div class="time-cell">
+                                                <i class="fas fa-clock"></i>
+                                                <span>{{ project.print_time_hours|floatformat:1 }} ساعت</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button type="button" 
+                                                    class="btn-select select-project" 
+                                                    data-project-id="{{ project.id }}" 
+                                                    data-project-code="{{ project.code }}"
+                                                    data-project-name="{{ project.model_name }}"
+                                                    data-filament-mm="{{ project.filament_used_mm }}"
+                                                    data-weight-g="{{ project.filament_weight_grams }}">
+                                                <i class="fas fa-hand-pointer"></i>
+                                                <span>انتخاب</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="helper-box">
+                            <div class="helper-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <strong>راهنما:</strong> روی دکمه "انتخاب" کلیک کنید یا از لیست بالا انتخاب کنید، سپس تعداد را وارد کنید.
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <h3 class="empty-title">پروژه‌ای برای اختصاص موجود نیست</h3>
+                            <p class="empty-text">همه پروژه‌ها قبلاً به این فیلامنت اختصاص داده شده‌اند یا هیچ پروژه‌ای وجود ندارد.</p>
+                            <a href="{% url 'calculator:add_project' %}" class="btn-empty">
+                                <i class="fas fa-plus"></i>
+                                <span>ایجاد پروژه جدید</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectSelect = document.getElementById('id_project');
+    const projectCodeInput = document.getElementById('id_project_code');
+    const quantityInput = document.getElementById('id_quantity');
+    const preview = document.getElementById('projectPreview');
+    const previewAlert = document.getElementById('preview-alert');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const filamentRemaining = parseFloat({{ filament.remaining_amount }});
+    
+    // Store project data
+    const projectsData = {};
+    
+    // Build projects data from table
+    document.querySelectorAll('.select-project').forEach(btn => {
+        const projectId = btn.dataset.projectId;
+        projectsData[projectId] = {
+            id: projectId,
+            code: btn.dataset.projectCode,
+            name: btn.dataset.projectName,
+            filamentMm: parseFloat(btn.dataset.filamentMm),
+            weightG: parseFloat(btn.dataset.weightG)
+        };
+    });
+    
+    // Also build from select options
+    if (projectSelect) {
+        Array.from(projectSelect.options).forEach(option => {
+            if (option.value) {
+                if (!projectsData[option.value]) {
+                    projectsData[option.value] = {
+                        id: option.value,
+                        code: '',
+                        name: option.text,
+                        filamentMm: 0,
+                        weightG: 0
+                    };
+                }
+            }
+        });
+    }
+
+    let currentProjectData = null;
+
+    // Handle select buttons in table
+    document.querySelectorAll('.select-project').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const projectId = this.dataset.projectId;
+            
+            // Remove previous selection
+            document.querySelectorAll('.select-project').forEach(b => {
+                b.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            
+            projectSelect.value = projectId;
+            projectCodeInput.value = this.dataset.projectCode;
+            
+            currentProjectData = projectsData[projectId];
+            updatePreview();
+            
+            // Scroll to preview
+            preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+
+    // Handle dropdown selection
+    if (projectSelect) {
+        projectSelect.addEventListener('change', function() {
+            if (this.value) {
+                currentProjectData = projectsData[this.value];
+                if (currentProjectData) {
+                    projectCodeInput.value = currentProjectData.code;
+                    updatePreview();
+                }
+            } else {
+                currentProjectData = null;
+                preview.style.display = 'none';
+            }
+        });
+    }
+
+    // Handle code input
+    if (projectCodeInput) {
+        projectCodeInput.addEventListener('input', function() {
+            if (this.value) {
+                const code = this.value;
+                const foundProject = Object.values(projectsData).find(p => p.code == code);
+                
+                if (foundProject) {
+                    projectSelect.value = foundProject.id;
+                    currentProjectData = foundProject;
+                    updatePreview();
+                } else {
+                    projectSelect.value = '';
+                }
+            } else {
+                projectSelect.value = '';
+                currentProjectData = null;
+                preview.style.display = 'none';
+            }
+        });
+    }
+
+    // Handle quantity change
+    if (quantityInput) {
+        quantityInput.addEventListener('input', updatePreview);
+        quantityInput.addEventListener('change', updatePreview);
+    }
+
+    function updatePreview() {
+        if (!currentProjectData) {
+            preview.style.display = 'none';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const quantity = parseInt(quantityInput.value) || 1;
+        const singleUsageM = currentProjectData.filamentMm / 1000;
+        const totalUsageM = singleUsageM * quantity;
+        const remainingM = filamentRemaining - totalUsageM;
+        const totalWeightG = currentProjectData.weightG * quantity;
+
+        // Show preview with animation
+        preview.style.display = 'block';
+        setTimeout(() => preview.classList.add('show'), 10);
+        
+        // Update preview content
+        document.getElementById('preview-project-name').textContent = currentProjectData.name;
+        document.getElementById('preview-project-code').textContent = currentProjectData.code;
+        document.getElementById('preview-quantity').textContent = quantity;
+        document.getElementById('preview-single-usage').textContent = singleUsageM.toFixed(3);
+        document.getElementById('preview-total-usage').textContent = totalUsageM.toFixed(3);
+        document.getElementById('preview-weight').textContent = totalWeightG.toFixed(1);
+        document.getElementById('preview-remaining').textContent = remainingM.toFixed(3);
+        
+        // Update alert styling based on availability
+        if (remainingM < 0) {
+            previewAlert.className = 'preview-alert alert-error';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-times"></i><span>فیلامنت کافی نیست!</span>';
+        } else if (remainingM < 10) {
+            previewAlert.className = 'preview-alert alert-warning';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check"></i><span>اختصاص به فیلامنت</span>';
+        } else {
+            previewAlert.className = 'preview-alert alert-success';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check"></i><span>اختصاص به فیلامنت</span>';
+        }
+    }
+
+    // Initial check
+    if (projectSelect && projectSelect.value) {
+        currentProjectData = projectsData[projectSelect.value];
+        updatePreview();
+    }
+    
+    // Animate table rows on load
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.table-row').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+
+<style>
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+    --dark: #1f2937;
+    --gray: #6b7280;
+    --light-gray: #f3f4f6;
+    --border: #e5e7eb;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== PAGE HEADER ========== */
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+}
+
+.back-button {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: var(--transition);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(4px);
+}
+
+.header-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+/* ========== INFO BANNER ========== */
+.info-banner {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.info-banner-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.info-banner-content {
+    flex: 1;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--gray);
+    font-weight: 600;
+}
+
+.info-label i {
+    color: var(--primary);
+}
+
+.info-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.color-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* ========== MAIN CARD ========== */
+.main-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    background: linear-gradient(to bottom, var(--light-gray), white);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+}
+
+.card-header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.card-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.card-icon-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: var(--gray);
+    margin: 0.25rem 0 0 0;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* ========== FORM STYLING ========== */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group-large {
+    grid-column: span 2;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.form-label i {
+    color: var(--primary);
+    width: 16px;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: var(--transition);
+    background: white;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* ========== ALERT ========== */
+.alert-danger {
+    background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+    border: 2px solid #fecaca;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-content strong {
+    color: var(--danger);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.error-list {
+    margin: 0;
+    padding-right: 1.25rem;
+    color: #991b1b;
+}
+
+/* ========== PREVIEW CARD ========== */
+.preview-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border: 2px solid var(--primary-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+}
+
+.preview-card.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.preview-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.preview-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.preview-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+.preview-body {
+    padding: 1.5rem;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.preview-section-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.preview-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.preview-label {
+    font-size: 0.9rem;
+    color: var(--gray);
+    font-weight: 600;
+}
+
+.preview-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.preview-value.highlight {
+    color: var(--danger);
+    font-size: 1.1rem;
+}
+
+.preview-value.badge-secondary {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--gray);
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.preview-value.badge-info {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--info);
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.preview-unit {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-right: 0.25rem;
+}
+
+.preview-alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.95rem;
+}
+
+.preview-alert.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.preview-alert.alert-success .alert-icon-wrapper {
+    color: var(--success);
+}
+
+.preview-alert.alert-success .preview-remaining {
+    color: var(--success);
+}
+
+.preview-alert.alert-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.preview-alert.alert-warning .alert-icon-wrapper {
+    color: var(--warning);
+}
+
+.preview-alert.alert-warning .preview-remaining {
+    color: var(--warning);
+}
+
+.preview-alert.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.preview-alert.alert-error .alert-icon-wrapper {
+    color: var(--danger);
+}
+
+.preview-alert.alert-error .preview-remaining {
+    color: var(--danger);
+}
+
+.alert-icon-wrapper {
+    font-size: 1.5rem;
+}
+
+.preview-remaining {
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+/* ========== BUTTONS ========== */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.75rem;
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:disabled {
+    background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.75rem;
+    background: white;
+    color: var(--gray);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background: var(--light-gray);
+    border-color: var(--gray);
+    color: var(--dark);
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.75rem;
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* ========== TABLE ========== */
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+}
+
+.modern-table th {
+    padding: 1rem 1.25rem;
+    text-align: right;
+    font-weight: 700;
+    color: var(--dark);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+}
+
+.modern-table th:first-child {
+    border-radius: var(--radius) 0 0 0;
+}
+
+.modern-table th:last-child {
+    border-radius: 0 var(--radius) 0 0;
+}
+
+.table-row {
+    background: white;
+    transition: var(--transition);
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.table-row.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.table-row:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    box-shadow: var(--shadow);
+}
+
+.modern-table td {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.table-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    display: inline-block;
+}
+
+.badge-primary {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--primary);
+}
+
+.badge-info {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--info);
+}
+
+.project-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.project-name {
+    color: var(--dark);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.project-tags {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tag-info {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--info);
+}
+
+.tag-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.filament-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filament-amount {
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.filament-meters {
+    color: var(--gray);
+    font-size: 0.85rem;
+}
+
+.time-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--gray);
+}
+
+.time-cell i {
+    color: var(--primary);
+}
+
+.btn-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-select:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-select.selected {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    box-shadow: var(--shadow);
+}
+
+/* ========== HELPER BOX ========== */
+.helper-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+    border: 2px solid #fde68a;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.helper-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.helper-box strong {
+    color: #92400e;
+}
+
+/* ========== EMPTY STATE ========== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    color: var(--border);
+    margin-bottom: 1.5rem;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray);
+    margin-bottom: 0.75rem;
+}
+
+.empty-text {
+    color: var(--gray);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-empty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-empty:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group-large {
+        grid-column: span 1;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 1.5rem;
+    }
+    
+    .header-title {
+        font-size: 1.5rem;
+    }
+    
+    .header-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .info-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .ms-auto {
+        margin-right: 0 !important;
+    }
+    
+    .preview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modern-table {
+        min-width: 800px;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}

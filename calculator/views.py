@@ -1,80 +1,80 @@
 # calculator/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.http import JsonResponse
-from django.db.models import Count, Sum, Q, F, ExpressionWrapper, DecimalField
-from django.urls import reverse
-from django.utils import timezone
 from datetime import timedelta
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods, require_POST
-from django.core.paginator import Paginator
 import json
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
-from math import pi
+
+from django.conf import settings
+from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Sum, Count, Q
-from .models import Filament, Project, Sale, PricingSettings, FilamentUsage
-from .forms import FilamentForm, ProjectForm, SaleForm, PricingSettingsForm, FilamentUsageForm
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncDate
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods, require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
+
+from .models import (
+    Filament,
+    Project,
+    Sale,
+    PricingSettings,
+    FilamentUsage,
+)
+from .forms import (
+    FilamentForm,
+    ProjectForm,
+    SaleForm,
+    PricingSettingsForm,
+    FilamentUsageForm,
+)
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def index(request):
-    """Dashboard with overview statistics"""
     filaments = Filament.objects.all()
     recent_projects = Project.objects.all()[:10]
-    
-    # FilamentUsage statistics
     usage_stats = FilamentUsage.objects.aggregate(
         count=Count('id'),
         total_cost=Sum('total_cost'),
         total_selling=Sum('selling_price')
     )
-    
-    # Sales statistics for current month
     thirty_days_ago = timezone.now() - timedelta(days=30)
     sales_stats = Sale.objects.filter(sale_date__gte=thirty_days_ago).aggregate(
         count=Count('id'),
         total_revenue=Sum('total_price')
     )
-    
+    projects = Project.objects.all()
     context = {
         'filaments': filaments,
         'recent_projects': recent_projects,
         'usage_stats': usage_stats,
         'sales_stats': sales_stats,
+        "projects": projects,
     }
     return render(request, 'calculator/index.html', context)
 
 
-# ==================== FILAMENT VIEWS ====================
-
 def filaments(request):
-    """List all filaments with filtering and sorting"""
-    # Get query parameters
     q = request.GET.get('q', '').strip()
     material = request.GET.get('material', '').strip()
     sort = request.GET.get('sort', '-created_date').strip()
     view_mode = request.GET.get('view', 'grid').strip()
     page = request.GET.get('page', 1)
-    
-    # Base queryset
+
     filaments_qs = Filament.objects.all()
-    
-    # Search filter
     if q:
         filaments_qs = filaments_qs.filter(
             Q(name__icontains=q) |
             Q(color__icontains=q) |
             Q(material__icontains=q)
         )
-    
-    # Material filter
     if material:
         filaments_qs = filaments_qs.filter(material=material)
-    
-    # Sorting
+
     allowed_sorts = [
         '-created_date', 'created_date',
         'name', '-name',
@@ -82,29 +82,23 @@ def filaments(request):
         '-remaining_amount', 'remaining_amount',
         '-cost_per_kg', 'cost_per_kg',
     ]
-    
     if sort in allowed_sorts:
         filaments_qs = filaments_qs.order_by(sort)
     else:
         filaments_qs = filaments_qs.order_by('-created_date')
-    
-    # Calculate statistics
+
     total_count = filaments_qs.count()
     total_remaining = filaments_qs.aggregate(Sum('remaining_amount'))['remaining_amount__sum'] or 0
-    
-    # Calculate total value
+
     total_value = 0
     for f in filaments_qs:
         total_value += f.remaining_value
-    
-    # Count unique materials
+
     materials_count = filaments_qs.values('material').distinct().count()
-    
-    # Pagination
     per_page = 12 if view_mode == 'grid' else 20
     paginator = Paginator(filaments_qs, per_page)
     page_obj = paginator.get_page(page)
-    
+
     context = {
         'filaments': page_obj,
         'page_obj': page_obj,
@@ -117,39 +111,34 @@ def filaments(request):
         'sort': sort,
         'view_mode': view_mode,
     }
-    
     return render(request, 'calculator/filaments.html', context)
 
+
 def add_filament(request):
-    """Add new filament to inventory"""
     if request.method == 'POST':
         form = FilamentForm(request.POST)
         if form.is_valid():
             filament = form.save()
             messages.success(
-                request, 
+                request,
                 f'✅ فیلامنت "{filament.name} - {filament.color}" با موفقیت اضافه شد'
             )
             return redirect('calculator:view_filament', pk=filament.pk)
         else:
-            # Add error message if form is invalid
             messages.error(request, 'لطفاً خطاهای فرم را بررسی کنید')
     else:
         form = FilamentForm()
-    
     return render(request, 'calculator/add_filament.html', {'form': form})
 
 
 def edit_filament(request, pk):
-    """Edit filament details"""
     filament = get_object_or_404(Filament, pk=pk)
-    
     if request.method == 'POST':
         form = FilamentForm(request.POST, instance=filament)
         if form.is_valid():
             updated_filament = form.save()
             messages.success(
-                request, 
+                request,
                 f'✅ اطلاعات فیلامنت "{updated_filament.name}" بروزرسانی شد'
             )
             return redirect('calculator:view_filament', pk=filament.pk)
@@ -157,29 +146,18 @@ def edit_filament(request, pk):
             messages.error(request, 'لطفاً خطاهای فرم را بررسی کنید')
     else:
         form = FilamentForm(instance=filament)
-    
-    return render(request, 'calculator/edit_filament.html', {
-        'form': form, 
-        'filament': filament
-    })
+    return render(request, 'calculator/edit_filament.html', {'form': form, 'filament': filament})
 
 
 def view_filament(request, pk):
-    """View filament details and assigned projects"""
     filament = get_object_or_404(Filament, pk=pk)
-    
-    # Get all projects assigned to this filament
     filament_usages = FilamentUsage.objects.filter(filament=filament).select_related('project')
-    
-    # Calculate statistics - UPDATED to use total values
     stats_count = filament_usages.count()
     stats_total_cost = sum(usage.total_all_costs for usage in filament_usages)
     stats_total_selling = sum(usage.total_selling_price for usage in filament_usages)
     stats_total_weight = sum(usage.total_weight_used for usage in filament_usages)
-    
     profit = stats_total_selling - stats_total_cost
     avg_profit = (profit / stats_count) if stats_count else 0
-    
     stats = {
         'count': stats_count,
         'total_cost': stats_total_cost,
@@ -188,34 +166,25 @@ def view_filament(request, pk):
         'profit': profit,
         'avg_profit': avg_profit,
     }
-    
-    # Filament values
     try:
         cost_per_kg = float(filament.cost_per_kg or 0)
     except Exception:
         cost_per_kg = 0.0
-    
     cost_per_meter = (cost_per_kg / 330.0) if cost_per_kg else 0.0
-    
     try:
         remaining_amount_m = float(filament.remaining_amount or 0)
     except Exception:
         remaining_amount_m = 0.0
-    
     remaining_value = remaining_amount_m * cost_per_meter
-    
     try:
         initial_amount_m = float(filament.initial_amount or 0)
     except Exception:
         initial_amount_m = 0.0
-    
     if initial_amount_m > 0:
         usage_percentage = int(round((remaining_amount_m / initial_amount_m) * 100))
     else:
         usage_percentage = 0
-    
     usage_percentage = max(0, min(100, usage_percentage))
-    
     context = {
         'filament': filament,
         'filament_usages': filament_usages,
@@ -231,24 +200,20 @@ def delete_filament(request, pk):
     filament = get_object_or_404(Filament, pk=pk)
     usage_count = FilamentUsage.objects.filter(filament=filament).count()
     next_url = request.POST.get('next') or request.GET.get('next')
-    default_redirect = reverse('calculator:filaments')  # or your actual URL name
-
+    default_redirect = reverse('calculator:filaments')
     if request.method == 'POST':
         if usage_count > 0:
             messages.error(
                 request,
                 f'نمی‌توان این فیلامنت را حذف کرد چون {usage_count} پروژه به آن اختصاص داده شده است. ابتدا اختصاص‌ها را حذف کنید.'
             )
-            return redirect('calculator:delete_filament_usage', pk=pk)
-
+            return redirect('calculator:delete_all_filament_usages', filament_id=pk)
         filament_name = f"{filament.name} ({filament.color})"
         filament.delete()
         messages.success(request, f'فیلامنت "{filament_name}" با موفقیت حذف شد')
-
         if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
             return redirect(next_url)
         return redirect(default_redirect)
-
     consumed_amount = filament.initial_amount - filament.remaining_amount
     context = {
         'filament': filament,
@@ -260,86 +225,60 @@ def delete_filament(request, pk):
 
 
 def assign_project_to_filament(request, filament_id):
-    """Assign an existing project to a filament"""
     filament = get_object_or_404(Filament, pk=filament_id)
-    
     if request.method == 'POST':
         form = FilamentUsageForm(request.POST, filament=filament)
         if form.is_valid():
             filament_usage = form.save(commit=False)
             filament_usage.filament = filament
             filament_usage.save()
-            
             messages.success(
-                request, 
+                request,
                 f'پروژه "{filament_usage.project.model_name}" به فیلامنت "{filament.name}" اختصاص داده شد'
             )
             return redirect('calculator:view_filament', pk=filament.pk)
     else:
         form = FilamentUsageForm(filament=filament)
-    
-    context = {
-        'form': form,
-        'filament': filament,
-    }
-    return render(request, 'calculator/assign_project.html', context)
+    return render(request, 'calculator/assign_project.html', {'form': form, 'filament': filament})
 
 
 def delete_filament_usage(request, pk):
-    """Remove project assignment from filament"""
     filament_usage = get_object_or_404(FilamentUsage, pk=pk)
     filament = filament_usage.filament
-    
     if request.method == 'POST':
         filament_usage.delete()
         messages.success(request, 'اختصاص پروژه حذف شد و فیلامنت بازگردانده شد')
         return redirect('calculator:view_filament', pk=filament.pk)
-    
     return render(request, 'calculator/confirm_delete_project.html', {
         'filament_usage': filament_usage,
         'filament': filament
     })
 
 
-# ==================== PROJECT VIEWS ====================
-
 def projects(request):
-    """List all projects with filtering and sorting"""
     q = request.GET.get('q', '').strip()
     material = request.GET.get('material', '').strip()
     sort = request.GET.get('sort', '-created_date').strip()
     view_mode = request.GET.get('view', 'cards').strip()
     page = request.GET.get('page', 1)
-    
-    # Base queryset
     qs = Project.objects.all()
-    
-    # Search
     if q:
         qs = qs.filter(
             Q(model_name__icontains=q) |
             Q(code__icontains=q)
         )
-    
-    # Sorting
     allowed_sorts = {
         '-created_date', 'created_date',
         'code', '-code',
         'model_name', '-model_name',
         '-print_time_hours', 'print_time_hours',
     }
-    
     if sort not in allowed_sorts:
         sort = '-created_date'
-    
     qs = qs.order_by(sort)
-    
     total_count = qs.count()
-    
-    # Pagination
     paginator = Paginator(qs, 12 if view_mode == 'cards' else 25)
     page_obj = paginator.get_page(page)
-    
     context = {
         'page_obj': page_obj,
         'total_count': total_count,
@@ -352,7 +291,6 @@ def projects(request):
 
 
 def add_project(request):
-    """Add new independent project"""
     if request.method == 'POST':
         form = ProjectForm(request.POST, request.FILES)
         if form.is_valid():
@@ -361,20 +299,13 @@ def add_project(request):
             return redirect('calculator:view_project', pk=project.pk)
     else:
         form = ProjectForm()
-    
     return render(request, 'calculator/add_project.html', {'form': form})
 
 
 def view_project(request, pk):
-    """View project details and assigned filaments"""
     project = get_object_or_404(Project, pk=pk)
-    
-    # Get all filaments this project is assigned to
     filament_usages = FilamentUsage.objects.filter(project=project).select_related('filament')
-    
-    # Get sales for this project
-    sales = Sale.objects.filter(filament_usage__project=project).select_related('filament_usage__filament')
-    
+    sales = Sale.objects.filter(project=project).order_by('-sale_date')
     context = {
         'project': project,
         'filament_usages': filament_usages,
@@ -384,15 +315,11 @@ def view_project(request, pk):
 
 
 def edit_project(request, pk):
-    """Edit project details"""
     project = get_object_or_404(Project, pk=pk)
-    
     if request.method == 'POST':
         form = ProjectForm(request.POST, request.FILES, instance=project)
         if form.is_valid():
             project = form.save()
-            
-            # Recalculate all FilamentUsage costs for this project
             for usage in FilamentUsage.objects.filter(project=project):
                 costs = project.calculate_cost_with_filament(usage.filament)
                 usage.filament_weight_used = costs['filament_weight']
@@ -404,78 +331,102 @@ def edit_project(request, pk):
                 usage.total_cost = costs['total_cost']
                 usage.selling_price = costs['selling_price']
                 usage.save()
-            
             messages.success(request, 'پروژه بروزرسانی شد')
             return redirect('calculator:view_project', pk=project.pk)
     else:
         form = ProjectForm(instance=project)
-    
     return render(request, 'calculator/edit_project.html', {'form': form, 'project': project})
 
 
 def delete_project(request, pk):
-    """Delete project (only if not assigned to any filament)"""
     project = get_object_or_404(Project, pk=pk)
     usage_count = FilamentUsage.objects.filter(project=project).count()
-    
     if usage_count > 0:
         messages.error(
-            request, 
-            f'نمی‌توان این پروژه را حذف کرد چون به {usage_count} فیلامنت اختصاص داده شده است. '
-            'ابتدا اختصاص‌ها را حذف کنید.'
+            request,
+            f'نمی‌توان این پروژه را حذف کرد چون به {usage_count} فیلامنت اختصاص داده شده است. ابتدا اختصاص‌ها را حذف کنید.'
         )
         return redirect('calculator:view_project', pk=pk)
-    
     if request.method == 'POST':
         project.delete()
         messages.success(request, 'پروژه حذف شد')
         return redirect('calculator:projects')
-    
     return render(request, 'calculator/confirm_delete_project.html', {'project': project})
 
 
-# ==================== SALES VIEWS ====================
+from django.db import transaction
 
 def sales(request):
-    """Sales management page"""
     if request.method == 'POST':
-        form = SaleForm(request.POST)
+        data = request.POST.copy()
+        posted_project_id = data.get('project')
+        posted_project_code = (data.get('project_code') or '').strip()
+
+        form = SaleForm(data)
         if form.is_valid():
-            sale = form.save()
-            messages.success(
-                request, 
-                f'فروش {sale.quantity} عدد محصول {sale.project.model_name} با کد {sale.project_code} ثبت شد'
-            )
+            sale = form.save(commit=False)
+
+            project_obj = None
+            # try posted project id first
+            if posted_project_id:
+                try:
+                    project_obj = Project.objects.get(pk=int(posted_project_id))
+                except (ValueError, Project.DoesNotExist):
+                    project_obj = None
+
+            # fallback: resolve by project_code (code is integer field)
+            if not project_obj and posted_project_code:
+                try:
+                    project_obj = Project.objects.get(code=int(posted_project_code))
+                except (ValueError, Project.DoesNotExist):
+                    project_obj = None
+
+            if not project_obj:
+                # attach error to form so it shows near fields
+                form.add_error('project', 'محصول مشخص نشده یا کد نامعتبر است.')
+                all_projects = Project.objects.all().order_by('-created_date')
+                recent_sales = Sale.objects.select_related('project').order_by('-sale_date')[:10]
+                return render(request, 'calculator/sales.html', {
+                    'form': form, 'all_projects': all_projects, 'recent_sales': recent_sales
+                })
+
+            # save atomically to be safe
+            with transaction.atomic():
+                sale.project = project_obj
+                # keep project_code in sync (overwrite or keep existing depending on policy)
+                sale.project_code = project_obj.code
+                # compute total in case form didn't
+                sale.total_price = (sale.unit_price * sale.quantity) + (sale.packaging_cost or 0)
+                sale.save()
+
+            messages.success(request, f'فروش {sale.quantity} عدد محصول {project_obj.model_name} ثبت شد')
             return redirect('calculator:sales_history')
-    else:
-        form = SaleForm()
-    
-    # Get all projects (the printed models available for sale)
+        else:
+            messages.error(request, 'فرم معتبر نیست — لطفاً خطاها را بررسی کنید.')
+            all_projects = Project.objects.all().order_by('-created_date')
+            recent_sales = Sale.objects.select_related('project').order_by('-sale_date')[:10]
+            return render(request, 'calculator/sales.html', {
+                'form': form, 'all_projects': all_projects, 'recent_sales': recent_sales
+            })
+
+    # GET branch (unchanged)
+    form = SaleForm()
     all_projects = Project.objects.all().order_by('-created_date')
-    
-    # Get recent sales for reference
     recent_sales = Sale.objects.select_related('project').order_by('-sale_date')[:10]
-    
-    context = {
-        'form': form,
-        'all_projects': all_projects,
-        'recent_sales': recent_sales,
-    }
-    return render(request, 'calculator/sales.html', context)
+    return render(request, 'calculator/sales.html', {'form': form, 'all_projects': all_projects, 'recent_sales': recent_sales})
+
+
 
 
 def sales_history(request):
-    """Sales history with filtering"""
     period = request.GET.get('period', 'all')
     search = request.GET.get('search', '').strip()
     customer = request.GET.get('customer', '').strip()
     sort = request.GET.get('sort', '-sale_date')
     page = request.GET.get('page', 1)
-    
-    # Base queryset
-    sales_qs = Sale.objects.select_related('filament_usage__project', 'filament_usage__filament').all()
-    
-    # Date filtering
+
+    sales_qs = Sale.objects.select_related('project').all()
+
     if period == 'today':
         date_filter = timezone.now().date()
         sales_qs = sales_qs.filter(sale_date__date=date_filter)
@@ -494,44 +445,92 @@ def sales_history(request):
         period_name = "سال گذشته"
     else:
         period_name = "همه فروش‌ها"
-    
-    # Search filtering
+
     if search:
         sales_qs = sales_qs.filter(
-            Q(filament_usage__project__model_name__icontains=search) |
             Q(project_code__icontains=search) |
             Q(customer_name__icontains=search) |
             Q(customer_phone__icontains=search)
         )
-    
-    # Customer filtering
+
     if customer:
         sales_qs = sales_qs.filter(customer_name__icontains=customer)
-    
-    # Sorting
-    allowed_sorts = ['-sale_date', 'sale_date', '-total_price', 'total_price', 
+
+    allowed_sorts = ['-sale_date', 'sale_date', '-total_price', 'total_price',
                      '-quantity', 'quantity', 'customer_name', '-customer_name']
     if sort in allowed_sorts:
         sales_qs = sales_qs.order_by(sort)
     else:
         sales_qs = sales_qs.order_by('-sale_date')
-    
-    # Statistics
-    total_sales = sales_qs.count()
-    total_revenue = sales_qs.aggregate(Sum('total_price'))['total_price__sum'] or 0
-    total_quantity = sales_qs.aggregate(Sum('quantity'))['quantity__sum'] or 0
-    total_profit = sum(sale.total_profit for sale in sales_qs)
-    
-    # Pagination
+
     paginator = Paginator(sales_qs, 20)
     page_obj = paginator.get_page(page)
-    
-    # Unique customers
-    customers = (Sale.objects.exclude(customer_name='')
-                .values_list('customer_name', flat=True)
-                .distinct()
-                .order_by('customer_name'))
-    
+
+    # Build set of project_code integers we need to resolve (when project FK missing)
+    codes_to_fetch = set()
+    sales_list = list(page_obj)  # materialize for safe iteration
+
+    for sale in sales_list:
+        sale._dbg = {
+            'project_fk': getattr(sale, 'project_id', None),
+            'project_code_raw': sale.project_code,
+            'found_by': None,
+            'project_repr': None,
+            'picture_url': None,
+        }
+        if getattr(sale, 'project_id', None):
+            # safe to attach the related Project because project_id exists and select_related used
+            sale.project_obj = sale.project
+            sale._dbg['found_by'] = 'fk'
+            if getattr(sale.project, 'code', None) is not None:
+                sale._dbg['project_repr'] = f'PK:{sale.project.pk} code:{sale.project.code}'
+            if getattr(sale.project, 'picture', None):
+                try:
+                    sale._dbg['picture_url'] = sale.project.picture.url
+                except Exception:
+                    sale._dbg['picture_url'] = 'error-getting-url'
+        else:
+            # collect integer codes for batch lookup
+            code_val = sale.project_code
+            if code_val is not None:
+                try:
+                    codes_to_fetch.add(int(code_val))
+                except Exception:
+                    pass
+
+    projects_map = {}
+    if codes_to_fetch:
+        qs_projects = Project.objects.filter(code__in=list(codes_to_fetch))
+        for p in qs_projects:
+            projects_map[p.code] = p
+
+    # attach found projects to sales that were missing FK
+    for sale in sales_list:
+        if getattr(sale, 'project_obj', None):
+            continue
+        code_val = sale.project_code
+        if code_val is not None and int(code_val) in projects_map:
+            p = projects_map[int(code_val)]
+            sale.project_obj = p
+            sale._dbg['found_by'] = 'code_lookup'
+            sale._dbg['project_repr'] = f'PK:{p.pk} code:{p.code}'
+            try:
+                sale._dbg['picture_url'] = p.picture.url if getattr(p, 'picture', None) else None
+            except Exception:
+                sale._dbg['picture_url'] = 'error-getting-url'
+        else:
+            sale.project_obj = None
+            sale._dbg['found_by'] = 'not_found'
+
+    # optional logging for debugging
+    missing = [s for s in sales_list if s._dbg.get('found_by') == 'not_found']
+    if missing:
+        logger.debug("sales_history: %d missing projects on current page example: %s",
+                     len(missing), [(s.pk, s.project_code) for s in missing[:10]])
+
+    # preserve current querystring (without page) for pagination links
+    current_query = request.GET.copy()
+    current_query.pop('page', None)
     context = {
         'page_obj': page_obj,
         'period': period,
@@ -539,17 +538,18 @@ def sales_history(request):
         'search': search,
         'customer': customer,
         'sort': sort,
-        'customers': customers,
-        'total_sales': total_sales,
-        'total_revenue': total_revenue,
-        'total_quantity': total_quantity,
-        'total_profit': total_profit,
+        'customers': (Sale.objects.exclude(customer_name='').values_list('customer_name', flat=True).distinct().order_by('customer_name')),
+        'total_sales': sales_qs.count(),
+        'total_revenue': sales_qs.aggregate(Sum('total_price'))['total_price__sum'] or 0,
+        'total_quantity': sales_qs.aggregate(Sum('quantity'))['quantity__sum'] or 0,
+        'current_querystring': current_query.urlencode(),
     }
+    if settings.DEBUG:
+        context['DEBUG_SALES_LIST'] = [(s.pk, s.project_code, s._dbg) for s in sales_list[:50]]
     return render(request, 'calculator/sales_history.html', context)
 
 
 def delete_sale(request, pk):
-    """Delete a sale record"""
     sale = get_object_or_404(Sale, pk=pk)
     if request.method == 'POST':
         sale.delete()
@@ -558,14 +558,9 @@ def delete_sale(request, pk):
     return render(request, 'calculator/confirm_delete_sale.html', {'sale': sale})
 
 
-# ==================== REPORTS ====================
-
 def reports(request):
-    """Generate sales and profit reports"""
     period = request.GET.get('period', 'month')
     item_filter = request.GET.get('item_filter', '')
-    
-    # Date filtering
     if period == 'week':
         date_filter = timezone.now() - timedelta(days=7)
         period_name = "هفته گذشته"
@@ -578,43 +573,35 @@ def reports(request):
     else:
         date_filter = None
         period_name = "همه زمان‌ها"
-    
-    # Base queryset
-    sales_qs = Sale.objects.select_related('filament_usage__project', 'filament_usage__filament')
+
+    sales_qs = Sale.objects.select_related('project')
     if date_filter:
         sales_qs = sales_qs.filter(sale_date__gte=date_filter)
     if item_filter:
-        sales_qs = sales_qs.filter(filament_usage__project__model_name__icontains=item_filter)
-    
+        sales_qs = sales_qs.filter(project__model_name__icontains=item_filter)
+
     sales_data = sales_qs.all()
-    
-    # Statistics
     total_sales = sales_data.count()
     total_revenue = sum(sale.total_price for sale in sales_data)
-    total_production_cost = sum(sale.filament_usage.total_cost * sale.quantity for sale in sales_data if sale.filament_usage)
+    total_production_cost = sum(getattr(sale, 'unit_cost', 0) * sale.quantity for sale in sales_data)
     total_packaging_cost = sum(sale.packaging_cost for sale in sales_data)
     total_cost = total_production_cost + total_packaging_cost
-    total_profit = sum(sale.total_profit for sale in sales_data)
-    
-    # Top products
-    top_products = (sales_qs.values('filament_usage__project__model_name')
+    total_profit = sum(getattr(sale, 'total_profit', 0) for sale in sales_data)
+    top_products = (sales_qs.values('project__model_name')
+                    .annotate(
+                        count=Count('id'),
+                        revenue=Sum('total_price'),
+                        total_quantity=Sum('quantity')
+                    )
+                    .order_by('-count')[:10])
+    daily_stats = (sales_qs.annotate(date=TruncDate('sale_date'))
+                   .values('date')
                    .annotate(
-                       count=Count('id'), 
+                       count=Count('id'),
                        revenue=Sum('total_price'),
                        total_quantity=Sum('quantity')
                    )
-                   .order_by('-count')[:10])
-    
-    # Daily stats
-    daily_stats = (sales_qs.extra({'date': "date(sale_date)"})
-                  .values('date')
-                  .annotate(
-                      count=Count('id'), 
-                      revenue=Sum('total_price'),
-                      total_quantity=Sum('quantity')
-                  )
-                  .order_by('-date')[:30])
-    
+                   .order_by('-date')[:30])
     context = {
         'sales_data': sales_data,
         'total_sales': total_sales,
@@ -632,19 +619,13 @@ def reports(request):
     return render(request, 'calculator/reports.html', context)
 
 
-# ==================== SETTINGS ====================
-
 @require_http_methods(["GET", "POST"])
 def pricing_settings_view(request):
-    """Pricing settings management"""
     settings_obj = PricingSettings.get_solo()
-    
     if request.method == 'POST':
-        # Clear existing messages
         storage = messages.get_messages(request)
         for _ in storage:
             pass
-        
         form = PricingSettingsForm(request.POST, instance=settings_obj)
         if form.is_valid():
             form.save()
@@ -654,7 +635,6 @@ def pricing_settings_view(request):
             messages.error(request, 'لطفاً خطاهای فرم را بررسی کنید.')
     else:
         form = PricingSettingsForm(instance=settings_obj)
-
     return render(request, 'calculator/pricing_settings.html', {
         'form': form,
         'settings_obj': settings_obj,
@@ -662,7 +642,6 @@ def pricing_settings_view(request):
 
 
 def pricing_settings_json(request):
-    """API endpoint for pricing settings"""
     s = PricingSettings.get_solo()
     return JsonResponse({
         'power_price_per_kwh': float(s.power_price_per_kwh),
@@ -677,10 +656,7 @@ def pricing_settings_json(request):
     })
 
 
-# ==================== API ENDPOINTS ====================
-
 def _D(val, default='0'):
-    """Helper to convert to Decimal safely"""
     try:
         return Decimal(str(val))
     except (InvalidOperation, TypeError, ValueError):
@@ -689,15 +665,12 @@ def _D(val, default='0'):
 
 @require_POST
 def calculate_preview(request):
-    """Calculate project costs preview (AJAX)"""
     try:
         data = json.loads(request.body.decode('utf-8'))
     except Exception:
         return JsonResponse({'error': 'ورودی نامعتبر است'}, status=400)
 
     s = PricingSettings.get_solo()
-
-    # Parse inputs
     filament_used_mm = _D(data.get('filament_used_mm'))
     print_time_hours = _D(data.get('print_time_hours'))
     size_x = _D(data.get('size_x'))
@@ -712,28 +685,19 @@ def calculate_preview(request):
         default=str(s.packaging_cost)
     ) if data.get('packaging_cost') is not None else s.packaging_cost
 
-    # Filament weight calculation
     g_per_m = _D('3.0')
     filament_length_m = filament_used_mm / _D('1000')
     filament_weight_g = filament_length_m * g_per_m
     filament_weight_g *= (_D('1') + s.filament_waste_percent / _D('100'))
 
-    # Costs
     material_cost = (filament_weight_g / _D('1000')) * filament_cost_per_kg
-    
     average_watts = _D('120')
     electricity_cost = (average_watts * print_time_hours / _D('1000')) * s.power_price_per_kwh
-    
     depreciation_cost = s.depreciation_per_hour * print_time_hours
-    
     post_processing_cost = s.post_processing_rate if post_processing_flag else _D('0')
-    
     surface_cm2 = (_D('2') * ((size_x * size_y) + (size_y * size_z) + (size_x * size_z))) / _D('100')
     painting_cost = (s.painting_rate_per_cm2 * surface_cm2) if painting_flag else _D('0')
-    
     base_total = material_cost + electricity_cost + depreciation_cost + post_processing_cost + painting_cost + packaging_cost
-    
-    # Selling price with profit and rounding
     selling_price = base_total * (_D('1') + s.profit_percent / _D('100'))
     if s.round_to_nearest and s.round_to_nearest > 0:
         step = s.round_to_nearest
@@ -751,33 +715,23 @@ def calculate_preview(request):
         'g_per_m': float(g_per_m),
     })
 
+
 def delete_all_filament_usages(request, filament_id):
-    """Delete all project assignments for a filament"""
     filament = get_object_or_404(Filament, pk=filament_id)
-    
     if request.method == 'POST':
-        # Get all usages for this filament
         usages = FilamentUsage.objects.filter(filament=filament)
         count = usages.count()
-        
-        # Calculate total filament to return
         total_filament_returned = 0
         for usage in usages:
             total_filament_returned += usage.total_filament_used
-        
-        # Delete all usages (each deletion will return filament via the delete() method)
         usages.delete()
-        
         messages.success(
             request,
             f'✅ {count} اختصاص پروژه حذف شد و {total_filament_returned:.2f} متر فیلامنت به موجودی بازگردانده شد.'
         )
         return redirect('calculator:delete_filament', pk=filament_id)
-    
-    # GET request - show confirmation
     usages = FilamentUsage.objects.filter(filament=filament).select_related('project')
     total_filament = sum(usage.total_filament_used for usage in usages)
-    
     context = {
         'filament': filament,
         'usages': usages,

@@ -144,7 +144,7 @@
                             <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" 
                                class="btn-modern btn-primary-gradient">
                                 <i class="fas fa-link"></i>
-                                <span>اختصاص پروژه جدید</span>
+                                <span>اختصاص مدل جدید</span>
                             </a>
                             <div class="button-group">
                                 <a href="{% url 'calculator:edit_filament' filament.pk %}" 
@@ -181,7 +181,7 @@
                                 </div>
                                 <div class="stat-info">
                                     <div class="stat-number">{{ stats.count }}</div>
-                                    <div class="stat-label">پروژه</div>
+                                    <div class="stat-label">مدل</div>
                                 </div>
                             </div>
                             
@@ -240,7 +240,7 @@
                     <div class="card-header-modern">
                         <div class="header-title">
                             <i class="fas fa-cubes"></i>
-                            <span>پروژه‌های مرتبط</span>
+                            <span>مدل‌های مرتبط</span>
                         </div>
                         <div class="header-badge">
                             <span class="count-badge">{{ filament_usages|length }}</span>
@@ -371,20 +371,20 @@
                             <div class="empty-icon">
                                 <i class="fas fa-unlink"></i>
                             </div>
-                            <h3 class="empty-title">هیچ پروژه‌ای اختصاص نیافته</h3>
+                            <h3 class="empty-title">هیچ مدل‌ای اختصاص نیافته</h3>
                             <p class="empty-description">
-                                برای محاسبه هزینه و قیمت فروش، پروژه‌های خود را به این فیلامنت اختصاص دهید
+                                برای محاسبه هزینه و قیمت فروش، مدل‌های خود را به این فیلامنت اختصاص دهید
                             </p>
                             <div class="empty-actions">
                                 <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" 
                                    class="btn-modern btn-primary-gradient">
                                     <i class="fas fa-link"></i>
-                                    اختصاص پروژه موجود
+                                    اختصاص مدل موجود
                                 </a>
                                 <a href="{% url 'calculator:add_project' %}" 
                                    class="btn-modern btn-outline">
                                     <i class="fas fa-plus"></i>
-                                    ایجاد پروژه جدید
+                                    ایجاد مدل جدید
                                 </a>
                             </div>
                         </div>
@@ -406,7 +406,7 @@
     
     <div class="fab-options">
         <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" 
-           class="fab-option" data-tooltip="اختصاص پروژه">
+           class="fab-option" data-tooltip="اختصاص مدل">
             <i class="fas fa-link"></i>
         </a>
         <a href="{% url 'calculator:edit_filament' filament.pk %}" 

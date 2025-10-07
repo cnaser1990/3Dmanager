@@ -1,6 +1,6 @@
 {% extends "calculator/base.html" %}
 
-{% block title %}پروژه جدید{% endblock %}
+{% block title %}مدل جدید{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-2 px-md-4 py-4">
@@ -17,8 +17,8 @@
                         <i class="fas fa-cube"></i>
                     </div>
                     <div>
-                        <h1 class="header-title mb-1">ایجاد پروژه جدید</h1>
-                        <p class="header-subtitle mb-0">مشخصات پروژه را وارد کنید و هزینه‌ها را به‌صورت زنده مشاهده کنید</p>
+                        <h1 class="header-title mb-1">ایجاد مدل جدید</h1>
+                        <p class="header-subtitle mb-0">مشخصات مدل را وارد کنید و هزینه‌ها را به‌صورت زنده مشاهده کنید</p>
                     </div>
                 </div>
             </div>
@@ -48,7 +48,7 @@
                             <div class="step-number">1</div>
                             <div>
                                 <h2 class="card-title">اطلاعات پایه</h2>
-                                <p class="card-subtitle">نام پروژه و تصویر</p>
+                                <p class="card-subtitle">نام مدل و تصویر</p>
                             </div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                                 <div class="form-group">
                                     <label for="id_model_name" class="form-label">
                                         <i class="fas fa-cube"></i>
-                                        <span>نام پروژه</span>
+                                        <span>نام مدل</span>
                                         <span class="required">*</span>
                                     </label>
                                     <div class="input-wrapper">
@@ -81,7 +81,7 @@
                                 <div class="form-group">
                                     <label for="id_picture" class="form-label">
                                         <i class="fas fa-image"></i>
-                                        <span>تصویر پروژه</span>
+                                        <span>تصویر مدل</span>
                                     </label>
                                     <div class="upload-container" id="upload-tile">
                                         <div class="upload-content">
@@ -217,12 +217,6 @@
 
                         <!-- Dimensions -->
                         <div class="dimensions-section">
-                            <div class="section-divider">
-                                <span class="divider-text">
-                                    <i class="fas fa-arrows-alt"></i>
-                                    ابعاد مدل
-                                </span>
-                            </div>
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <div class="form-group">
@@ -350,7 +344,7 @@
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">
                         <i class="fas fa-save"></i>
-                        <span>ذخیره پروژه</span>
+                        <span>ذخیره مدل</span>
                     </button>
                     <a href="{% url 'calculator:projects' %}" class="btn-secondary">
                         <i class="fas fa-times"></i>

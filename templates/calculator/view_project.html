@@ -22,9 +22,9 @@
                     <span>ویرایش</span>
                 </a>
                 <a class="header-action-btn header-action-delete" href="{% url 'calculator:delete_project' project.pk %}"
-                    onclick="return confirm('آیا از حذف این پروژه مطمئن هستید؟')">
+                    onclick="return confirm('آیا از حذف این مدل مطمئن هستید؟')">
                     <i class="fas fa-trash"></i>
-                    <span>حذف پروژه</span>
+                    <span>حذف مدل</span>
                 </a>
             </div>
         </div>
@@ -113,7 +113,7 @@
                         <div class="image-badge-overlay">
                             <span class="image-badge">
                                 <i class="fas fa-camera"></i>
-                                تصویر پروژه
+                                تصویر مدل
                             </span>
                         </div>
                     {% else %}
@@ -230,7 +230,7 @@
                             <h2 class="content-title">فیلامنت‌های اختصاص یافته</h2>
                             <p class="content-subtitle">
                                 {% if filament_usages %}
-                                    {{ filament_usages|length }} فیلامنت به این پروژه متصل شده
+                                    {{ filament_usages|length }} فیلامنت به این مدل متصل شده
                                 {% else %}
                                     هنوز فیلامنتی اختصاص نیافته است
                                 {% endif %}
@@ -347,7 +347,7 @@
                             </div>
                             <h3 class="empty-state-title">هنوز فیلامنتی اختصاص نیافته</h3>
                             <p class="empty-state-text">
-                                برای محاسبه هزینه و قیمت فروش، این پروژه را به یک فیلامنت اختصاص دهید
+                                برای محاسبه هزینه و قیمت فروش، این مدل را به یک فیلامنت اختصاص دهید
                             </p>
                             <a href="{% url 'calculator:filaments' %}" class="empty-state-btn">
                                 <i class="fas fa-layer-group"></i>
@@ -368,7 +368,7 @@
                         </div>
                         <div>
                             <h2 class="content-title">سوابق فروش</h2>
-                            <p class="content-subtitle">تاریخچه فروش این پروژه</p>
+                            <p class="content-subtitle">تاریخچه فروش این مدل</p>
                         </div>
                     </div>
                     <div class="content-badge content-badge-success">
@@ -447,7 +447,7 @@
                             </div>
                             <h3 class="empty-state-title">هنوز فروشی ثبت نشده</h3>
                             <p class="empty-state-text">
-                                می‌توانید این پروژه را از صفحه فروش به فروش برسانید
+                                می‌توانید این مدل را از صفحه فروش به فروش برسانید
                             </p>
                             <a href="{% url 'calculator:sales' %}" class="empty-state-btn">
                                 <i class="fas fa-plus"></i>

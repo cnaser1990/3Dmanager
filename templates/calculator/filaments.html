@@ -133,13 +133,13 @@
               <td>
                 <div class="row-actions">
                   <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn-mini primary" title="مشاهده"><i class="fas fa-eye"></i></a>
-                  <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" class="btn-mini success" title="اختصاص پروژه"><i class="fas fa-link"></i></a>
+                  <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" class="btn-mini success" title="اختصاص مدل"><i class="fas fa-link"></i></a>
                   <a href="{% url 'calculator:edit_filament' filament.pk %}" class="btn-mini info" title="ویرایش"><i class="fas fa-edit"></i></a>
                   <form method="post" action="{% url 'calculator:delete_filament' filament.pk %}" class="row-delete-form">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <button type="submit" class="btn-mini danger" title="حذف"
-                            onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر پروژه اختصاص داده شده باشد حذف نمی‌شود.')">
+                            onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر مدل اختصاص داده شده باشد حذف نمی‌شود.')">
                       <i class="fas fa-trash"></i>
                     </button>
                   </form>
@@ -206,7 +206,7 @@
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button type="submit" class="btn-filament btn-filament-delete" title="حذف"
-                      onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر پروژه اختصاص داده شده باشد حذف نمی‌شود.')">
+                      onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر مدل اختصاص داده شده باشد حذف نمی‌شود.')">
                 <i class="fas fa-trash"></i>
               </button>
             </form>

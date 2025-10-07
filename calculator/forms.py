@@ -96,7 +96,6 @@ class FilamentForm(forms.ModelForm):
         return instance
 
 
-
 class ProjectForm(forms.ModelForm):
     """Form for creating independent projects"""
     print_hours = forms.IntegerField(
@@ -272,19 +271,11 @@ class SaleForm(forms.ModelForm):
         }),
         label='کد مدل'
     )
-    
-    filament_id = forms.IntegerField(
-        required=False,
-        widget=forms.HiddenInput(),
-        label='شناسه فیلامنت'
-    )
-    
     class Meta:
         model = Sale
-        fields = ['filament_usage', 'quantity', 'customer_name', 'customer_phone', 
+        fields = ['quantity', 'customer_name', 'customer_phone', 
                  'unit_price', 'packaging_cost', 'notes']
         widgets = {
-            'filament_usage': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'value': '1',
@@ -318,11 +309,10 @@ class SaleForm(forms.ModelForm):
     
     def clean(self):
         cleaned_data = super().clean()
-        filament_usage = cleaned_data.get('filament_usage')
         project_code = cleaned_data.get('project_code')
         filament_id = cleaned_data.get('filament_id')
         
-        if not filament_usage and project_code:
+        if project_code:
             try:
                 # Find FilamentUsage by project code (and optionally filament)
                 query = FilamentUsage.objects.filter(project__code=project_code)
@@ -330,14 +320,9 @@ class SaleForm(forms.ModelForm):
                 if filament_id:
                     query = query.filter(filament_id=filament_id)
                 
-                filament_usage = query.first()
-                
-                if not filament_usage:
-                    raise forms.ValidationError('ترکیب پروژه و فیلامنت یافت نشد!')
-                
-                cleaned_data['filament_usage'] = filament_usage
-            except FilamentUsage.DoesNotExist:
-                raise forms.ValidationError('استفاده از فیلامنت یافت نشد!')
+
+            except Exception as e:
+                raise (e)
         
         return cleaned_data
 

@@ -1,778 +1,809 @@
 <!-- templates/calculator/sales.html -->
 {% extends "calculator/base.html" %}
-
-{% block title %}ثبت فروش جدید{% endblock %}
-
+{% block title %}ثبت فروش{% endblock %}
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
+<div class="container-fluid px-4 py-4">
 
-    <!-- Sales Header -->
-    <div class="sales-header">
-        <div class="header-icon-wrapper">
-            <div class="header-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
+<!-- Hero Header (Same style as index) -->
+<div class="page-header">
+    <div class="header-bg"></div>
+    <div class="header-wrapper">
+        <div class="header-icon-box">
+            <i class="fas fa-shopping-cart"></i>
         </div>
-        <div class="header-content">
+        <div class="header-text">
             <h1 class="header-title">ثبت فروش جدید</h1>
-            <p class="header-subtitle">ثبت و مدیریت فروش محصولات پرینت سه‌بعدی</p>
+            <p class="header-desc">مدیریت سریع و هوشمند فروش محصولات</p>
         </div>
-        <div class="header-actions">
-            <a href="{% url 'calculator:sales_history' %}" class="btn-history" title="مشاهده تاریخچه فروش">
-                <i class="fas fa-history"></i>
-                <span>تاریخچه فروش</span>
-            </a>
-        </div>
-    </div>
-
-    <div class="sales-wrapper">
-        <div class="row g-4">
-            <!-- Main Form -->
-            <div class="col-lg-8">
-                <div class="sales-card">
-                    <div class="sales-card-header">
-                        <i class="fas fa-shopping-cart"></i>
-                        <h2>اطلاعات فروش</h2>
-                    </div>
-
-                    <div class="sales-card-body">
-                        <!-- Tabs -->
-                        <div class="method-tabs">
-                            <button class="tab-btn active" data-tab="select">
-                                <i class="fas fa-mouse-pointer"></i>
-                                <span>انتخاب از لیست</span>
-                            </button>
-                            <button class="tab-btn" data-tab="code">
-                                <i class="fas fa-keyboard"></i>
-                                <span>وارد کردن کد</span>
-                            </button>
-                        </div>
-
-                        <!-- Select Method -->
-                        <div class="tab-content active" id="tab-select">
-                            <form method="POST" action="{% url 'calculator:sales' %}" id="selectSaleForm">
-                                {% csrf_token %}
-
-                                <!-- Product Section -->
-                                <div class="form-section">
-                                    <div class="section-header">
-                                        <div class="section-icon">
-                                            <i class="fas fa-cube"></i>
-                                        </div>
-                                        <h3>انتخاب محصول</h3>
-                                    </div>
-
-                                    <div class="form-grid">
-                                        <div class="form-group form-group-full">
-                                            <label class="form-label">
-                                                <i class="fas fa-list"></i>
-                                                محصول
-                                            </label>
-                                            <!-- Use ALL projects and compute price by grams (price = grams * 2) -->
-                                            <select name="project" class="form-select" id="id_project" required>
-                                                <option value="">-- انتخاب محصول --</option>
-                                                {% for project in all_projects %}
-                                                <option value="{{ project.pk }}"
-                                                        data-grams="{{ project.filament_weight_grams|default:0 }}">
-                                                    {{ project.code }} - {{ project.model_name }}
-                                                    ({{ project.filament_weight_grams|default:0|floatformat:0 }} گرم)
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                            {% if form.project.errors %}
-                                                <div class="field-error">{{ form.project.errors.0 }}</div>
-                                            {% endif %}
-                                            {% if not all_projects %}
-                                                <div class="field-hint">
-                                                    <i class="fas fa-exclamation-circle"></i>
-                                                    هیچ محصولی موجود نیست. لطفاً ابتدا یک محصول ایجاد کنید.
-                                                </div>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-hashtag"></i>
-                                                تعداد
-                                            </label>
-                                            <input type="number" name="quantity" class="form-control" value="1" min="1" required id="id_quantity">
-                                            {% if form.quantity.errors %}
-                                                <div class="field-error">{{ form.quantity.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-money-bill-wave"></i>
-                                                قیمت واحد (تومان)
-                                            </label>
-                                            <input type="number" name="unit_price" class="form-control" placeholder="بر اساس وزن: گرم × 2" required id="id_unit_price">
-                                            {% if form.unit_price.errors %}
-                                                <div class="field-error">{{ form.unit_price.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-box"></i>
-                                                هزینه بسته‌بندی (تومان)
-                                            </label>
-                                            <input type="number" name="packaging_cost" class="form-control" value="0" min="0" id="id_packaging_cost">
-                                            {% if form.packaging_cost.errors %}
-                                                <div class="field-error">{{ form.packaging_cost.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Preview (Live) -->
-                                <div class="preview-section" id="product_preview" style="display:none;">
-                                    <div class="preview-header">
-                                        <i class="fas fa-receipt"></i>
-                                        <h3>پیش‌نمایش محاسبات</h3>
-                                    </div>
-                                    <div class="preview-grid">
-                                        <div class="preview-item">
-                                            <div class="preview-icon preview-icon-primary">
-                                                <i class="fas fa-tag"></i>
-                                            </div>
-                                            <div class="preview-content">
-                                                <span class="preview-label">قیمت پیشنهادی</span>
-                                                <span class="preview-value" id="preview_suggested">۰  تومن</span>
-                                            </div>
-                                        </div>
-                                        <div class="preview-item">
-                                            <div class="preview-icon preview-icon-info">
-                                                <i class="fas fa-calculator"></i>
-                                            </div>
-                                            <div class="preview-content">
-                                                <span class="preview-label">قیمت کل</span>
-                                                <span class="preview-value" id="preview_total_price">۰  </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Customer Section -->
-                                <div class="form-section">
-                                    <div class="section-header">
-                                        <div class="section-icon">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <h3>اطلاعات مشتری (اختیاری)</h3>
-                                    </div>
-
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-user"></i>
-                                                نام مشتری
-                                            </label>
-                                            <input type="text" name="customer_name" class="form-control" placeholder="نام و نام خانوادگی">
-                                            {% if form.customer_name.errors %}
-                                                <div class="field-error">{{ form.customer_name.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-phone"></i>
-                                                شماره تماس
-                                            </label>
-                                            <input type="text" name="customer_phone" class="form-control" placeholder="09123456789" inputmode="numeric">
-                                            {% if form.customer_phone.errors %}
-                                                <div class="field-error">{{ form.customer_phone.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-
-                                        <div class="form-group form-group-full">
-                                            <label class="form-label">
-                                                <i class="fas fa-sticky-note"></i>
-                                                یادداشت
-                                            </label>
-                                            <textarea name="notes" class="form-control" rows="3" placeholder="توضیحات اضافی در مورد فروش..."></textarea>
-                                            {% if form.notes.errors %}
-                                                <div class="field-error">{{ form.notes.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Submit -->
-                                <div class="form-actions">
-                                    <button type="submit" class="btn-submit-sale">
-                                        <i class="fas fa-check"></i>
-                                        <span>ثبت فروش</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Code Method -->
-                        <div class="tab-content" id="tab-code">
-                            <form method="POST" action="{% url 'calculator:sales' %}" id="codeSaleForm">
-                                {% csrf_token %}
-                                <div class="form-section">
-                                    <div class="section-header">
-                                        <div class="section-icon">
-                                            <i class="fas fa-keyboard"></i>
-                                        </div>
-                                        <h3>ورود اطلاعات با کد</h3>
-                                    </div>
-
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-hashtag"></i>
-                                                کد محصول
-                                            </label>
-                                            <input type="text" name="project_code" class="form-control" placeholder="1001" required id="id_project_code" inputmode="numeric">
-                                            {% if form.project_code.errors %}
-                                                <div class="field-error">{{ form.project_code.errors.0 }}</div>
-                                            {% endif %}
-                                            <div class="field-hint">
-                                                <i class="fas fa-info-circle"></i>
-                                                کد عددی محصول را وارد کنید
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-hashtag"></i>
-                                                تعداد
-                                            </label>
-                                            <input type="number" class="form-control" name="quantity" value="1" min="1" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-money-bill-wave"></i>
-                                                قیمت واحد (تومان)
-                                            </label>
-                                            <input type="number" class="form-control" name="unit_price" required placeholder="بر اساس وزن: گرم × 2">
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-box"></i>
-                                                هزینه بسته‌بندی (تومان)
-                                            </label>
-                                            <input type="number" class="form-control" name="packaging_cost" value="0" min="0" placeholder="0">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-section">
-                                    <div class="section-header">
-                                        <div class="section-icon">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <h3>اطلاعات مشتری (اختیاری)</h3>
-                                    </div>
-
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-user"></i>
-                                                نام مشتری
-                                            </label>
-                                            <input type="text" class="form-control" name="customer_name" placeholder="نام و نام خانوادگی">
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label class="form-label">
-                                                <i class="fas fa-phone"></i>
-                                                شماره تماس
-                                            </label>
-                                            <input type="text" class="form-control" name="customer_phone" placeholder="09123456789" inputmode="numeric">
-                                        </div>
-
-                                        <div class="form-group form-group-full">
-                                            <label class="form-label">
-                                                <i class="fas fa-sticky-note"></i>
-                                                یادداشت
-                                            </label>
-                                            <textarea class="form-control" name="notes" rows="3" placeholder="توضیحات اضافی در مورد فروش..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-actions">
-                                    <button type="submit" class="btn-submit-sale">
-                                        <i class="fas fa-check"></i>
-                                        <span>ثبت فروش</span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Sticky mobile total -->
-                <div class="sticky-summary d-lg-none" id="stickySummary" style="display:none;">
-                    <div class="sticky-summary-item">
-                        <i class="fas fa-calculator"></i>
-                        <span>مبلغ کل:</span>
-                        <strong id="stickyTotalAmount">۰ تومان</strong>
-                    </div>
-                    <a href="#selectSaleForm" class="sticky-submit">
-                        <i class="fas fa-check"></i>
-                        ثبت
-                    </a>
-                </div>
-            </div>
-
-            <!-- Sidebar: Products -->
-            <div class="col-lg-4">
-                <div class="products-sidebar">
-                    <div class="sidebar-header">
-                        <i class="fas fa-list"></i>
-                        <h3>فهرست محصولات</h3>
-                    </div>
-
-                    <div class="sidebar-body">
-                        {% if all_projects %}
-                            <div class="products-list">
-                                {% for project in all_projects|slice:":12" %}
-                                <div class="product-card"
-                                     onclick="selectProject({{ project.pk }}, {{ project.filament_weight_grams|default:0 }})">
-                                    <div class="product-image-wrapper">
-                                        {% if project.has_image %}
-                                            <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" class="product-image">
-                                        {% else %}
-                                            <div class="product-no-image">
-                                                <i class="fas fa-cube"></i>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="product-details">
-                                        <div class="product-header">
-                                            <span class="product-code">{{ project.code }}</span>
-                                            <span class="product-date">{{ project.created_date|date:"Y/m/d" }}</span>
-                                        </div>
-                                        <h4 class="product-name" title="{{ project.model_name }}">{{ project.model_name }}</h4>
-                                        <p class="product-meta">
-                                            <i class="fas fa-weight-hanging"></i> {{ project.filament_weight_grams|default:0|floatformat:0 }} گرم
-                                            <span class="sep">•</span>
-                                            <i class="fas fa-clock"></i> {{ project.print_time_hours|default:0|floatformat:1 }} ساعت
-                                        </p>
-                                        <div class="product-footer">
-                                            <div class="product-price">
-                                                <span class="price-label">قیمت پیشنهادی:</span>
-                                                <strong class="price-value">
-                                                    {% widthratio project.filament_weight_grams|floatformat:0 1 2 %} <span style="font-weight:600">تومان</span>
-                                                </strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-
-                            {% if all_projects|length > 12 %}
-                            <div class="sidebar-footer">
-                                <p class="more-text">و {{ all_projects|length|add:"-12" }} محصول دیگر...</p>
-                                <a href="{% url 'calculator:projects' %}" class="btn-view-all">
-                                    <i class="fas fa-eye"></i>
-                                    <span>مشاهده همه محصولات</span>
-                                </a>
-                            </div>
-                            {% endif %}
-                        {% else %}
-                            <div class="empty-state">
-                                <div class="empty-icon">
-                                    <i class="fas fa-box-open"></i>
-                                </div>
-                                <p class="empty-text">هیچ محصولی موجود نیست</p>
-                                <a href="{% url 'calculator:add_project' %}" class="btn-start">
-                                    <i class="fas fa-plus"></i>
-                                    <span>افزودن مدل جدید</span>
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        <a href="{% url 'calculator:sales_history' %}" class="header-action-btn">
+            <i class="fas fa-history"></i>
+            تاریخچه فروش
+        </a>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
+<!-- Main Layout -->
+<div class="sales-grid">
+    
+    <!-- LEFT: Products Panel -->
+    <div class="panel products-panel">
+        <div class="panel-head">
+            <div class="panel-title">
+                <i class="fas fa-cubes"></i>
+                <h2>محصولات موجود</h2>
+            </div>
+            <span class="panel-badge">{{ all_projects|length }}</span>
+        </div>
+        <div class="panel-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchBox" placeholder="جستجوی سریع..." class="search-box">
+        </div>
+        <div class="panel-body">
+            {% if all_projects %}
+                <div class="products-list" id="productsList">
+                    {% for p in all_projects %}
+                    <div class="product-item" data-id="{{p.pk}}" data-grams="{{p.filament_weight_grams|default:0}}" 
+                         data-name="{{p.model_name}}" data-code="{{p.code}}" onclick="selectProduct(this)">
+                        <div class="product-thumb">
+                            {% if p.has_image %}
+                                <img src="{{p.picture.url}}" alt="{{p.model_name}}">
+                            {% else %}
+                                <div class="product-placeholder">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            {% endif %}
+                            <div class="product-overlay">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                        </div>
+                        <div class="product-data">
+                            <span class="product-badge">#{{p.code}}</span>
+                            <h4 class="product-title">{{p.model_name}}</h4>
+                            <div class="product-specs">
+                                <span><i class="fas fa-weight"></i> {{p.filament_weight_grams|default:0}}g</span>
+                                <span><i class="fas fa-clock"></i> {{p.print_time_hours|default:0}}h</span>
+                            </div>
+                            <div class="product-cost">{% widthratio p.filament_weight_grams|floatformat:0 1 2000 %} تومان</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <i class="fas fa-inbox"></i>
+                    <p>محصولی موجود نیست</p>
+                    <a href="{% url 'calculator:add_project' %}" class="btn-add">افزودن محصول</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT: Sale Form -->
+    <div class="panel form-panel">
+        <!-- Method Tabs -->
+        <div class="method-tabs">
+            <button class="method-tab active" data-method="select" onclick="changeMethod('select')">
+                <i class="fas fa-mouse-pointer"></i>
+                <div>
+                    <strong>انتخاب محصول</strong>
+                    <small>از لیست سمت چپ</small>
+                </div>
+            </button>
+            <button class="method-tab" data-method="code" onclick="changeMethod('code')">
+                <i class="fas fa-keyboard"></i>
+                <div>
+                    <strong>ورود کد</strong>
+                    <small>جستجو با کد</small>
+                </div>
+            </button>
+        </div>
+
+        <!-- Method: Select -->
+        <div class="method-view active" id="view-select">
+            <form method="POST" id="saleFormSelect">
+                {% csrf_token %}
+                
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-cube"></i>
+                        انتخاب محصول
+                    </label>
+                    <select name="project" id="projectField" class="field-input" required>
+                        <option value="">-- انتخاب کنید --</option>
+                        {% for p in all_projects %}
+                        <option value="{{p.pk}}" data-grams="{{p.filament_weight_grams|default:0}}">
+                            {{p.code}} - {{p.model_name}} ({{p.filament_weight_grams|default:0}}g)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">
+                            <i class="fas fa-sort-numeric-up"></i>
+                            تعداد
+                        </label>
+                        <input type="number" name="quantity" id="qtyField" class="field-input" value="1" min="1" required>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            قیمت واحد
+                        </label>
+                        <input type="number" name="unit_price" id="priceField" class="field-input" placeholder="تومان" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-box-open"></i>
+                        هزینه بسته‌بندی
+                    </label>
+                    <input type="number" name="packaging_cost" id="pkgField" class="field-input" value="0" min="0">
+                </div>
+
+                <!-- Live Preview -->
+                <div class="calc-preview" id="calcPreview" style="display:none;">
+                    <div class="preview-item">
+                        <span class="preview-label">قیمت پیشنهادی</span>
+                        <span class="preview-value" id="sugPrice">0 تومان</span>
+                    </div>
+                    <div class="preview-item highlight">
+                        <span class="preview-label">مجموع کل</span>
+                        <span class="preview-value" id="totalPrice">0 تومان</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-user"></i>
+                        نام مشتری (اختیاری)
+                    </label>
+                    <input type="text" name="customer_name" class="field-input" placeholder="نام و نام خانوادگی">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-phone"></i>
+                        شماره تماس (اختیاری)
+                    </label>
+                    <input type="text" name="customer_phone" class="field-input" placeholder="09123456789">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-sticky-note"></i>
+                        یادداشت (اختیاری)
+                    </label>
+                    <textarea name="notes" class="field-input" rows="3" placeholder="توضیحات..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-check-circle"></i>
+                    ثبت فروش
+                </button>
+            </form>
+        </div>
+
+        <!-- Method: Code -->
+        <div class="method-view" id="view-code">
+            <form method="POST" id="saleFormCode">
+                {% csrf_token %}
+                
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-hashtag"></i>
+                        کد محصول
+                    </label>
+                    <input type="text" name="project_code" id="codeField" class="field-input field-code" placeholder="مثال: 1001" required>
+                </div>
+
+                <div class="field-row">
+                    <div class="field-group">
+                        <label class="field-label">
+                            <i class="fas fa-sort-numeric-up"></i>
+                            تعداد
+                        </label>
+                        <input type="number" name="quantity" class="field-input" value="1" min="1" required>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            قیمت واحد
+                        </label>
+                        <input type="number" name="unit_price" class="field-input" placeholder="تومان" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-box-open"></i>
+                        هزینه بسته‌بندی
+                    </label>
+                    <input type="number" name="packaging_cost" class="field-input" value="0" min="0">
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-user"></i>
+                        نام مشتری (اختیاری)
+                    </label>
+                    <input type="text" name="customer_name" class="field-input" placeholder="نام و نام خانوادگی">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-phone"></i>
+                        شماره تماس (اختیاری)
+                    </label>
+                    <input type="text" name="customer_phone" class="field-input" placeholder="09123456789">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">
+                        <i class="fas fa-sticky-note"></i>
+                        یادداشت (اختیاری)
+                    </label>
+                    <textarea name="notes" class="field-input" rows="3" placeholder="توضیحات..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-check-circle"></i>
+                    ثبت فروش
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- Mobile Sticky -->
+<div class="mobile-bar" id="mobileBar" style="display:none;">
+    <div class="mobile-info">
+        <span>مجموع:</span>
+        <strong id="mobileTotal">0</strong>
+    </div>
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="mobile-btn">ثبت</button>
+</div>
+
+</div>
+
 <script>
-// Format number with Persian digits
-function formatNumber(num) {
-    return new Intl.NumberFormat('fa-IR').format(Math.round(num || 0));
+const fmt=n=>new Intl.NumberFormat('fa-IR').format(Math.round(n||0));
+
+function changeMethod(m){
+    document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.method-view').forEach(v=>v.classList.remove('active'));
+    document.querySelector(`[data-method="${m}"]`).classList.add('active');
+    document.getElementById(`view-${m}`).classList.add('active');
 }
 
-// Tab switching and interactions
-document.addEventListener('DOMContentLoaded', function() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            tabButtons.forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-        });
+function selectProduct(el){
+    changeMethod('select');
+    const id=el.dataset.id,g=parseFloat(el.dataset.grams)||0;
+    const field=document.getElementById('projectField');
+    field.value=id;
+    field.dispatchEvent(new Event('change'));
+    const price=document.getElementById('priceField');
+    price.value=Math.round(g*2000);
+    price.dispatchEvent(new Event('input'));
+    document.querySelector('.form-panel').scrollIntoView({behavior:'smooth'});
+}
+
+function updateCalc(){
+    const field=document.getElementById('projectField');
+    const preview=document.getElementById('calcPreview');
+    if(!field||!field.value){
+        if(preview)preview.style.display='none';
+        document.getElementById('mobileBar').style.display='none';
+        return;
+    }
+    const g=parseFloat(field.options[field.selectedIndex].dataset.grams)||0;
+    const sug=Math.round(g*2000);
+    const qty=parseInt(document.getElementById('qtyField').value)||1;
+    const price=parseFloat(document.getElementById('priceField').value)||0;
+    const pkg=parseFloat(document.getElementById('pkgField').value)||0;
+    const total=(qty*price)+pkg;
+    
+    document.getElementById('sugPrice').textContent=fmt(sug)+' تومان';
+    document.getElementById('totalPrice').textContent=fmt(total)+' تومان';
+    document.getElementById('mobileTotal').textContent=fmt(total)+' تومان';
+    
+    if(preview){
+        preview.style.display='grid';
+        preview.classList.add('show');
+    }
+    
+    if(total>0&&window.innerWidth<992){
+        document.getElementById('mobileBar').style.display='flex';
+    }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+    const pf=document.getElementById('projectField');
+    const qf=document.getElementById('qtyField');
+    const prf=document.getElementById('priceField');
+    const pkf=document.getElementById('pkgField');
+    
+    if(pf)pf.addEventListener('change',function(){
+        if(this.value){
+            const g=parseFloat(this.options[this.selectedIndex].dataset.grams)||0;
+            if(prf&&(!prf.value||parseFloat(prf.value)===0)){
+                prf.value=Math.round(g*2000);
+            }
+        }
+        updateCalc();
     });
-
-    // Elements
-    const projectSelect = document.getElementById('id_project');
-    const quantityInput = document.getElementById('id_quantity');
-    const unitPriceInput = document.getElementById('id_unit_price');
-    const packagingInput = document.getElementById('id_packaging_cost');
-    const stickySummary = document.getElementById('stickySummary');
-    const stickyTotalAmount = document.getElementById('stickyTotalAmount');
-    const preview = document.getElementById('product_preview');
-
-    // Initialize when page loads (if preselected)
-    if (projectSelect && projectSelect.value) {
-        handleProjectSelection(projectSelect);
+    
+    if(qf)qf.addEventListener('input',updateCalc);
+    if(prf)prf.addEventListener('input',updateCalc);
+    if(pkf)pkf.addEventListener('input',updateCalc);
+    
+    const search=document.getElementById('searchBox');
+    if(search){
+        search.addEventListener('input',function(){
+            const q=this.value.toLowerCase();
+            document.querySelectorAll('.product-item').forEach(p=>{
+                const n=p.dataset.name.toLowerCase();
+                const c=p.dataset.code.toLowerCase();
+                p.style.display=(n.includes(q)||c.includes(q))?'flex':'none';
+            });
+        });
     }
-
-    // Change listeners
-    if (projectSelect) projectSelect.addEventListener('change', function() { handleProjectSelection(this); });
-    if (quantityInput) quantityInput.addEventListener('input', updateTotalCalculations);
-    if (unitPriceInput) unitPriceInput.addEventListener('input', updateTotalCalculations);
-    if (packagingInput) packagingInput.addEventListener('input', updateTotalCalculations);
-
-    // URL param ?code=...
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    if (code) {
-        const codeBtn = document.querySelector('[data-tab="code"]');
-        if (codeBtn) codeBtn.click();
-        const codeInput = document.getElementById('id_project_code');
-        if (codeInput) { codeInput.value = code; codeInput.focus(); }
+    
+    const params=new URLSearchParams(window.location.search);
+    const code=params.get('code');
+    if(code){
+        changeMethod('code');
+        const cf=document.getElementById('codeField');
+        if(cf){cf.value=code;cf.focus();}
     }
-
-    // Animate product cards
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => entry.target.classList.add('visible'), index * 50);
-                observer.unobserve(entry.target);
+    
+    const obs=new IntersectionObserver(e=>{
+        e.forEach((el,i)=>{
+            if(el.isIntersecting){
+                setTimeout(()=>el.target.classList.add('visible'),i*40);
+                obs.unobserve(el.target);
             }
         });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.product-card').forEach(card => observer.observe(card));
-
-    // Sticky summary toggle on mobile
-    function updateSticky(total) {
-        if (!stickySummary) return;
-        if (total > 0) {
-            stickySummary.style.display = 'flex';
-            if (stickyTotalAmount) stickyTotalAmount.textContent = formatNumber(total) + ' تومان';
-        } else {
-            stickySummary.style.display = 'none';
-        }
-    }
-    // expose
-    window._updateStickyTotal = updateSticky;
-
-    // Selection handler
-    function handleProjectSelection(selectElement) {
-        if (selectElement && selectElement.value) {
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const grams = parseFloat(selectedOption.dataset.grams) || 0;
-            const suggested = Math.round(grams * 2); // price = gram_weight * 2
-
-            // Prefill unit price if empty or zero
-            if (unitPriceInput && (!unitPriceInput.value || parseFloat(unitPriceInput.value) === 0)) {
-                unitPriceInput.value = suggested;
-            }
-
-            updatePreview(suggested);
-            if (preview) preview.style.display = 'block';
-        } else {
-            if (unitPriceInput) unitPriceInput.value = '';
-            if (preview) preview.style.display = 'none';
-        }
-        updateTotalCalculations();
-    }
-
-    function updatePreview(suggestedPrice) {
-        const suggestedElement = document.getElementById('preview_suggested');
-        if (suggestedElement) suggestedElement.textContent = formatNumber(suggestedPrice) + ' تومان';
-        updateTotalCalculations();
-    }
-
-    function updateTotalCalculations() {
-        const projectSelect = document.getElementById('id_project');
-        const quantity = parseInt(quantityInput?.value || '1', 10) || 1;
-        const unitPrice = parseFloat(unitPriceInput?.value || '0') || 0;
-        const packagingCost = parseFloat(packagingInput?.value || '0') || 0;
-
-        const totalPriceElement = document.getElementById('preview_total_price');
-
-        if (!projectSelect || !projectSelect.value) {
-            if (totalPriceElement) totalPriceElement.textContent = '۰ تومان';
-            if (window._updateStickyTotal) window._updateStickyTotal(0);
-            return;
-        }
-
-        const subtotal = unitPrice * quantity;
-        const totalPrice = subtotal + packagingCost;
-
-        if (totalPriceElement) totalPriceElement.textContent = formatNumber(totalPrice) + ' تومان';
-
-        // Sticky total on mobile
-        if (window._updateStickyTotal) window._updateStickyTotal(totalPrice);
-    }
-
-    // Quick select from sidebar (sets price by grams×2)
-    window.selectProject = function(id, grams) {
-        const selectBtn = document.querySelector('[data-tab="select"]');
-        if (selectBtn) selectBtn.click();
-
-        const projectSelect = document.getElementById('id_project');
-        if (projectSelect) {
-            projectSelect.value = id;
-            projectSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        // Overwrite unit price to suggested price = grams * 2
-        if (unitPriceInput) {
-            unitPriceInput.value = Math.round((parseFloat(grams) || 0) * 2);
-        }
-
-        // Focus quantity
-        setTimeout(() => {
-            if (quantityInput) { quantityInput.focus(); quantityInput.select(); }
-        }, 200);
-    };
+    },{threshold:0.1});
+    document.querySelectorAll('.product-item').forEach(p=>obs.observe(p));
 });
 </script>
 
 <style>
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --dark: #1f2937;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,.05);
-    --shadow: 0 4px 6px -1px rgba(0,0,0,.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0,0,0,.1);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --transition: all .3s cubic-bezier(.4,0,.2,1);
+:root{
+    --primary:#6366f1;
+    --primary-dark:#4f46e5;
+    --success:#10b981;
+    --success-dark:#059669;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --info:#06b6d4;
+    --purple:#8b5cf6;
+    --dark:#1f2937;
+    --gray:#6b7280;
+    --light:#f3f4f6;
+    --border:#e5e7eb;
+    --white:#fff;
+    --shadow:0 4px 6px -1px rgba(0,0,0,.1);
+    --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1);
+    --radius:12px;
+    --radius-lg:16px;
 }
 
 /* Header */
-.sales-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-lg);
-    display: flex; align-items: center; gap: 1.25rem; position: relative; overflow: hidden;
+.page-header{
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    border-radius:var(--radius-lg);
+    padding:2rem;
+    margin-bottom:2rem;
+    position:relative;
+    overflow:hidden;
+    box-shadow:var(--shadow-lg);
 }
-.sales-header::before {
-    content: ''; position: absolute; inset-inline-end: -60px; inset-block-start: -60px;
-    width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.12) 0%, transparent 70%);
+.header-bg{
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 60%);
 }
-.header-icon-wrapper { flex-shrink: 0; }
-.header-icon { width: 70px; height: 70px; background: rgba(255,255,255,.2); backdrop-filter: blur(10px); border-radius: 16px;
-    display: grid; place-items: center; color: #fff; font-size: 2rem; border: 2px solid rgba(255,255,255,.3); }
-.header-title { font-size: 1.75rem; font-weight: 900; color: #fff; margin: 0 0 .25rem; }
-.header-subtitle { color: rgba(255,255,255,.95); margin: 0; }
-.header-actions { margin-inline-start: auto; }
-.btn-history {
-    background: #fff; color: var(--primary); padding: .8rem 1.25rem; border-radius: var(--radius); font-weight: 800; text-decoration: none;
-    display: inline-flex; gap: .5rem; align-items: center; box-shadow: var(--shadow);
-    transition: var(--transition);
+.header-wrapper{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:1.5rem;
+    flex-wrap:wrap;
 }
-.btn-history:hover { transform: translateY(-2px); background: var(--light-gray); }
-
-/* Wrapper */
-.sales-wrapper { max-width: 1400px; margin: 0 auto; }
-
-/* Card */
-.sales-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
-.sales-card-header { background: linear-gradient(135deg, var(--light-gray), #fff); border-bottom: 1px solid var(--border); padding: 1.25rem;
-    display: flex; gap: .6rem; align-items: center; }
-.sales-card-header i { color: var(--primary); font-size: 1.4rem; }
-.sales-card-header h2 { margin: 0; font-size: 1.2rem; font-weight: 900; color: var(--dark); }
-.sales-card-body { padding: 1.5rem; }
-
-/* Tabs */
-.method-tabs { display: flex; gap: .75rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border); }
-.tab-btn {
-    background: transparent; border: none; padding: .85rem 1.1rem; font-weight: 800; color: var(--gray);
-    display: inline-flex; gap: .5rem; align-items: center; border-bottom: 3px solid transparent; margin-bottom: -2px;
-    cursor: pointer; transition: var(--transition);
+.header-icon-box{
+    width:70px;
+    height:70px;
+    background:rgba(255,255,255,.2);
+    backdrop-filter:blur(10px);
+    border-radius:var(--radius);
+    display:grid;
+    place-items:center;
+    font-size:2rem;
+    color:#fff;
+    border:2px solid rgba(255,255,255,.3);
 }
-.tab-btn:hover { color: var(--primary); background: rgba(99,102,241,.06); }
-.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn .25s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Form */
-.form-section { margin-bottom: 1.5rem; }
-.section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 2px solid var(--border); }
-.section-icon { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; color: #fff;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark)); font-size: 1.2rem; }
-.section-header h3 { margin: 0; font-size: 1.05rem; font-weight: 900; color: var(--dark); }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-.form-group { display: flex; flex-direction: column; }
-.form-group-full { grid-column: 1 / -1; }
-.form-label { font-weight: 800; color: var(--dark); margin-bottom: .4rem; display: inline-flex; align-items: center; gap: .5rem; }
-.form-label i { color: var(--primary); font-size: .9rem; }
-.form-control, .form-select {
-    border: 2px solid var(--border); border-radius: var(--radius); padding: .7rem .9rem; transition: var(--transition); font-weight: 600;
+.header-text{flex:1;}
+.header-title{
+    font-size:2rem;
+    font-weight:900;
+    color:#fff;
+    margin:0 0 .5rem;
+    text-shadow:0 2px 4px rgba(0,0,0,.1);
 }
-.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.1); outline: none; }
-.field-error { color: var(--danger); font-size: .875rem; margin-top: .4rem; display: flex; gap: .35rem; align-items: center; }
-.field-error::before { content: '⚠'; }
-.field-hint { color: var(--gray); font-size: .875rem; margin-top: .35rem; display: flex; gap: .35rem; align-items: center; }
-
-/* Preview */
-.preview-section {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    border: 2px solid var(--info); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;
+.header-desc{color:rgba(255,255,255,.95);margin:0;}
+.header-action-btn{
+    background:rgba(255,255,255,.95);
+    color:var(--primary);
+    padding:.9rem 1.5rem;
+    border-radius:var(--radius);
+    font-weight:700;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:.6rem;
+    box-shadow:var(--shadow);
+    transition:all .3s;
 }
-.preview-header { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; }
-.preview-header i { color: var(--info); font-size: 1.2rem; }
-.preview-header h3 { margin: 0; font-size: 1.05rem; font-weight: 900; color: #0c4a6e; }
-.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .75rem; }
-.preview-item { background: #fff; border-radius: var(--radius); padding: .9rem; display: flex; gap: .75rem; align-items: center; }
-.preview-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 1.1rem; }
-.preview-icon-info { background: linear-gradient(135deg, var(--info), #0891b2); }
-.preview-icon-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
-.preview-label { color: var(--gray); font-weight: 800; font-size: .85rem; }
-.preview-value { color: var(--dark); font-weight: 900; font-size: 1.1rem; }
+.header-action-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
 
-/* Actions */
-.form-actions { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 2px solid var(--border); display: flex; justify-content: flex-end; }
-.btn-submit-sale {
-    background: linear-gradient(135deg, var(--success), #059669); color: #fff; padding: .9rem 1.6rem; border-radius: var(--radius);
-    font-weight: 900; font-size: 1rem; display: inline-flex; gap: .6rem; align-items: center; border: none; cursor: pointer;
-    transition: var(--transition); box-shadow: 0 4px 12px rgba(16,185,129,.3);
-}
-.btn-submit-sale:hover { transform: translateY(-2px); }
-
-/* Sidebar */
-.products-sidebar {
-    background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-lg);
-    overflow: hidden; position: sticky; top: 100px; max-height: calc(100vh - 120px); display: flex; flex-direction: column;
-}
-.sidebar-header { background: linear-gradient(135deg, var(--success), #059669); color: #fff; padding: 1.1rem 1.25rem; display: flex; gap: .6rem; align-items: center; }
-.sidebar-header i { font-size: 1.25rem; }
-.sidebar-header h3 { margin: 0; font-size: 1.05rem; font-weight: 900; }
-.sidebar-body { flex: 1; overflow-y: auto; padding: 1.1rem; }
-.products-list { display: flex; flex-direction: column; gap: .85rem; }
-
-/* Product card */
-.product-card {
-    background: linear-gradient(135deg, var(--light-gray), #fff); border: 2px solid var(--border);
-    border-radius: var(--radius); padding: .9rem; cursor: pointer; transition: var(--transition); display: flex; gap: .8rem;
-    opacity: 0; transform: translateY(8px);
-}
-.product-card.visible { opacity: 1; transform: translateY(0); }
-.product-card:hover { border-color: var(--success); transform: translateY(-3px); box-shadow: var(--shadow-lg); background: linear-gradient(135deg, #ecfdf5, #fff); }
-.product-image-wrapper { width: 76px; height: 76px; border-radius: var(--radius); overflow: hidden; flex-shrink: 0; }
-.product-image { width: 100%; height: 100%; object-fit: cover; }
-.product-no-image { width: 100%; height: 100%; background: var(--light-gray); display: grid; place-items: center; color: var(--gray); font-size: 1.6rem; }
-.product-details { flex: 1; display: flex; flex-direction: column; }
-.product-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .35rem; }
-.product-code { background: var(--success); color: #fff; padding: .2rem .5rem; border-radius: 6px; font-weight: 900; font-size: .78rem; }
-.product-date { font-size: .78rem; color: var(--gray); }
-.product-name { font-size: .95rem; font-weight: 900; color: var(--dark); margin: 0 0 .25rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.product-meta { font-size: .85rem; color: var(--gray); display: flex; gap: .4rem .6rem; align-items: center; flex-wrap: wrap; }
-.product-meta .sep { opacity: .6; }
-.product-footer { display: flex; justify-content: space-between; align-items: center; padding-top: .5rem; border-top: 1px solid var(--border); }
-.price-label { font-size: .78rem; color: var(--gray); }
-.price-value { color: var(--success); font-weight: 900; }
-
-/* Sidebar footer */
-.sidebar-footer { text-align: center; padding: 1rem; border-top: 2px solid var(--border); }
-.more-text { color: var(--gray); margin-bottom: .6rem; }
-.btn-view-all {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; padding: .7rem 1.2rem; border-radius: var(--radius);
-    font-weight: 800; text-decoration: none; display: inline-flex; gap: .5rem; align-items: center; transition: var(--transition);
-}
-.btn-view-all:hover { transform: translateY(-2px); }
-
-/* Empty */
-.empty-state { text-align: center; padding: 2.25rem 1rem; }
-.empty-icon { font-size: 3rem; color: var(--border); margin-bottom: .6rem; }
-.empty-text { color: var(--gray); }
-.btn-start {
-    background: linear-gradient(135deg, var(--success), #059669); color: #fff; padding: .65rem 1.2rem; border-radius: var(--radius);
-    font-weight: 800; text-decoration: none; display: inline-flex; gap: .5rem; align-items: center;
+/* Grid */
+.sales-grid{
+    display:grid;
+    grid-template-columns:400px 1fr;
+    gap:2rem;
+    align-items:start;
 }
 
-/* Sticky summary (mobile) */
-.sticky-summary {
-    position: fixed; inset-inline: .75rem; inset-block-end: calc(.75rem + env(safe-area-inset-bottom)); background: #fff; border: 1px solid var(--border);
-    border-radius: 14px; box-shadow: var(--shadow-lg); padding: .6rem .75rem; display: none; align-items: center; justify-content: space-between; gap: .75rem; z-index: 1020;
+/* Panel */
+.panel{
+    background:#fff;
+    border-radius:var(--radius-lg);
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-lg);
+    overflow:hidden;
 }
-.sticky-summary-item { display: inline-flex; gap: .5rem; align-items: center; font-weight: 900; color: var(--dark); }
-.sticky-summary-item i { color: var(--primary); }
-.sticky-submit {
-    background: linear-gradient(135deg, var(--success), #059669); color: #fff; padding: .55rem .9rem; border-radius: 10px; text-decoration: none; font-weight: 900; display: inline-flex; gap: .4rem; align-items: center;
+.panel-head{
+    background:linear-gradient(to bottom,var(--light),#fff);
+    border-bottom:1px solid var(--border);
+    padding:1.25rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.panel-title{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+}
+.panel-title i{color:var(--primary);font-size:1.3rem;}
+.panel-title h2{margin:0;font-size:1.1rem;font-weight:800;color:var(--dark);}
+.panel-badge{
+    background:var(--primary);
+    color:#fff;
+    padding:.3rem .8rem;
+    border-radius:20px;
+    font-weight:800;
+    font-size:.85rem;
+}
+.panel-search{
+    padding:1rem 1.25rem;
+    border-bottom:1px solid var(--border);
+    position:relative;
+}
+.panel-search i{
+    position:absolute;
+    right:2rem;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--gray);
+}
+.search-box{
+    width:100%;
+    padding:.8rem 1rem .8rem 2.5rem;
+    border:2px solid var(--border);
+    border-radius:var(--radius);
+    font-weight:600;
+    transition:all .3s;
+}
+.search-box:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(99,102,241,.1);
 }
 
-/* Inputs: remove number spinners for cleaner UI */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
+.panel-body{padding:1.25rem;max-height:calc(100vh - 280px);overflow-y:auto;}
+.products-list{display:flex;flex-direction:column;gap:1rem;}
 
-/* Small aesthetic tweaks */
-a, button { outline: none; }
-a:focus-visible, button:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,.2); border-radius: 10px; }
+.product-item{
+    background:linear-gradient(135deg,#f8f9ff,#fff);
+    border:2px solid var(--border);
+    border-radius:var(--radius);
+    padding:1rem;
+    display:flex;
+    gap:1rem;
+    cursor:pointer;
+    transition:all .3s;
+    opacity:0;
+    transform:translateY(10px);
+}
+.product-item.visible{opacity:1;transform:translateY(0);}
+.product-item:hover{
+    border-color:var(--primary);
+    background:linear-gradient(135deg,#eef2ff,#fff);
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-lg);
+}
 
-/* Custom scrollbar for sidebar */
-.sidebar-body::-webkit-scrollbar { width: 8px; }
-.sidebar-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
-.sidebar-body { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+.product-thumb{
+    width:70px;
+    height:70px;
+    border-radius:var(--radius);
+    overflow:hidden;
+    flex-shrink:0;
+    position:relative;
+}
+.product-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.product-item:hover .product-thumb img{transform:scale(1.1);}
+.product-placeholder{
+    width:100%;
+    height:100%;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    display:grid;
+    place-items:center;
+    color:#fff;
+    font-size:1.8rem;
+}
+.product-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(99,102,241,.9);
+    display:grid;
+    place-items:center;
+    color:#fff;
+    font-size:2rem;
+    opacity:0;
+    transition:opacity .3s;
+}
+.product-item:hover .product-overlay{opacity:1;}
+
+.product-data{flex:1;display:flex;flex-direction:column;gap:.4rem;}
+.product-badge{
+    background:var(--primary);
+    color:#fff;
+    padding:.2rem .6rem;
+    border-radius:5px;
+    font-weight:800;
+    font-size:.75rem;
+    align-self:flex-start;
+}
+.product-title{
+    font-size:.95rem;
+    font-weight:800;
+    color:var(--dark);
+    margin:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.product-specs{
+    display:flex;
+    gap:.6rem;
+    font-size:.8rem;
+    color:var(--gray);
+}
+.product-specs i{margin-left:.2rem;}
+.product-cost{
+    font-size:1rem;
+    font-weight:900;
+    color:var(--primary);
+    margin-top:auto;
+}
+
+.no-data{
+    text-align:center;
+    padding:3rem 1rem;
+}
+.no-data i{font-size:3.5rem;color:var(--border);margin-bottom:1rem;}
+.no-data p{color:var(--gray);margin-bottom:1.5rem;}
+.btn-add{
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;
+    padding:.8rem 1.5rem;
+    border-radius:var(--radius);
+    font-weight:700;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.products-panel{position:sticky;top:100px;}
+
+/* Form Panel */
+.method-tabs{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+    padding:1.5rem;
+    background:var(--light);
+}
+.method-tab{
+    background:#fff;
+    border:2px solid var(--border);
+    border-radius:var(--radius);
+    padding:1rem;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+    transition:all .3s;
+    text-align:right;
+}
+.method-tab i{
+    font-size:1.5rem;
+    color:var(--gray);
+    transition:color .3s;
+}
+.method-tab strong{
+    display:block;
+    font-size:.95rem;
+    color:var(--dark);
+    margin-bottom:.2rem;
+}
+.method-tab small{
+    display:block;
+    font-size:.8rem;
+    color:var(--gray);
+}
+.method-tab:hover{
+    border-color:var(--primary);
+    transform:translateY(-2px);
+}
+.method-tab.active{
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    border-color:var(--primary);
+}
+.method-tab.active i,
+.method-tab.active strong,
+.method-tab.active small{color:#fff;}
+
+.method-view{display:none;padding:2rem;animation:fadeIn .3s;}
+.method-view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.field-group{margin-bottom:1.5rem;}
+.field-label{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    font-weight:800;
+    color:var(--dark);
+    margin-bottom:.6rem;
+    font-size:.9rem;
+}
+.field-label i{color:var(--primary);}
+.field-input{
+    width:100%;
+    padding:.9rem 1rem;
+    border:2px solid var(--border);
+    border-radius:var(--radius);
+    font-size:.95rem;
+    font-weight:600;
+    transition:all .3s;
+}
+.field-input:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(99,102,241,.1);
+}
+.field-code{
+    font-size:1.5rem;
+    text-align:center;
+    font-weight:900;
+    letter-spacing:.05em;
+}
+textarea.field-input{resize:vertical;font-family:inherit;}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+
+.calc-preview{
+    background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+    border:2px solid var(--info);
+    border-radius:var(--radius);
+    padding:1.25rem;
+    margin-bottom:1.5rem;
+    display:none;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+    opacity:0;
+    transition:opacity .3s;
+}
+.calc-preview.show{opacity:1;}
+.preview-item{display:flex;flex-direction:column;gap:.3rem;}
+.preview-label{font-size:.85rem;color:#075985;font-weight:700;}
+.preview-value{font-size:1.2rem;font-weight:900;color:#0c4a6e;}
+.preview-item.highlight{text-align:left;}
+.preview-item.highlight .preview-value{font-size:1.5rem;color:var(--purple);}
+
+.divider{
+    height:1px;
+    background:var(--border);
+    margin:1.5rem 0;
+}
+
+.btn-submit{
+    width:100%;
+    background:linear-gradient(135deg,var(--success),var(--success-dark));
+    color:#fff;
+    padding:1.2rem 2rem;
+    border:none;
+    border-radius:var(--radius);
+    font-size:1.1rem;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.75rem;
+    box-shadow:0 4px 12px rgba(16,185,129,.3);
+    transition:all .3s;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,.4);}
+
+/* Mobile */
+.mobile-bar{
+    position:fixed;
+    bottom:1rem;
+    left:1rem;
+    right:1rem;
+    background:#fff;
+    border:2px solid var(--primary);
+    border-radius:var(--radius);
+    padding:1rem 1.25rem;
+    box-shadow:var(--shadow-lg);
+    z-index:1000;
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+}
+.mobile-info{display:flex;flex-direction:column;gap:.2rem;}
+.mobile-info span{font-size:.85rem;color:var(--gray);}
+.mobile-info strong{font-size:1.4rem;font-weight:900;color:var(--primary);}
+.mobile-btn{
+    background:linear-gradient(135deg,var(--success),var(--success-dark));
+    color:#fff;
+    padding:.8rem 1.5rem;
+    border:none;
+    border-radius:var(--radius);
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* Scrollbar */
+.panel-body::-webkit-scrollbar{width:8px;}
+.panel-body::-webkit-scrollbar-track{background:var(--light);border-radius:10px;}
+.panel-body::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
 
 /* Responsive */
-@media (max-width: 991px) {
-    .sales-header { flex-wrap: wrap; justify-content: center; text-align: center; padding: 1.5rem; }
-    .header-actions { width: 100%; display: flex; justify-content: center; margin-top: .5rem; }
-    .header-title { font-size: 1.5rem; }
-    .header-subtitle { font-size: .95rem; }
-
-    .products-sidebar {
-        position: static; max-height: none; margin-top: 0;
-    }
-    .sidebar-body { max-height: 50vh; }
-
-    .form-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    .preview-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+@media(max-width:1200px){
+    .sales-grid{grid-template-columns:1fr;gap:1.5rem;}
+    .products-panel{position:static;order:-1;}
+    .panel-body{max-height:500px;}
 }
-
-@media (max-width: 768px) {
-    .header-icon { width: 60px; height: 60px; font-size: 1.6rem; }
-    .sales-card-body { padding: 1.1rem; }
-    .method-tabs { gap: .5rem; }
-    .tab-btn { padding: .7rem .9rem; font-size: .95rem; }
-    .section-icon { width: 42px; height: 42px; font-size: 1.05rem; }
-    .form-grid { grid-template-columns: 1fr 1fr; }
-    .product-image-wrapper { width: 68px; height: 68px; }
-}
-
-@media (max-width: 576px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .preview-grid { grid-template-columns: 1fr; }
-    .product-card { padding: .8rem; }
-    .product-name { white-space: normal; }
-    .sticky-summary { inset-inline: .5rem; }
+@media(max-width:768px){
+    .header-wrapper{flex-direction:column;text-align:center;}
+    .header-title{font-size:1.5rem;}
+    .header-icon-box{width:60px;height:60px;font-size:1.5rem;}
+    .method-tabs{grid-template-columns:1fr;}
+    .field-row{grid-template-columns:1fr;}
+    .calc-preview{grid-template-columns:1fr;}
 }
 </style>
 {% endblock %}

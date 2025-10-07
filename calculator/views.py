@@ -559,8 +559,11 @@ def delete_sale(request, pk):
 
 
 def reports(request):
+    """Generate sales and profit reports"""
     period = request.GET.get('period', 'month')
     item_filter = request.GET.get('item_filter', '')
+    
+    # Date filtering
     if period == 'week':
         date_filter = timezone.now() - timedelta(days=7)
         period_name = "هفته گذشته"
@@ -573,43 +576,112 @@ def reports(request):
     else:
         date_filter = None
         period_name = "همه زمان‌ها"
-
-    sales_qs = Sale.objects.select_related('project')
+    
+    # Base queryset
+    sales_qs = Sale.objects.all()
     if date_filter:
         sales_qs = sales_qs.filter(sale_date__gte=date_filter)
     if item_filter:
-        sales_qs = sales_qs.filter(project__model_name__icontains=item_filter)
-
-    sales_data = sales_qs.all()
-    total_sales = sales_data.count()
+        sales_qs = sales_qs.filter(project_code__icontains=item_filter)
+    
+    sales_data = list(sales_qs.all())
+    
+    # Attach project objects AND Jalali dates
+    project_codes = [sale.project_code for sale in sales_data]
+    projects_dict = {p.code: p for p in Project.objects.filter(code__in=project_codes)}
+    
+    # Convert dates to Jalali
+    try:
+        import jdatetime
+        use_jalali = True
+    except ImportError:
+        use_jalali = False
+    
+    for sale in sales_data:
+        sale.project_obj = projects_dict.get(sale.project_code)
+        
+        if use_jalali:
+            try:
+                j_dt = jdatetime.datetime.fromgregorian(datetime=sale.sale_date)
+                sale.display_date = f"{j_dt.year}/{j_dt.month:02d}/{j_dt.day:02d}"
+                sale.display_time = f"{j_dt.hour:02d}:{j_dt.minute:02d}"
+            except Exception:
+                sale.display_date = sale.sale_date.strftime('%Y/%m/%d')
+                sale.display_time = sale.sale_date.strftime('%H:%M')
+        else:
+            sale.display_date = sale.sale_date.strftime('%Y/%m/%d')
+            sale.display_time = sale.sale_date.strftime('%H:%M')
+    
+    # Statistics
+    total_sales = len(sales_data)
     total_revenue = sum(sale.total_price for sale in sales_data)
-    total_production_cost = sum(getattr(sale, 'unit_cost', 0) * sale.quantity for sale in sales_data)
     total_packaging_cost = sum(sale.packaging_cost for sale in sales_data)
-    total_cost = total_production_cost + total_packaging_cost
-    total_profit = sum(getattr(sale, 'total_profit', 0) for sale in sales_data)
-    top_products = (sales_qs.values('project__model_name')
-                    .annotate(
-                        count=Count('id'),
-                        revenue=Sum('total_price'),
-                        total_quantity=Sum('quantity')
-                    )
-                    .order_by('-count')[:10])
-    daily_stats = (sales_qs.annotate(date=TruncDate('sale_date'))
-                   .values('date')
-                   .annotate(
-                       count=Count('id'),
-                       revenue=Sum('total_price'),
-                       total_quantity=Sum('quantity')
-                   )
-                   .order_by('-date')[:30])
+    
+    # Top products - UPDATED to include project objects
+    top_products_raw = (sales_qs.values('project_code')
+                       .annotate(
+                           count=Count('id'), 
+                           revenue=Sum('total_price'),
+                           total_quantity=Sum('quantity')
+                       )
+                       .order_by('-count')[:10])
+    
+    # Fetch all top product codes and get their project objects
+    top_product_codes = [p['project_code'] for p in top_products_raw]
+    top_projects_dict = {p.code: p for p in Project.objects.filter(code__in=top_product_codes)}
+    
+    # Build top_products with full project data
+    top_products = []
+    for product in top_products_raw:
+        project_obj = top_projects_dict.get(product['project_code'])
+        top_products.append({
+            'project_code': product['project_code'],
+            'name': project_obj.model_name if project_obj else f"کد {product['project_code']}",
+            'count': product['count'],
+            'revenue': product['revenue'],
+            'total_quantity': product.get('total_quantity', 0),
+            'project': project_obj,  # Full project object with image
+        })
+    
+    # Daily stats
+    daily_stats_raw = (sales_qs.extra({'date': "date(sale_date)"})
+                      .values('date')
+                      .annotate(
+                          count=Count('id'), 
+                          revenue=Sum('total_price'),
+                          total_quantity=Sum('quantity')
+                      )
+                      .order_by('-date')[:30])
+    
+    # Convert daily stats
+    daily_stats = []
+    for day in daily_stats_raw:
+        if use_jalali:
+            try:
+                from datetime import datetime as dt
+                if isinstance(day['date'], str):
+                    date_obj = dt.strptime(day['date'], '%Y-%m-%d').date()
+                else:
+                    date_obj = day['date']
+                
+                j_dt = jdatetime.date.fromgregorian(date=date_obj)
+                jalali_display = f"{j_dt.month:02d}/{j_dt.day:02d}"
+            except Exception:
+                jalali_display = str(day['date'])[5:]
+        else:
+            jalali_display = str(day['date'])[5:]
+        
+        daily_stats.append({
+            'date_display': jalali_display,
+            'count': day['count'],
+            'revenue': day['revenue'],
+        })
+    
     context = {
         'sales_data': sales_data,
         'total_sales': total_sales,
         'total_revenue': total_revenue,
-        'total_cost': total_cost,
-        'total_production_cost': total_production_cost,
         'total_packaging_cost': total_packaging_cost,
-        'total_profit': total_profit,
         'top_products': top_products,
         'daily_stats': daily_stats,
         'period': period,

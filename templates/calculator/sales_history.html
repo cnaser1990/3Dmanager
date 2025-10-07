@@ -1,4 +1,5 @@
 {% extends "calculator/base.html" %}
+{% load jalali %}
 
 {% block title %}تاریخچه فروش{% endblock %}
 
@@ -240,8 +241,8 @@
                                 </td>
                                 <td>
                                     <div class="date-cell">
-                                        <strong>{{ sale.sale_date|date:"Y/m/d" }}</strong>
-                                        <span>{{ sale.sale_date|date:"H:i" }}</span>
+                                        <strong>{{ sale.sale_date|jalali:"%Y/%m/%d"|fa_digits }}</strong>
+                                        <span>{{ sale.sale_date|jalali:"%H:%M"|fa_digits }}</span>
                                     </div>
                                 </td>
                                 <td>

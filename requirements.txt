@@ -1,6 +1,7 @@
 Django==4.2.7
 Pillow==10.1.0
 python-jose[cryptography]
-django-crispy-forms==2.0
-crispy-bootstrap5==0.7\
+django-crispy-forms
+crispy-bootstrap5==0.7
 jdatetime==5.2.0
+pyinstaller

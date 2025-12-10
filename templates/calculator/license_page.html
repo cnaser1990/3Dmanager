@@ -1,747 +1,274 @@
-<!-- templates/calculator/licence_page.html -->
-<!doctype html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="utf-8">
-    {% if auto_redirect %}
-        <meta http-equiv="refresh" content="15; url={% url 'calculator:index' %}">
-    {% endif %}
-    <title>مدیریت مجوز - Calculator</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% load static %}
-    <link href="{% static 'css/bootstrap.rtl.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/fontawesome.min.css' %}" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary-50: #eff6ff;
-            --primary-100: #dbeafe;
-            --primary-200: #bfdbfe;
-            --primary-300: #93c5fd;
-            --primary-400: #60a5fa;
-            --primary-500: #3b82f6;
-            --primary-600: #2563eb;
-            --primary-700: #1d4ed8;
-            --primary-800: #1e40af;
-            --primary-900: #1e3a8a;
-            
-            --success-50: #f0fdf4;
-            --success-100: #dcfce7;
-            --success-200: #bbf7d0;
-            --success-300: #86efac;
-            --success-400: #4ade80;
-            --success-500: #22c55e;
-            --success-600: #16a34a;
-            --success-700: #15803d;
-            --success-800: #166534;
-            --success-900: #14532d;
-            
-            --danger-50: #fef2f2;
-            --danger-100: #fee2e2;
-            --danger-200: #fecaca;
-            --danger-300: #fca5a5;
-            --danger-400: #f87171;
-            --danger-500: #ef4444;
-            --danger-600: #dc2626;
-            --danger-700: #b91c1c;
-            --danger-800: #991b1b;
-            --danger-900: #7f1d1d;
-            
-            --secondary-50: #f8fafc;
-            --secondary-100: #f1f5f9;
-            --secondary-200: #e2e8f0;
-            --secondary-300: #cbd5e1;
-            --secondary-400: #94a3b8;
-            --secondary-500: #64748b;
-            --secondary-600: #475569;
-            --secondary-700: #334155;
-            --secondary-800: #1e293b;
-            --secondary-900: #0f172a;
-            
-            --border-radius-sm: 6px;
-            --border-radius-md: 8px;
-            --border-radius-lg: 12px;
-            --border-radius-xl: 16px;
-            --border-radius-2xl: 20px;
-            --spacing-xs: 0.5rem;
-            --spacing-sm: 0.75rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
-            --spacing-2xl: 3rem;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+<!-- templates/calculator/license_page.html -->
+{% extends "calculator/base.html" %}
+{% load static %}
 
-        /* Font Awesome Local CSS */
-        @font-face {
-            font-family: "Font Awesome 6 Free";
-            src: url("{% static 'fonts/fontawesome/fa-solid-900.woff2' %}") format("woff2");
-            font-weight: 900;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: "Font Awesome 6 Free";
-            src: url("{% static 'fonts/fontawesome/fa-regular-400.woff2' %}") format("woff2");
-            font-weight: 400;
-            font-style: normal;
-            font-display: swap;
-        }
-        
-        @font-face {
-            font-family: "Font Awesome 6 Brands";
-            src: url("{% static 'fonts/fontawesome/fa-brands-400.woff2' %}") format("woff2");
-            font-weight: 400;
-            font-style: normal;
-            font-display: swap;
-        }
+{% block title %}مدیریت لایسنس - پرینت‌کست{% endblock %}
 
-        .fa, .fas {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-        }
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
 
-        .far {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 400;
-        }
-
-        .fab {
-            font-family: "Font Awesome 6 Brands";
-            font-weight: 400;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: var(--spacing-lg);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--secondary-800);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        /* Header */
-        .page-header {
-            text-align: center;
-            margin-bottom: var(--spacing-2xl);
-            padding: var(--spacing-xl) 0;
-        }
-        
-        .page-title {
-            color: white;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 0 0 var(--spacing-md) 0;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .page-subtitle {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.125rem;
-            margin: 0;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Modern Cards */
-        .modern-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius-2xl);
-            padding: var(--spacing-xl);
-            margin-bottom: var(--spacing-xl);
-            box-shadow: var(--shadow-xl);
-            transition: all 0.3s ease;
-        }
-
-        .modern-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-        }
-        
-        /* Status Cards */
-        .status-card.status-valid {
-            border-top: 4px solid var(--success-500);
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(255, 255, 255, 0.95));
-        }
-        
-        .status-card.status-invalid {
-            border-top: 4px solid var(--danger-500);
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(255, 255, 255, 0.95));
-        }
-        
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-        }
-        
-        .status-item {
-            text-align: center;
-            padding: var(--spacing-lg);
-            background: var(--secondary-50);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--secondary-200);
-            transition: all 0.3s ease;
-        }
-
-        .status-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .status-label {
-            font-size: 0.875rem;
-            color: var(--secondary-600);
-            margin-bottom: var(--spacing-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .status-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--secondary-800);
-        }
-        
-        .status-valid .status-value {
-            color: var(--success-600);
-        }
-        
-        .status-invalid .status-value {
-            color: var(--danger-600);
-        }
-        
-        /* Card Headers */
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-            padding-bottom: var(--spacing-md);
-            border-bottom: 2px solid var(--primary-100);
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--primary-100);
-            border-radius: var(--border-radius-lg);
-            color: var(--primary-600);
-            font-size: 1.25rem;
-        }
-        
-        .card-title {
-            margin: 0;
-            color: var(--secondary-800);
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-        
-        /* File Upload */
-        .file-upload-area {
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .file-upload {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--spacing-md);
-            padding: var(--spacing-2xl);
-            border: 3px dashed var(--primary-300);
-            border-radius: var(--border-radius-xl);
-            background: var(--primary-50);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            text-align: center;
-        }
-        
-        .file-upload:hover,
-        .file-upload.dragover {
-            border-color: var(--primary-500);
-            background: var(--primary-100);
-            transform: translateY(-2px);
-        }
-        
-        .file-upload input[type=file] {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        
-        .upload-icon {
-            font-size: 3rem;
-            color: var(--primary-500);
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .upload-text {
-            color: var(--secondary-700);
-            font-size: 1.125rem;
-            font-weight: 500;
-        }
-
-        .upload-hint {
-            color: var(--secondary-500);
-            font-size: 0.875rem;
-            margin-top: var(--spacing-xs);
-        }
-        
-        /* Buttons */
-        .btn-modern {
-            background: var(--primary-500);
-            color: white;
-            border: none;
-            padding: var(--spacing-md) var(--spacing-xl);
-            border-radius: var(--border-radius-lg);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-modern:hover {
-            background: var(--primary-600);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn-modern:active {
-            transform: translateY(0);
-        }
-        
-        .btn-success {
-            background: var(--success-500);
-            padding: var(--spacing-lg) var(--spacing-2xl);
-            font-size: 1.125rem;
-            font-weight: 700;
-        }
-        
-        .btn-success:hover {
-            background: var(--success-600);
-        }
-        
-        /* Redirect Notice - FIXED CENTERING */
-        .redirect-notice {
-            background: linear-gradient(135deg, var(--success-50), var(--success-100));
-            border: 2px solid var(--success-200);
-            padding: var(--spacing-xl);
-            border-radius: var(--border-radius-xl);
-            margin-top: var(--spacing-lg);
-            text-align: center;
-            animation: pulseGreen 2s ease-in-out infinite;
-        }
-
-        @keyframes pulseGreen {
-            0%, 100% { 
-                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-            }
-            50% { 
-                box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.1);
-            }
-        }
-        
-        .redirect-icon {
-            font-size: 2rem;
-            color: var(--success-600);
-            margin-bottom: 1rem;
-            display: block;
-        }
-        
-        .redirect-content {
-            width: 100%;
-            text-align: center;
-        }
-        
-        .redirect-content p {
-            margin: 0 0 var(--spacing-lg) 0;
-            color: var(--success-800);
-            font-weight: 600;
-            font-size: 1.1rem;
-            text-align: center;
-        }
-        
-        /* Fingerprint Display */
-        .fingerprint-box {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            background: var(--secondary-100);
-            border: 2px solid var(--secondary-200);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-lg);
-            font-family: 'Courier New', 'Monaco', monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            margin: var(--spacing-md) 0;
-            color: var(--secondary-700);
-        }
-        
-        .copy-btn {
-            background: var(--secondary-500);
-            color: white;
-            border: none;
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--border-radius-md);
-            font-size: 0.875rem;
-            cursor: pointer;
-            min-width: 80px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        
-        .copy-btn:hover {
-            background: var(--secondary-600);
-            transform: translateY(-1px);
-        }
-        
-        .copy-btn.copied {
-            background: var(--success-500);
-        }
-        
-        .file-path {
-            background: var(--secondary-100);
-            border: 1px solid var(--secondary-200);
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-md);
-            font-family: 'Courier New', 'Monaco', monospace;
-            font-size: 0.875rem;
-            color: var(--secondary-700);
-            margin-top: var(--spacing-md);
-            word-break: break-all;
-        }
-        
-        .countdown {
-            display: inline-block;
-            background: var(--success-500);
-            color: white;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            font-weight: 700;
-            margin: 0 var(--spacing-xs);
-            animation: countdownPulse 1s ease-in-out infinite;
-            font-size: 1.1rem;
-        }
-
-        @keyframes countdownPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .selected-file {
-            background: var(--success-50);
-            border-color: var(--success-300);
-            color: var(--success-700);
-        }
-
-        .selected-file .upload-icon {
-            color: var(--success-500);
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                padding: var(--spacing-md);
-            }
-            
-            .page-title {
-                font-size: 2rem;
-            }
-            
-            .status-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modern-card {
-                padding: var(--spacing-lg);
-            }
-            
-            .redirect-notice {
-                padding: var(--spacing-lg);
-            }
-
-            .fingerprint-box {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .file-upload {
-                padding: var(--spacing-xl);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-title {
-                font-size: 1.75rem;
-            }
-
-            .card-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .upload-icon {
-                font-size: 2.5rem;
-            }
-
-            .redirect-content p {
-                font-size: 1rem;
-            }
-
-            .countdown {
-                font-size: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Header -->
-        <div class="page-header">
-            <h1 class="page-title">
-                <i class="fas fa-shield-alt me-3"></i>
-                مدیریت مجوز
-            </h1>
-            <p class="page-subtitle">سیستم مدیریت مجوز کاربری محاسبه‌گر پرینت سه‌بعدی</p>
-        </div>
-        
-        <!-- Status Card -->
-        {% if status.valid %}
-            <div class="modern-card status-card status-valid">
-                <div class="status-grid">
-                    <div class="status-item">
-                        <div class="status-label">وضعیت</div>
-                        <div class="status-value">
-                            <i class="fas fa-check-circle me-2"></i>فعال
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">باقی‌مانده</div>
-                        <div class="status-value">{{ status.expires_in_days }} روز</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">پلن</div>
-                        <div class="status-value">{{ status.payload.plan|default:"استاندارد" }}</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">شناسه مجوز</div>
-                        <div class="status-value">{{ status.payload.lic }}</div>
-                    </div>
-                </div>
-                
-                {% if auto_redirect %}
-                    <div class="redirect-notice">
-                        <i class="fas fa-rocket redirect-icon"></i>
-                        <div class="redirect-content">
-                            <p>
-                                <i class="fas fa-spinner fa-spin me-2"></i>
-                                در حال انتقال به محاسبه‌گر در
-                                <span class="countdown" id="countdown">15</span>
-                                ثانیه
-                            </p>
-                            <a href="{% url 'calculator:index' %}" class="btn-modern btn-success">
-                                <i class="fas fa-calculator me-2"></i>ورود فوری به محاسبه‌گر
-                            </a>
-                        </div>
-                    </div>
-                {% else %}
-                    <div style="margin-top: var(--spacing-xl); text-align: center;">
-                        <a href="{% url 'calculator:index' %}" class="btn-modern btn-success">
-                            <i class="fas fa-calculator me-2"></i>شروع استفاده از محاسبه‌گر
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="modern-card status-card status-invalid">
-                <div class="status-grid">
-                    <div class="status-item">
-                        <div class="status-label">وضعیت</div>
-                        <div class="status-value">
-                            <i class="fas fa-times-circle me-2"></i>غیرفعال
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">دلیل</div>
-                        <div class="status-value">{{ status.error }}</div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-
-        <!-- License Upload Card -->
-        <div class="modern-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-upload"></i>
-                </div>
-                <h3 class="card-title">نصب یا جایگزینی مجوز</h3>
-            </div>
-            
-            <form method="post" action="{% url 'license_upload' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="file-upload-area">
-                    <div class="file-upload" id="fileUpload">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <div class="upload-text">فایل مجوز را انتخاب کنید یا اینجا بکشید</div>
-                        <div class="upload-hint">فرمت‌های مجاز: .jwt, .lic, .txt</div>
-                        <input name="file" type="file" accept=".jwt,.lic,.txt,application/jwt,text/plain" required>
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <button type="submit" class="btn-modern btn-success">
-                        <i class="fas fa-upload me-2"></i>آپلود فایل 
-                    </button>
-                </div>
-                
-                <div class="file-path">
-                    <i class="fas fa-folder me-2"></i>
-                    <strong>مسیر مجوز:</strong> {{ license_path }}
-                </div>
-            </form>
-        </div>
-
-        <!-- Hardware Fingerprint Card -->
-        <div class="modern-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-fingerprint"></i>
-                </div>
-                <h3 class="card-title">اثر انگشت سخت‌افزار</h3>
-            </div>
-            
-            <p style="color: var(--secondary-600); margin-bottom: var(--spacing-lg);">
-                این اثر انگشت را برای دریافت مجوز ارسال کنید:
-            </p>
-            
-            <div class="fingerprint-box">
-                <span id="fingerprint-text">{{ fingerprint }}</span>
-                <button class="copy-btn" onclick="copyFingerprint()">
-                    <i class="fas fa-copy me-1"></i>کپی
-                </button>
-            </div>
-            
-            <div class="text-center">
-                <a href="{% url 'license_fingerprint' %}" class="btn-modern">
-                    <i class="fas fa-file-text me-2"></i>باز کردن به عنوان فایل متنی
+    <!-- Page Header -->
+    <div class="page-header animate-in" style="{% if status.valid %}background: var(--gradient-success);{% else %}background: var(--gradient-danger);{% endif %}">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:index' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
                 </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="page-header-text">
+                    <h1>مدیریت لایسنس</h1>
+                    <p>سیستم مجوز نرم‌افزار پرینت‌کست</p>
+                </div>
+            </div>
+            <div class="page-header-actions">
+                {% if status.valid %}
+                <div class="license-status-badge valid">
+                    <i class="fas fa-check-circle"></i>
+                    <span>لایسنس فعال</span>
+                </div>
+                {% else %}
+                <div class="license-status-badge invalid">
+                    <i class="fas fa-times-circle"></i>
+                    <span>لایسنس غیرفعال</span>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script>
-        // Countdown timer for redirect (changed to 15 seconds)
-        {% if auto_redirect %}
-        let countdown = 15;
-        const countdownEl = document.getElementById('countdown');
-        if (countdownEl) {
-            const timer = setInterval(() => {
-                countdown--;
-                countdownEl.textContent = countdown;
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                }
-            }, 1000);
-        }
-        {% endif %}
+    <!-- Status Card -->
+    <div class="card-modern mb-4 animate-in">
+        <div class="card-modern-body p-0">
+            {% if status.valid %}
+            <div class="license-status-card valid">
+                <div class="license-status-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="license-status-content">
+                    <div class="license-status-header">
+                        <span class="badge badge-success">
+                            <i class="fas fa-check me-1"></i>
+                            فعال
+                        </span>
+                        <span class="badge badge-light" id="planBadge" data-plan="{{ status.payload.plan|default:'standard' }}">
+                            <!-- Will be replaced by JS -->
+                            {{ status.payload.plan|default:"استاندارد" }}
+                        </span>
+                    </div>
+                    <div class="license-status-details">
+                        <div class="license-detail-item">
+                            <i class="fas fa-calendar-alt text-success"></i>
+                            <span>باقی‌مانده:</span>
+                            <strong id="remainingDays" data-days="{{ status.expires_in_days }}">{{ status.expires_in_days }} روز</strong>
+                        </div>
+                        <div class="license-detail-item">
+                            <i class="fas fa-key text-primary"></i>
+                            <span>شناسه:</span>
+                            <strong>{{ status.payload.lic }}</strong>
+                        </div>
+                        {% if status.payload.issued_at %}
+                        <div class="license-detail-item">
+                            <i class="fas fa-clock text-muted"></i>
+                            <span>صادر شده:</span>
+                            <strong id="issuedDate" data-date="{{ status.payload.issued_at }}"></strong>
+                        </div>
+                        {% endif %}
+                        {% if status.payload.expires_at %}
+                        <div class="license-detail-item">
+                            <i class="fas fa-hourglass-end text-warning"></i>
+                            <span>انقضا:</span>
+                            <strong id="expiresDate" data-date="{{ status.payload.expires_at }}"></strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="license-status-card invalid">
+                <div class="license-status-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="license-status-content">
+                    <div class="license-status-header">
+                        <span class="badge badge-danger">
+                            <i class="fas fa-times me-1"></i>
+                            غیرفعال
+                        </span>
+                    </div>
+                    <div class="license-error">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <span>{{ status.error }}</span>
+                    </div>
+                    <div class="license-help-text">
+                        برای فعال‌سازی، اثر انگشت سخت‌افزار را به پشتیبانی ارسال کرده و فایل لایسنس دریافتی را آپلود کنید.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-        // File upload drag and drop
-        const fileUpload = document.getElementById('fileUpload');
-        const fileInput = fileUpload.querySelector('input[type="file"]');
-        const uploadText = fileUpload.querySelector('.upload-text');
-        
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.classList.add('dragover');
-        });
-        
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.classList.remove('dragover');
-        });
-        
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                updateUploadText(files[0].name);
-            }
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                updateUploadText(e.target.files[0].name);
-            }
-        });
-        
-        function updateUploadText(filename) {
-            uploadText.innerHTML = `<i class="fas fa-check-circle me-2"></i>انتخاب شده: ${filename}`;
-            fileUpload.classList.add('selected-file');
-        }
+    <div class="row g-4">
+        <!-- Fingerprint Card -->
+        <div class="col-lg-6">
+            <div class="card-modern animate-in h-100">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-info">
+                            <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>اثر انگشت سخت‌افزار</h2>
+                            <p>شناسه یکتای این دستگاه</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-modern-body">
+                    <div class="fingerprint-info">
+                        <i class="fas fa-info-circle text-info"></i>
+                        <span>این کد را برای دریافت لایسنس به پشتیبانی ارسال کنید:</span>
+                    </div>
+                    
+                    <div class="fingerprint-box" id="fingerprintBox">
+                        <code id="fingerprintCode">{{ fingerprint }}</code>
+                    </div>
+                    
+                    <div class="fingerprint-actions">
+                        <button type="button" class="btn-modern btn-primary flex-grow-1" id="copyBtn" onclick="copyFingerprint()">
+                            <i class="fas fa-copy"></i>
+                            <span>کپی کد</span>
+                        </button>
+                        <a href="{% url 'license_fingerprint' %}" target="_blank" class="btn-modern btn-outline">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- Telegram Support -->
+                    <div class="support-box">
+                        <div class="support-icon">
+                            <i class="fab fa-telegram-plane"></i>
+                        </div>
+                        <div class="support-content">
+                            <div class="support-title">پشتیبانی تلگرام</div>
+                            <div class="support-text">کد را کپی کرده و به پشتیبانی ارسال کنید</div>
+                        </div>
+                        <a href="https://t.me/threedbynaser" target="_blank" class="btn-modern btn-info btn-sm">
+                            <i class="fab fa-telegram-plane"></i>
+                            <span>ارسال</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        // Copy fingerprint functionality
-        function copyFingerprint() {
-            const fingerprintText = document.getElementById('fingerprint-text').textContent;
-            const copyBtn = document.querySelector('.copy-btn');
-            
-            navigator.clipboard.writeText(fingerprintText).then(() => {
-                copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>کپی شد!';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy me-1"></i>کپی';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = fingerprintText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                copyBtn.innerHTML = '<i class="fas fa-check me-1"></i>کپی شد!';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy me-1"></i>کپی';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-    </script>
-</body>
-</html>
+        <!-- Upload Card -->
+        <div class="col-lg-6">
+            <div class="card-modern animate-in h-100">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-primary">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>{% if status.valid %}جایگزینی{% else %}نصب{% endif %} لایسنس</h2>
+                            <p>آپلود فایل مجوز</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-modern-body">
+                    <form method="post" action="{% url 'license_upload' %}" enctype="multipart/form-data" id="licenseForm">
+                        {% csrf_token %}
+                        
+                        <div class="upload-zone" id="uploadZone">
+                            <input type="file" name="file" id="licenseFile" class="upload-input" accept=".jwt,.lic,.txt" required>
+                            <div class="upload-content">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="upload-title">فایل لایسنس را انتخاب کنید</span>
+                                    <span class="upload-hint">یا اینجا رها کنید</span>
+                                </div>
+                                <div class="upload-formats">
+                                    <span class="badge badge-light">JWT</span>
+                                    <span class="badge badge-light">LIC</span>
+                                    <span class="badge badge-light">TXT</span>
+                                </div>
+                            </div>
+                            <div class="upload-selected" id="selectedFile" style="display: none;">
+                                <i class="fas fa-file-alt text-primary"></i>
+                                <span id="selectedFileName"></span>
+                                <button type="button" class="upload-remove" onclick="clearFile()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-modern btn-primary btn-lg w-100 mt-4" id="uploadBtn">
+                            <i class="fas fa-upload"></i>
+                            <span>آپلود و فعال‌سازی</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="card-modern mt-4 animate-in">
+        <div class="card-modern-header">
+            <div class="card-header-title">
+                <div class="card-header-icon icon-warning">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="card-header-text">
+                    <h2>راهنمای فعال‌سازی</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-modern-body">
+            <div class="activation-steps">
+                <div class="activation-step">
+                    <div class="step-number">۱</div>
+                    <div class="step-content">
+                        <div class="step-title">کپی اثر انگشت</div>
+                        <div class="step-desc">کد اثر انگشت سخت‌افزار را کپی کنید</div>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="activation-step">
+                    <div class="step-number">۲</div>
+                    <div class="step-content">
+                        <div class="step-title">ارسال به پشتیبانی</div>
+                        <div class="step-desc">کد را به پشتیبانی تلگرام ارسال کنید</div>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="activation-step">
+                    <div class="step-number">۳</div>
+                    <div class="step-content">
+                        <div class="step-title">دریافت لایسنس</div>
+                        <div class="step-desc">فایل لایسنس را از پشتیبانی دریافت کنید</div>
+                    </div>
+                </div>
+                <div class="step-arrow">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="activation-step">
+                    <div class="step-number">۴</div>
+                    <div class="step-content">
+                        <div class="step-title">آپلود فایل</div>
+                        <div class="step-desc">فایل را در این صفحه آپلود کنید</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

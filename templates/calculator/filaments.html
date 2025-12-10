@@ -1,520 +1,423 @@
+<!-- templates/calculator/filaments.html -->
 {% extends "calculator/base.html" %}
+{% load static %}
 
-{% block title %}لیست فیلامنت‌ها{% endblock %}
+{% block title %}فیلامنت‌ها - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
+<div class="container-fluid px-3 px-lg-4 py-4">
 
-  <!-- Page Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-text">
-        <div class="d-flex align-items-center gap-3 mb-2">
-          <a href="{% url 'calculator:index' %}" class="back-button">
-            <i class="fas fa-arrow-right"></i>
-          </a>
-          <div class="header-icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
-          <div>
-            <h1 class="header-title mb-1">فیلامنت‌ها</h1>
-            <p class="header-subtitle mb-0">مدیریت موجودی فیلامنت‌ها و مشاهده جزئیات</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="header-actions">
-        <span class="count-chip">
-          <i class="fas fa-database"></i>
-          <span>{{ total_count|default:0 }} مورد</span>
-        </span>
-        <a href="{% url 'calculator:add_filament' %}" class="btn-action">
-          <i class="fas fa-plus"></i>
-          <span>فیلامنت جدید</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filters Toolbar -->
-  <form method="get" class="filter-bar" id="filtersForm">
-    <div class="filter-group">
-      <div class="input-group-custom">
-        <span class="input-prefix"><i class="fas fa-search"></i></span>
-        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control" placeholder="جستجو نام یا رنگ...">
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="select-wrapper input-group-custom">
-        <span class="input-prefix"><i class="fas fa-cube"></i></span>
-        <select name="material" class="form-select">
-          <option value="">همه مواد</option>
-          {% for k,v in filaments.model.MATERIAL_CHOICES %}
-            <option value="{{ k }}" {% if material == k %}selected{% endif %}>{{ v }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="select-wrapper input-group-custom">
-        <span class="input-prefix"><i class="fas fa-sort"></i></span>
-        <select name="sort" class="form-select">
-          <option value="-created_date" {% if sort == "-created_date" %}selected{% endif %}>جدیدترین</option>
-          <option value="created_date" {% if sort == "created_date" %}selected{% endif %}>قدیمی‌ترین</option>
-          <option value="name" {% if sort == "name" %}selected{% endif %}>نام (الفبا)</option>
-          <option value="-name" {% if sort == "-name" %}selected{% endif %}>نام (معکوس)</option>
-          <option value="-remaining_amount" {% if sort == "-remaining_amount" %}selected{% endif %}>باقی‌مانده (زیاد به کم)</option>
-          <option value="remaining_amount" {% if sort == "remaining_amount" %}selected{% endif %}>باقی‌مانده (کم به زیاد)</option>
-          <option value="-cost_per_kg" {% if sort == "-cost_per_kg" %}selected{% endif %}>قیمت (زیاد به کم)</option>
-          <option value="cost_per_kg" {% if sort == "cost_per_kg" %}selected{% endif %}>قیمت (کم به زیاد)</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-actions">
-      <input type="hidden" name="view" value="{{ view_mode|default:'grid' }}" id="viewInput">
-      <button type="submit" class="btn-filter">
-        <i class="fas fa-filter"></i>
-        اعمال
-      </button>
-
-      <div class="view-toggle">
-        <button type="button" class="toggle-btn {% if view_mode == 'grid' %}active{% endif %}" data-view="grid" title="نمای کارت">
-          <i class="fas fa-th-large"></i>
-        </button>
-        <button type="button" class="toggle-btn {% if view_mode == 'table' %}active{% endif %}" data-view="table" title="نمای جدول">
-          <i class="fas fa-list"></i>
-        </button>
-      </div>
-    </div>
-  </form>
-
-  <!-- Results -->
-  {% if page_obj and page_obj.object_list %}
-    {% if view_mode == 'table' %}
-      <!-- Table view -->
-      <div class="table-container">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>رنگ</th>
-              <th>نام</th>
-              <th>ماده</th>
-              <th>موجودی</th>
-              <th>قیمت/کیلو</th>
-              <th>تاریخ ایجاد</th>
-              <th>عملیات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for filament in page_obj %}
-            {% with col=filament.color %}
-            <tr class="table-row">
-              <td>
-                <span class="color-dot-table"
-                      style="--chip-color: {% if col and col|slice:':1' == '#' %}{{ col }}{% elif col %}#{{ col }}{% else %}#6c757d{% endif %};"></span>
-                <small class="text-muted">{{ filament.color }}</small>
-              </td>
-              <td class="fw-700">{{ filament.name }}</td>
-              <td>{{ filament.material }}</td>
-              <td>
-                <span class="table-badge badge-info">
-                  {{ filament.remaining_amount|floatformat:1 }} / {{ filament.initial_amount|floatformat:1 }} m
-                </span>
-              </td>
-              <td>
-                <span class="table-badge badge-secondary">
-                  {{ filament.cost_per_kg|floatformat:0 }} تومان
-                </span>
-              </td>
-              <td><small>{{ filament.created_date|date:"Y/m/d" }}</small></td>
-              <td>
-                <div class="row-actions">
-                  <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn-mini primary" title="مشاهده"><i class="fas fa-eye"></i></a>
-                  <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" class="btn-mini success" title="اختصاص مدل"><i class="fas fa-link"></i></a>
-                  <a href="{% url 'calculator:edit_filament' filament.pk %}" class="btn-mini info" title="ویرایش"><i class="fas fa-edit"></i></a>
-                  <form method="post" action="{% url 'calculator:delete_filament' filament.pk %}" class="row-delete-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                    <button type="submit" class="btn-mini danger" title="حذف"
-                            onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر مدل اختصاص داده شده باشد حذف نمی‌شود.')">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </form>
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:index' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-layer-group"></i>
                 </div>
-              </td>
-            </tr>
-            {% endwith %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <!-- Grid view -->
-      <div class="filaments-grid">
-        {% for filament in page_obj %}
-        {% with col=filament.color %}
-        <div class="filament-card"
-             style="--chip-color: {% if col and col|slice:':1' == '#' %}{{ col }}{% elif col %}#{{ col }}{% else %}#6c757d{% endif %};">
-          <div class="filament-header">
-            <div class="filament-info">
-              <h3 class="filament-name">{{ filament.name }}</h3>
-              <span class="filament-material">
-                <i class="fas fa-cube"></i>
-                {{ filament.material }}
-              </span>
+                <div class="page-header-text">
+                    <h1>مدیریت فیلامنت‌ها</h1>
+                    <p>موجودی انبار و مشخصات فیلامنت‌های شما</p>
+                </div>
             </div>
-            <span class="filament-color-chip" title="{{ filament.color }}"></span>
-          </div>
-
-          <div class="filament-stats">
-            <div class="stat-item">
-              <i class="fas fa-tape text-success"></i>
-              <div>
-                <span class="stat-value">{{ filament.remaining_amount|floatformat:1 }}m</span>
-                <span class="stat-text">باقی‌مانده</span>
-              </div>
+            <div class="page-header-actions">
+                <div class="header-stats-row">
+                    <div class="header-stat-item">
+                        <i class="fas fa-database"></i>
+                        <span><strong>{{ total_count|default:0 }}</strong> فیلامنت</span>
+                    </div>
+                    <div class="header-stat-item">
+                        <i class="fas fa-ruler"></i>
+                        <span><strong>{{ total_remaining|floatformat:0|default:0 }}</strong> متر موجودی</span>
+                    </div>
+                </div>
+                <a href="{% url 'calculator:add_filament' %}" class="btn-modern btn-success">
+                    <i class="fas fa-plus"></i>
+                    <span>فیلامنت جدید</span>
+                </a>
             </div>
-            <div class="stat-item">
-              <i class="fas fa-ruler-combined text-gray"></i>
-              <div>
-                <span class="stat-value">{{ filament.initial_amount|floatformat:1 }}m</span>
-                <span class="stat-text">مقدار اولیه</span>
-              </div>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-coins text-primary"></i>
-              <div>
-                <span class="stat-value">{{ filament.cost_per_kg|floatformat:0 }}</span>
-                <span class="stat-text">تومان/کیلو</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="filament-actions">
-            <a href="{% url 'calculator:view_filament' filament.pk %}" class="btn-filament btn-filament-view" title="مشاهده">
-              <i class="fas fa-eye"></i>
-            </a>
-            <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" class="btn-filament btn-filament-add" title="اختصاص">
-              <i class="fas fa-link"></i>
-            </a>
-            <!-- Remove (POST) -->
-            <form method="post" action="{% url 'calculator:delete_filament' filament.pk %}" class="delete-form">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="btn-filament btn-filament-delete" title="حذف"
-                      onclick="return confirm('آیا از حذف «{{ filament.name }} ({{ filament.color }})» مطمئن هستید؟ اگر مدل اختصاص داده شده باشد حذف نمی‌شود.')">
-                <i class="fas fa-trash"></i>
-              </button>
-            </form>
-          </div>
         </div>
-        {% endwith %}
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <!-- Pagination -->
-    {% if page_obj.paginator.num_pages > 1 %}
-    <nav class="pagination-nav" aria-label="ناوبری صفحات">
-      <ul class="pagination">
-        {% if page_obj.has_previous %}
-          <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
-        {% else %}
-          <li class="disabled"><span class="page-link"><i class="fas fa-chevron-right"></i></span></li>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-          {% if num == page_obj.number %}
-            <li class="active"><span class="page-link">{{ num }}</span></li>
-          {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
-            <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
-        {% else %}
-          <li class="disabled"><span class="page-link"><i class="fas fa-chevron-left"></i></span></li>
-        {% endif %}
-      </ul>
-    </nav>
-    {% endif %}
-
-  {% else %}
-    <!-- Empty state -->
-    <div class="empty-state">
-      <div class="empty-icon"><i class="fas fa-layer-group"></i></div>
-      <h3>هیچ فیلامنتی یافت نشد</h3>
-      <p>می‌توانید فیلامنت جدید اضافه کنید یا فیلترها را تغییر دهید.</p>
-      <a href="{% url 'calculator:add_filament' %}" class="btn-empty-action">
-        <i class="fas fa-plus"></i> افزودن فیلامنت
-      </a>
     </div>
-  {% endif %}
+
+    <!-- Filters Card -->
+    <div class="card-modern mb-4 animate-in">
+        <div class="card-modern-body py-4">
+            <form method="get" id="filtersForm">
+                <div class="row g-3 align-items-end">
+                    <!-- Search -->
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-search text-primary me-1"></i>
+                            جستجو
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" name="q" value="{{ q|default_if_none:'' }}" 
+                                   class="form-control" placeholder="نام یا رنگ فیلامنت...">
+                        </div>
+                    </div>
+
+                    <!-- Material Filter -->
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-cube text-primary me-1"></i>
+                            نوع ماده
+                        </label>
+                        <select name="material" class="form-control form-select">
+                            <option value="">همه مواد</option>
+                            <option value="PLA" {% if material == "PLA" %}selected{% endif %}>PLA</option>
+                            <option value="ABS" {% if material == "ABS" %}selected{% endif %}>ABS</option>
+                            <option value="PETG" {% if material == "PETG" %}selected{% endif %}>PETG</option>
+                            <option value="TPU" {% if material == "TPU" %}selected{% endif %}>TPU</option>
+                            <option value="ASA" {% if material == "ASA" %}selected{% endif %}>ASA</option>
+                            <option value="Nylon" {% if material == "Nylon" %}selected{% endif %}>Nylon</option>
+                            <option value="PC" {% if material == "PC" %}selected{% endif %}>PC</option>
+                            <option value="Other" {% if material == "Other" %}selected{% endif %}>سایر</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-sort text-primary me-1"></i>
+                            مرتب‌سازی
+                        </label>
+                        <select name="sort" class="form-control form-select">
+                            <option value="-created_date" {% if sort == "-created_date" %}selected{% endif %}>جدیدترین</option>
+                            <option value="created_date" {% if sort == "created_date" %}selected{% endif %}>قدیمی‌ترین</option>
+                            <option value="name" {% if sort == "name" %}selected{% endif %}>نام (الف-ی)</option>
+                            <option value="-name" {% if sort == "-name" %}selected{% endif %}>نام (ی-الف)</option>
+                            <option value="-remaining_amount" {% if sort == "-remaining_amount" %}selected{% endif %}>موجودی (بیشتر)</option>
+                            <option value="remaining_amount" {% if sort == "remaining_amount" %}selected{% endif %}>موجودی (کمتر)</option>
+                            <option value="-cost_per_kg" {% if sort == "-cost_per_kg" %}selected{% endif %}>قیمت (بیشتر)</option>
+                            <option value="cost_per_kg" {% if sort == "cost_per_kg" %}selected{% endif %}>قیمت (کمتر)</option>
+                        </select>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="d-flex gap-2">
+                            <input type="hidden" name="view" value="{{ view_mode|default:'grid' }}" id="viewInput">
+                            <button type="submit" class="btn-modern btn-primary flex-grow-1">
+                                <i class="fas fa-search"></i>
+                                <span>اعمال</span>
+                            </button>
+                            <div class="view-toggle-group">
+                                <button type="button" class="view-toggle-btn {% if view_mode == 'grid' or not view_mode %}active{% endif %}" 
+                                        data-view="grid" title="نمای کارت">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button type="button" class="view-toggle-btn {% if view_mode == 'table' %}active{% endif %}" 
+                                        data-view="table" title="نمای جدول">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if q or material %}
+                <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted small">فیلترهای فعال:</span>
+                    {% if q %}
+                    <div class="filter-badge">
+                        <i class="fas fa-search"></i>
+                        <span>{{ q }}</span>
+                        <a href="?{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}">
+                            <i class="fas fa-times-circle"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if material %}
+                    <div class="filter-badge">
+                        <i class="fas fa-cube"></i>
+                        <span>{{ material }}</span>
+                        <a href="?{% if q %}q={{ q }}&{% endif %}sort={{ sort }}&view={{ view_mode }}">
+                            <i class="fas fa-times-circle"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'calculator:filaments' %}" class="btn-modern btn-ghost btn-sm text-danger">
+                        <i class="fas fa-times-circle"></i>
+                        پاک کردن همه
+                    </a>
+                    <span class="text-muted small me-auto">
+                        {{ total_count }} نتیجه
+                    </span>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if filaments and filaments.object_list %}
+        {% if view_mode == 'table' %}
+            <!-- Table View -->
+            <div class="card-modern animate-in">
+                <div class="table-container">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">رنگ</th>
+                                <th>نام فیلامنت</th>
+                                <th>ماده</th>
+                                <th>موجودی</th>
+                                <th>قیمت (کیلو)</th>
+                                <th>تاریخ</th>
+                                <th style="width: 140px;">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for filament in filaments %}
+                            {% with col=filament.color %}
+                            <tr class="table-row" onclick="window.location='{% url 'calculator:view_filament' filament.pk %}'" style="cursor: pointer;">
+                                <td onclick="event.stopPropagation();">
+                                    <div class="filament-color-dot-lg" style="background: {% if col and col|slice:':1' == '#' %}{{ col }}{% elif col %}#{{ col }}{% else %}#6b7280{% endif %};"></div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">{{ filament.name }}</div>
+                                    <div class="text-muted small">{{ filament.color|default:"-" }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-material">{{ filament.material }}</span>
+                                </td>
+                                <td>
+                                    {% widthratio filament.remaining_amount filament.initial_amount 100 as percent %}
+                                    <div class="stock-indicator">
+                                        <div class="stock-bar">
+                                            <div class="stock-fill {% if percent > 50 %}success{% elif percent > 20 %}warning{% else %}danger{% endif %}" 
+                                                 style="width: {{ percent }}%;"></div>
+                                        </div>
+                                        <span class="stock-text">
+                                            <strong>{{ filament.remaining_amount|floatformat:0 }}</strong> / {{ filament.initial_amount|floatformat:0 }} متر
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="price-value">{{ filament.cost_per_kg|floatformat:0 }}</span>
+                                    <span class="price-unit">تومان</span>
+                                </td>
+                                <td>
+                                    <span class="date-display" data-date="{{ filament.created_date.isoformat }}">
+                                        {{ filament.created_date|date:"Y/m/d" }}
+                                    </span>
+                                </td>
+                                <td onclick="event.stopPropagation();">
+                                    <div class="table-actions">
+                                        <a href="{% url 'calculator:view_filament' filament.pk %}" 
+                                           class="table-action-btn" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" 
+                                           class="table-action-btn text-success" title="اختصاص مدل">
+                                            <i class="fas fa-link"></i>
+                                        </a>
+                                        <a href="{% url 'calculator:edit_filament' filament.pk %}" 
+                                           class="table-action-btn text-info" title="ویرایش">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                        <a href="{% url 'calculator:delete_filament' filament.pk %}" 
+                                           class="table-action-btn text-danger" title="حذف"
+                                           onclick="return confirm('آیا از حذف فیلامنت «{{ filament.name }}» مطمئن هستید؟')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        نمایش {{ page_obj.start_index }} تا {{ page_obj.end_index }} از {{ page_obj.paginator.count }} فیلامنت
+                    </div>
+                    <nav class="pagination-nav">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page=1"><i class="fas fa-angle-double-right"></i></a></li>
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-angle-right"></i></a></li>
+                            {% else %}
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-double-right"></i></span></li>
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-right"></i></span></li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if num == page_obj.number %}
+                                    <li class="active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                                    <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+                                {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                                    <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+                                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                                    <li class="disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.next_page_number }}"><i class="fas fa-angle-left"></i></a></li>
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.paginator.num_pages }}"><i class="fas fa-angle-double-left"></i></a></li>
+                            {% else %}
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-left"></i></span></li>
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-double-left"></i></span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <!-- Grid View -->
+            <div class="row g-4" id="filamentsGrid">
+                {% for filament in filaments %}
+                {% with col=filament.color %}
+                <div class="col-6 col-lg-4 col-xl-3">
+                    <div class="filament-card-new animate-scale" onclick="window.location='{% url 'calculator:view_filament' filament.pk %}'"
+                         style="--filament-color: {% if col and col|slice:':1' == '#' %}{{ col }}{% elif col %}#{{ col }}{% else %}#6b7280{% endif %};">
+                        
+                        <!-- Color Header -->
+                        <div class="filament-card-header">
+                            <div class="filament-color-ring">
+                                {% widthratio filament.remaining_amount filament.initial_amount 100 as percent %}
+                                <svg viewBox="0 0 36 36" class="filament-progress-ring">
+                                    <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="ring-fill {% if percent > 50 %}success{% elif percent > 20 %}warning{% else %}danger{% endif %}" 
+                                          stroke-dasharray="{{ percent }}, 100"
+                                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="filament-color-center" style="background: {% if col and col|slice:':1' == '#' %}{{ col }}{% elif col %}#{{ col }}{% else %}#6b7280{% endif %};"></div>
+                            </div>
+                            <div class="filament-percent">{{ percent }}%</div>
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="filament-card-body">
+                            <h3 class="filament-card-title">{{ filament.name }}</h3>
+                            <span class="filament-card-material">{{ filament.material }}</span>
+                            
+                            <div class="filament-card-stats">
+                                <div class="filament-stat-item">
+                                    <span class="stat-value">{{ filament.remaining_amount|floatformat:0 }}</span>
+                                    <span class="stat-label">متر مانده</span>
+                                </div>
+                                <div class="filament-stat-divider"></div>
+                                <div class="filament-stat-item">
+                                    <span class="stat-value">{{ filament.cost_per_kg|floatformat:0 }}</span>
+                                    <span class="stat-label">تومان/کیلو</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="filament-card-actions" onclick="event.stopPropagation();">
+                            <a href="{% url 'calculator:view_filament' filament.pk %}" class="filament-action-btn primary" title="مشاهده">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'calculator:assign_project_to_filament' filament.pk %}" class="filament-action-btn success" title="اختصاص مدل">
+                                <i class="fas fa-link"></i>
+                            </a>
+                            <a href="{% url 'calculator:edit_filament' filament.pk %}" class="filament-action-btn info" title="ویرایش">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                            <a href="{% url 'calculator:delete_filament' filament.pk %}" class="filament-action-btn danger" title="حذف"
+                               onclick="return confirm('آیا از حذف فیلامنت «{{ filament.name }}» مطمئن هستید؟')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+
+            <!-- Pagination for Grid -->
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="card-modern mt-4">
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        نمایش {{ page_obj.start_index }} تا {{ page_obj.end_index }} از {{ page_obj.paginator.count }} فیلامنت
+                    </div>
+                    <nav class="pagination-nav">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page=1"><i class="fas fa-angle-double-right"></i></a></li>
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-angle-right"></i></a></li>
+                            {% else %}
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-double-right"></i></span></li>
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-right"></i></span></li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if num == page_obj.number %}
+                                    <li class="active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                                    <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+                                {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                                    <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ num }}">{{ num }}</a></li>
+                                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                                    <li class="disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.next_page_number }}"><i class="fas fa-angle-left"></i></a></li>
+                                <li><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}{% if material %}material={{ material }}&{% endif %}sort={{ sort }}&view={{ view_mode }}&page={{ page_obj.paginator.num_pages }}"><i class="fas fa-angle-double-left"></i></a></li>
+                            {% else %}
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-left"></i></span></li>
+                                <li class="disabled"><span class="page-link"><i class="fas fa-angle-double-left"></i></span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="card-modern animate-in">
+            <div class="card-modern-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="empty-state-title">
+                        {% if q or material %}نتیجه‌ای یافت نشد{% else %}فیلامنتی ثبت نشده{% endif %}
+                    </h3>
+                    <p class="empty-state-text">
+                        {% if q or material %}
+                            فیلامنتی با این مشخصات پیدا نشد. فیلترها را تغییر دهید.
+                        {% else %}
+                            اولین فیلامنت خود را اضافه کنید تا بتوانید محاسبات را شروع کنید.
+                        {% endif %}
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        {% if q or material %}
+                            <a href="{% url 'calculator:filaments' %}" class="btn-modern btn-outline">
+                                <i class="fas fa-times"></i>
+                                <span>پاک کردن فیلترها</span>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'calculator:add_filament' %}" class="btn-modern btn-primary btn-lg">
+                            <i class="fas fa-plus"></i>
+                            <span>افزودن فیلامنت</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // View toggle
-  const viewInput = document.getElementById('viewInput');
-  document.querySelectorAll('.toggle-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      viewInput.value = btn.dataset.view;
-      document.getElementById('filtersForm').submit();
-    });
-  });
-
-  // Auto-submit on select change
-  document.querySelectorAll('.filter-bar select').forEach(sel => {
-    sel.addEventListener('change', () => document.getElementById('filtersForm').submit());
-  });
-
-  // Animate entries
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.filament-card, .table-row').forEach(el => observer.observe(el));
-});
-</script>
-
-<style>
-:root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #06b6d4;
-  --dark: #1f2937;
-  --gray: #6b7280;
-  --light-gray: #f3f4f6;
-  --border: #e5e7eb;
-  --white: #ffffff;
-  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --radius: 12px;
-  --radius-lg: 16px;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Header */
-.page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-lg);
-  position: relative; overflow: hidden;
-}
-.page-header::before {
-  content: '';
-  position: absolute; top: 0; right: 0;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  border-radius: 50%; transform: translate(30%, -30%);
-}
-.header-content {
-  position: relative; z-index: 1;
-  display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
-}
-.back-button {
-  width: 44px; height: 44px; background: rgba(255,255,255,0.2);
-  border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  color: white; text-decoration: none; border: 2px solid rgba(255,255,255,0.3);
-  transition: var(--transition);
-}
-.back-button:hover { transform: translateX(4px); background: rgba(255,255,255,0.3); }
-.header-icon {
-  width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px; display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; color: white; border: 2px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px);
-}
-.header-title { font-size: 1.75rem; font-weight: 800; color: white; margin: 0; }
-.header-subtitle { color: rgba(255,255,255,0.9); font-size: 0.95rem; margin: 0; }
-.header-actions { display: flex; align-items: center; gap: .5rem; }
-.count-chip {
-  display: inline-flex; align-items: center; gap: .4rem;
-  padding: .5rem .75rem; background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.35); border-radius: 10px; color: white; font-weight: 700;
-}
-.btn-action {
-  display: inline-flex; align-items: center; gap: .5rem; padding: .6rem 1rem;
-  background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.35);
-  border-radius: 10px; text-decoration: none; font-weight: 700; transition: var(--transition);
-}
-.btn-action:hover { background: rgba(255,255,255,0.28); transform: translateY(-2px); }
-
-/* Filters */
-.filter-bar {
-  display: flex; gap: .75rem; align-items: stretch; flex-wrap: wrap;
-  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
-  padding: .75rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem;
-}
-.filter-group { min-width: 220px; flex: 1; }
-.input-group-custom {
-  display: flex; align-items: stretch; border: 2px solid var(--border);
-  border-radius: var(--radius); overflow: hidden; background: white; transition: var(--transition);
-}
-.input-group-custom:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
-.input-prefix {
-  display: flex; align-items: center; padding: 0 .8rem; background: var(--light-gray);
-  color: var(--gray); font-weight: 600; font-size: .9rem; white-space: nowrap; border: none;
-}
-.input-group-custom input, .input-group-custom select { border: none; padding: .7rem .9rem; flex: 1; outline: none; }
-.select-wrapper select { appearance: none; padding-right: .3rem; }
-.filter-actions { display: flex; align-items: center; gap: .5rem; }
-.btn-filter {
-  display: inline-flex; align-items: center; gap: .5rem; padding: .6rem 1rem; border-radius: 10px;
-  background: var(--primary); color: white; border: none; font-weight: 700; transition: var(--transition);
-}
-.btn-filter:hover { background: var(--primary-dark); transform: translateY(-1px); }
-.view-toggle { display: inline-flex; background: var(--light-gray); border-radius: 10px; overflow: hidden; }
-.toggle-btn {
-  padding: .5rem .7rem; border: none; background: transparent; color: var(--gray);
-  cursor: pointer; transition: var(--transition);
-}
-.toggle-btn.active { background: white; color: var(--primary); border: 1px solid var(--border); }
-
-/* Grid */
-.filaments-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem; margin-top: .25rem;
-}
-.filament-card {
-  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-  border: 2px solid var(--border); border-radius: var(--radius);
-  padding: 1.1rem; transition: var(--transition); opacity: 0; transform: scale(0.96);
-  overflow: hidden; /* ensures nothing overflows visually */
-  box-sizing: border-box;
-}
-.filament-card.visible { opacity: 1; transform: scale(1); }
-.filament-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-lg); transform: translateY(-3px) scale(1.01); }
-
-.filament-header {
-  display: flex; justify-content: space-between; align-items: start;
-  margin-bottom: .8rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border);
-}
-.filament-info { flex: 1; min-width: 0; }
-.filament-name { font-size: 1.05rem; font-weight: 800; color: var(--primary); margin: 0 0 .4rem 0; }
-.filament-material {
-  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; color: var(--gray);
-  background: rgba(99,102,241,.08); padding: .2rem .55rem; border-radius: 6px;
-}
-.filament-color-chip {
-  width: 40px; height: 40px; border-radius: 10px; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,.12);
-  background-color: var(--chip-color);
-}
-
-.filament-stats { display: flex; flex-direction: column; gap: .6rem; margin-bottom: .8rem; }
-.stat-item { display: flex; align-items: center; gap: .6rem; }
-.stat-item i { font-size: 1.1rem; }
-.stat-value { font-size: 1rem; font-weight: 800; color: var(--dark); line-height: 1.2; }
-.stat-text { font-size: .8rem; color: var(--gray); }
-
-/* Actions: 2 columns by default to avoid overflow; 3 columns on >= 640px */
-.filament-actions {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem;
-}
-@media (min-width: 640px) {
-  .filament-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-.filament-actions form { margin: 0; display: contents; } /* make the button itself a grid child */
-
-.btn-filament {
-  display: flex; align-items: center; justify-content: center; gap: .45rem;
-  padding: .6rem .8rem; border-radius: var(--radius); font-weight: 700; font-size: .87rem;
-  text-decoration: none; transition: var(--transition); width: 100%; box-sizing: border-box; min-width: 0;
-}
-.btn-filament span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.btn-filament-view { background: rgba(99,102,241,.1); color: var(--primary); }
-.btn-filament-view:hover { background: var(--primary); color: white; }
-.btn-filament-add { background: rgba(16,185,129,.1); color: var(--success); }
-.btn-filament-add:hover { background: var(--success); color: white; }
-.btn-filament-delete { background: rgba(239,68,68,.1); color: var(--danger); border: none; cursor: pointer; }
-.btn-filament-delete:hover { background: var(--danger); color: white; }
-
-/* On very small widths, show icon-only to prevent overflow */
-@media (max-width: 380px) {
-  .btn-filament span { display: none; }
-}
-
-/* Table */
-.table-container { overflow-x: auto; background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-.modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-.modern-table thead { background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); }
-.modern-table th {
-  padding: .9rem 1rem; text-align: right; font-weight: 800; color: var(--dark); font-size: .85rem; border-bottom: 2px solid var(--border);
-}
-.modern-table td { padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.table-row { opacity: 0; transform: translateX(-12px); transition: var(--transition); }
-.table-row.visible { opacity: 1; transform: translateX(0); }
-.table-badge { padding: .35rem .6rem; border-radius: 8px; font-weight: 800; font-size: .8rem; display: inline-block; }
-.badge-info { background: rgba(6,182,212,.12); color: var(--info); }
-.badge-secondary { background: rgba(107,114,128,.15); color: var(--gray); }
-.fw-700 { font-weight: 800; }
-.color-dot-table {
-  display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1); margin-left: .4rem; background-color: var(--chip-color);
-}
-.row-actions { display: inline-flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
-.btn-mini {
-  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 8px; border: 2px solid transparent; text-decoration: none; transition: var(--transition);
-}
-.btn-mini.primary { background: rgba(99,102,241,.12); color: var(--primary); border-color: rgba(99,102,241,.2); }
-.btn-mini.primary:hover { background: var(--primary); color: white; }
-.btn-mini.success { background: rgba(16,185,129,.12); color: var(--success); border-color: rgba(16,185,129,.2); }
-.btn-mini.success:hover { background: var(--success); color: white; }
-.btn-mini.info { background: rgba(6,182,212,.12); color: var(--info); border-color: rgba(6,182,212,.2); }
-.btn-mini.info:hover { background: var(--info); color: white; }
-.btn-mini.danger { background: rgba(239,68,68,.12); color: var(--danger); border-color: rgba(239,68,68,.25); }
-.btn-mini.danger:hover { background: var(--danger); color: white; }
-
-/* Pagination */
-.pagination-nav { margin-top: 1rem; display: flex; justify-content: center; }
-.pagination { list-style: none; display: flex; gap: .35rem; padding: 0; margin: 0; }
-.page-link {
-  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
-  background: white; border: 1px solid var(--border); border-radius: 8px; color: var(--dark); text-decoration: none; transition: var(--transition);
-}
-.page-link:hover { background: var(--light-gray); }
-.pagination .active .page-link, .pagination .active span.page-link {
-  background: var(--primary); color: white; border-color: var(--primary);
-}
-.pagination .disabled .page-link { opacity: .5; pointer-events: none; }
-
-/* Empty state */
-.empty-state {
-  text-align: center; padding: 3rem 1.5rem; background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
-}
-.empty-icon { font-size: 4rem; color: var(--border); margin-bottom: 1rem; }
-.empty-state h3 { font-size: 1.25rem; font-weight: 700; color: var(--gray); margin-bottom: .5rem; }
-.empty-state p { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
-.btn-empty-action {
-  display: inline-flex; align-items: center; gap: .5rem; padding: .875rem 1.5rem; background: var(--primary); color: white;
-  border-radius: var(--radius); font-weight: 700; text-decoration: none; transition: var(--transition);
-}
-.btn-empty-action:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow); }
-
-/* Responsive */
-@media (max-width: 768px) {
-  .page-header { padding: 1.5rem; }
-  .header-title { font-size: 1.5rem; }
-  .header-icon { width: 50px; height: 50px; font-size: 1.5rem; }
-  .filter-group { min-width: 100%; }
-  .filaments-grid { grid-template-columns: 1fr; }
-}
-</style>
+{% block extra_js %}
+<script src="{% static 'js/filaments.js' %}"></script>
 {% endblock %}

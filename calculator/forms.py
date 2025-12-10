@@ -247,7 +247,7 @@ class FilamentUsageForm(forms.ModelForm):
                 project = Project.objects.get(code=project_code)
                 cleaned_data['project'] = project
             except Project.DoesNotExist:
-                raise forms.ValidationError('پروژه با این کد یافت نشد!')
+                raise forms.ValidationError('مدل با این کد یافت نشد!')
         
         # Check if enough filament available for quantity
         if project and self.filament:
@@ -348,7 +348,7 @@ class PricingSettingsForm(forms.ModelForm):
             'post_processing_rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
             'painting_rate_per_cm2': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
             'profit_percent': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
-            'round_to_nearest': forms.NumberInput(attrs={'class': 'form-control', 'step': '100', 'min': '1'}),
+            'round_to_nearest': forms.NumberInput(attrs={'class': 'form-control', 'step': '1', 'min': '1'}),
         }
 
     def clean_round_to_nearest(self):

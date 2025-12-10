@@ -1,1306 +1,458 @@
 <!-- templates/calculator/edit_project.html -->
 {% extends "calculator/base.html" %}
+{% load static %}
 
-{% block title %}ویرایش مدل - {{ project.model_name }}{% endblock %}
+{% block title %}ویرایش {{ project.model_name }} - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="edit-page">
-    
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="container">
-            <div class="top-bar-content">
-                <a href="{% url 'calculator:view_project' project.pk %}" class="back-link">
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:view_project' project.pk %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
                     <i class="fas fa-arrow-right"></i>
-                    بازگشت به مدل
                 </a>
-                <div class="top-info">
-                    <span class="project-code">{{ project.code }}</span>
-                    <span class="separator">|</span>
-                    <span class="project-name">{{ project.model_name }}</span>
+                <div class="page-header-icon">
+                    <i class="fas fa-edit"></i>
                 </div>
+                <div class="page-header-text">
+                    <h1>ویرایش مدل</h1>
+                    <p>{{ project.model_name }} (کد {{ project.code }})</p>
+                </div>
+            </div>
+            <div class="page-header-actions">
+                <span class="badge badge-lg" style="background: rgba(255,255,255,0.2); color: white;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    تغییرات بر محاسبات بعدی اعمال می‌شود
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Main Container -->
-    <div class="container edit-container">
-        <form method="POST" enctype="multipart/form-data" id="editForm">
-            {% csrf_token %}
-
-            <div class="edit-layout">
-
-                <!-- Main Content -->
-                <div class="main-content">
-
-                    <!-- Model Name -->
-                    <div class="edit-card">
-                        <div class="card-label">
-                            <span class="label-number">1</span>
-                            <span class="label-text">نام مدل</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="input-wrapper">
-                                {{ form.model_name }}
-                                <label for="{{ form.model_name.id_for_label }}" class="floating-label">نام مدل را وارد کنید</label>
-                                {% if form.model_name.errors %}
-                                    <span class="field-error">{{ form.model_name.errors.0 }}</span>
-                                {% endif %}
+    <form method="post" enctype="multipart/form-data" id="projectForm">
+        {% csrf_token %}
+        
+        <!-- Hidden field for actual mm value -->
+        <input type="hidden" name="{{ form.filament_used_mm.name }}" id="id_filament_used_mm" value="{{ form.filament_used_mm.value|default:'' }}">
+        
+        <div class="row g-4">
+            
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <!-- Basic Info Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-primary">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>اطلاعات پایه</h2>
+                                <p>نام و تصویر مدل</p>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Material & Time -->
-                    <div class="edit-card">
-                        <div class="card-label">
-                            <span class="label-number">2</span>
-                            <span class="label-text">مواد و زمان</span>
+                    <div class="card-modern-body">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.model_name.id_for_label }}">
+                                <i class="fas fa-tag text-primary"></i>
+                                نام مدل
+                                <span class="required">*</span>
+                            </label>
+                            {{ form.model_name }}
+                            {% if form.model_name.errors %}
+                                <div class="form-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.model_name.errors.0 }}
+                                </div>
+                            {% endif %}
                         </div>
-                        <div class="card-content">
-                            <div class="fields-row">
-                                <div class="field-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-ruler-combined"></i>
-                                        فیلامنت مصرفی (mm)
-                                    </label>
-                                    {{ form.filament_used_mm }}
-                                    <div class="field-hint">1000mm = 1m</div>
-                                </div>
-                                <div class="field-group">
-                                    <label class="field-label">
-                                        <i class="fas fa-clock"></i>
-                                        زمان پرینت
-                                    </label>
-                                    <div class="time-fields">
-                                        <div class="time-field">
-                                            {{ form.print_hours }}
-                                            <span class="time-unit">ساعت</span>
-                                        </div>
-                                        <span class="time-sep">:</span>
-                                        <div class="time-field">
-                                            {{ form.print_minutes }}
-                                            <span class="time-unit">دقیقه</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Dimensions -->
-                    <div class="edit-card">
-                        <div class="card-label">
-                            <span class="label-number">3</span>
-                            <span class="label-text">ابعاد (میلی‌متر)</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="dimensions-row">
-                                <div class="dim-field">
-                                    <div class="dim-icon x-axis">
-                                        <i class="fas fa-arrows-alt-h"></i>
-                                    </div>
-                                    <div class="dim-input">
-                                        {{ form.size_x }}
-                                        <label for="{{ form.size_x.id_for_label }}">X (طول)</label>
-                                    </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label" for="{{ form.picture.id_for_label }}">
+                                <i class="fas fa-image text-primary"></i>
+                                تصویر مدل
+                            </label>
+                            <div class="p-4 rounded-xl" style="background: var(--bg-secondary); border: 2px dashed var(--border-color);">
+                                <input type="file" name="{{ form.picture.name }}" id="{{ form.picture.id_for_label }}"
+                                       class="form-control" data-preview-target="project-image-preview" accept="image/*">
+                                <div class="mt-3 text-center">
+                                    {% if project.has_image %}
+                                        <img id="project-image-preview" src="{{ project.picture.url }}" class="rounded-xl" alt="{{ project.model_name }}"
+                                             style="max-height: 200px; max-width: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <img id="project-image-preview" class="rounded-xl d-none" alt="پیش‌نمایش"
+                                             style="max-height: 200px; max-width: 100%; object-fit: cover;">
+                                    {% endif %}
                                 </div>
-                                <div class="dim-field">
-                                    <div class="dim-icon y-axis">
-                                        <i class="fas fa-arrows-alt-v"></i>
+                                {% if form.picture.errors %}
+                                    <div class="form-error mt-2">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.picture.errors.0 }}
                                     </div>
-                                    <div class="dim-input">
-                                        {{ form.size_y }}
-                                        <label for="{{ form.size_y.id_for_label }}">Y (عرض)</label>
-                                    </div>
-                                </div>
-                                <div class="dim-field">
-                                    <div class="dim-icon z-axis">
-                                        <i class="fas fa-arrows-alt"></i>
-                                    </div>
-                                    <div class="dim-input">
-                                        {{ form.size_z }}
-                                        <label for="{{ form.size_z.id_for_label }}">Z (ارتفاع)</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Services -->
-                    <div class="edit-card">
-                        <div class="card-label">
-                            <span class="label-number">4</span>
-                            <span class="label-text">خدمات اضافی</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="services-list">
-                                <div class="service-item">
-                                    <div class="service-switch">
-                                        <input type="checkbox" id="{{ form.post_processing_enabled.id_for_label }}" 
-                                               name="{{ form.post_processing_enabled.name }}"
-                                               {% if form.post_processing_enabled.value %}checked{% endif %}
-                                               class="switch-input">
-                                        <label for="{{ form.post_processing_enabled.id_for_label }}" class="switch-label"></label>
-                                    </div>
-                                    <div class="service-info">
-                                        <div class="service-icon-wrap">
-                                            <i class="fas fa-hammer"></i>
-                                        </div>
-                                        <div class="service-text">
-                                            <h4>پست‌پروسسینگ</h4>
-                                            <p>پرداخت، سنباده و نهایی‌سازی</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="service-item">
-                                    <div class="service-switch">
-                                        <input type="checkbox" id="{{ form.painting_enabled.id_for_label }}" 
-                                               name="{{ form.painting_enabled.name }}"
-                                               {% if form.painting_enabled.value %}checked{% endif %}
-                                               class="switch-input">
-                                        <label for="{{ form.painting_enabled.id_for_label }}" class="switch-label"></label>
-                                    </div>
-                                    <div class="service-info">
-                                        <div class="service-icon-wrap">
-                                            <i class="fas fa-palette"></i>
-                                        </div>
-                                        <div class="service-text">
-                                            <h4>رنگ‌آمیزی</h4>
-                                            <p>رنگ‌آمیزی حرفه‌ای مدل</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Sidebar -->
-                <div class="sidebar-content">
-
-                    <!-- Image Upload -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title">
-                            <i class="fas fa-image"></i>
-                            تصویر مدل
-                        </h3>
-                        <div class="upload-zone" id="uploadZone">
-                            <div class="visually-hidden">
-                                {{ form.picture }}
-                            </div>
-                            <div class="image-container">
-                                {% if project.has_image %}
-                                    <img src="{{ project.picture.url }}" id="imgPreview" class="uploaded-image">
                                 {% else %}
-                                    <div class="upload-placeholder" id="placeholder">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <span>کلیک کنید یا فایل را بکشید</span>
-                                    </div>
-                                    <img id="imgPreview" class="uploaded-image" style="display:none;">
+                                    <div class="form-hint mt-2 text-center">JPG, PNG | حداکثر 5MB</div>
                                 {% endif %}
                             </div>
-                            <div class="upload-actions">
-                                <button type="button" class="upload-btn" id="selectBtn">
-                                    <i class="fas fa-folder-open"></i>
-                                    انتخاب فایل
-                                </button>
-                                <button type="button" class="remove-btn" id="removeBtn">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Details Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-success">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>مشخصات فنی</h2>
+                                <p>اطلاعات پرینت از اسلایسر</p>
                             </div>
                         </div>
-                        <input type="hidden" name="remove_picture" id="removePic" value="0">
                     </div>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <!-- Filament Used with Unit Selector -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">
+                                        <i class="fas fa-ruler text-success"></i>
+                                        فیلامنت مصرفی
+                                        <span class="required">*</span>
+                                    </label>
+                                    
+                                    <div class="unit-input-wrapper">
+                                        <div class="unit-input-group">
+                                            <input type="number" 
+                                                   id="filament_input_display" 
+                                                   step="any" 
+                                                   min="0"
+                                                   placeholder="مقدار را وارد کنید"
+                                                   value="{{ form.filament_used_mm.value|default:'' }}">
+                                            <div class="unit-selector">
+                                                <button type="button" class="unit-btn active" data-unit="mm">mm</button>
+                                                <button type="button" class="unit-btn" data-unit="m">متر</button>
+                                                <button type="button" class="unit-btn" data-unit="g">گرم</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Conversion Info -->
+                                        <div class="conversion-info" id="conversionInfo" style="display: none;">
+                                            <i class="fas fa-exchange-alt"></i>
+                                            <span>معادل: <span class="conversion-value" id="conversionValue">—</span></span>
+                                        </div>
+                                        
+                                        <!-- Density Selector for Gram -->
+                                        <div class="density-selector" id="densitySelector">
+                                            <label>
+                                                <i class="fas fa-weight-hanging"></i>
+                                                چگالی فیلامنت (گرم بر متر)
+                                            </label>
+                                            <div class="density-options">
+                                                <div class="density-option" data-density="2.5">
+                                                    <span>۲.۵</span>
+                                                    <small>PLA سبک</small>
+                                                </div>
+                                                <div class="density-option active" data-density="3.0">
+                                                    <span>۳.۰</span>
+                                                    <small>PLA معمولی</small>
+                                                </div>
+                                                <div class="density-option" data-density="3.3">
+                                                    <span>۳.۳</span>
+                                                    <small>PETG</small>
+                                                </div>
+                                                <div class="density-option" data-density="3.5">
+                                                    <span>۳.۵</span>
+                                                    <small>ABS</small>
+                                                </div>
+                                                <div class="density-option" data-density="4.0">
+                                                    <span>۴.۰</span>
+                                                    <small>TPU</small>
+                                                </div>
+                                            </div>
+                                            <div class="form-hint mt-2">
+                                                <i class="fas fa-info-circle"></i>
+                                                چگالی بر اساس قطر ۱.۷۵ میلی‌متر محاسبه شده
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if form.filament_used_mm.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.filament_used_mm.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="form-hint mt-2" id="unitHint">
+                                        <span id="hintMM">1000mm = 1 متر</span>
+                                        <span id="hintM" style="display:none;">مستقیم از اسلایسر</span>
+                                        <span id="hintG" style="display:none;">وزن فیلامنت مصرفی</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock text-warning"></i>
+                                        زمان پرینت
+                                        <span class="required">*</span>
+                                    </label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            {{ form.print_hours }}
+                                            <div class="form-hint">ساعت</div>
+                                        </div>
+                                        <div class="col-6">
+                                            {{ form.print_minutes }}
+                                            <div class="form-hint">دقیقه</div>
+                                        </div>
+                                    </div>
+                                    {% if form.print_hours.errors %}
+                                        <div class="form-error">{{ form.print_hours.errors.0 }}</div>
+                                    {% endif %}
+                                    
+                                    <!-- Time Summary Display -->
+                                    <div class="time-summary" id="timeSummary" style="display: none;">
+                                        <i class="fas fa-hourglass-half"></i>
+                                        <span id="timeSummaryText">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Calculator -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title">
-                            <i class="fas fa-calculator"></i>
-                            محاسبه‌گر هزینه
+                        <hr class="my-4" style="border-color: var(--border-color);">
+
+                        <h3 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="fas fa-ruler-combined text-primary"></i>
+                            ابعاد (میلی‌متر)
                         </h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.size_x.id_for_label }}">
+                                        طول (X)
+                                    </label>
+                                    {{ form.size_x }}
+                                    {% if form.size_x.errors %}
+                                        <div class="form-error">{{ form.size_x.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.size_y.id_for_label }}">
+                                        عرض (Y)
+                                    </label>
+                                    {{ form.size_y }}
+                                    {% if form.size_y.errors %}
+                                        <div class="form-error">{{ form.size_y.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.size_z.id_for_label }}">
+                                        ارتفاع (Z)
+                                    </label>
+                                    {{ form.size_z }}
+                                    {% if form.size_z.errors %}
+                                        <div class="form-error">{{ form.size_z.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Services Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-info">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>خدمات اضافی</h2>
+                                <p>سرویس‌های تکمیلی</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-xl service-box" id="postProcessingBox" style="background: var(--bg-secondary); border: 2px solid var(--border-color); cursor: pointer;">
+                                    <div class="d-flex align-items-start">
+                                        <input type="checkbox" 
+                                               name="{{ form.post_processing_enabled.name }}" 
+                                               id="id_post_processing_enabled"
+                                               class="form-check-input mt-1"
+                                               {% if form.post_processing_enabled.value %}checked{% endif %}>
+                                        <div class="ms-3">
+                                            <label class="fw-bold d-block" for="id_post_processing_enabled" style="cursor: pointer;">
+                                                <i class="fas fa-hammer text-info me-2"></i>
+                                                پست‌پروسسینگ
+                                            </label>
+                                            <div class="text-muted small mt-1">
+                                                پرداخت، سنباده، حذف ساپورت و آماده‌سازی
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-4 rounded-xl service-box" id="paintingBox" style="background: var(--bg-secondary); border: 2px solid var(--border-color); cursor: pointer;">
+                                    <div class="d-flex align-items-start">
+                                        <input type="checkbox" 
+                                               name="{{ form.painting_enabled.name }}" 
+                                               id="id_painting_enabled"
+                                               class="form-check-input mt-1"
+                                               {% if form.painting_enabled.value %}checked{% endif %}>
+                                        <div class="ms-3">
+                                            <label class="fw-bold d-block" for="id_painting_enabled" style="cursor: pointer;">
+                                                <i class="fas fa-palette text-warning me-2"></i>
+                                                رنگ‌آمیزی
+                                            </label>
+                                            <div class="text-muted small mt-1">
+                                                رنگ‌آمیزی حرفه‌ای بر اساس سطح مدل
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <div class="calc-container">
-                            <div class="calc-empty" id="calcEmpty">
-                                <i class="fas fa-info-circle"></i>
-                                <p>فرم را پر کنید</p>
-                            </div>
-
-                            <div class="calc-content" id="calcContent" style="display:none;">
-                                
-                                <div class="cost-input-group">
-                                    <label>قیمت فیلامنت (تومان/کیلو)</label>
-                                    <input type="number" id="costInput" value="25000" step="1000">
-                                </div>
-
-                                <div class="weight-display">
-                                    <span>وزن:</span>
-                                    <strong id="weightValue">0 گرم</strong>
-                                </div>
-
-                                <div class="costs-list">
-                                    <div class="cost-line">
-                                        <span class="cost-name">
-                                            <i class="fas fa-fill-drip" style="color: #10b981;"></i>
-                                            مواد
-                                        </span>
-                                        <span class="cost-amount" id="matCost">0</span>
-                                    </div>
-                                    <div class="cost-line">
-                                        <span class="cost-name">
-                                            <i class="fas fa-bolt" style="color: #f59e0b;"></i>
-                                            برق
-                                        </span>
-                                        <span class="cost-amount" id="elecCost">0</span>
-                                    </div>
-                                    <div class="cost-line">
-                                        <span class="cost-name">
-                                            <i class="fas fa-cogs" style="color: #6b7280;"></i>
-                                            استهلاک
-                                        </span>
-                                        <span class="cost-amount" id="depCost">0</span>
-                                    </div>
-                                    <div class="cost-line" id="postLine" style="display:none;">
-                                        <span class="cost-name">
-                                            <i class="fas fa-hammer" style="color: #06b6d4;"></i>
-                                            پست‌پروسسینگ
-                                        </span>
-                                        <span class="cost-amount" id="postVal">0</span>
-                                    </div>
-                                    <div class="cost-line" id="paintLine" style="display:none;">
-                                        <span class="cost-name">
-                                            <i class="fas fa-palette" style="color: #ef4444;"></i>
-                                            رنگ‌آمیزی
-                                        </span>
-                                        <span class="cost-amount" id="paintVal">0</span>
-                                    </div>
-                                </div>
-
-                                <div class="total-cost">
-                                    <span>جمع کل</span>
-                                    <strong id="totalVal">0 تومان</strong>
-                                </div>
-
-                                <div class="selling-price">
-                                    <div class="selling-header">
-                                        <span>قیمت پیشنهادی</span>
-                                        <span class="profit-tag" id="profitTag">سود: 0</span>
-                                    </div>
-                                    <div class="selling-value" id="sellVal">0 تومان</div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- Bottom Bar -->
-            <div class="bottom-bar">
-                <div class="container">
-                    <div class="bottom-content">
-                        <div class="save-info">
-                            <i class="fas fa-save"></i>
-                            <span>تغییرات خودکار ذخیره نمی‌شود</span>
-                        </div>
-                        <div class="bottom-actions">
-                            <a href="{% url 'calculator:view_project' project.pk %}" class="btn-cancel">
-                                انصراف
-                            </a>
-                            <button type="submit" class="btn-save">
-                                <i class="fas fa-check"></i>
-                                ذخیره تغییرات
-                            </button>
+                        <div class="alert mt-4 mb-0" style="background: var(--info-50); color: var(--info-700); border: none; border-radius: var(--radius-lg);">
+                            <i class="fas fa-info-circle me-2"></i>
+                            تغییرات در محاسبات بعدی اعمال خواهد شد.
                         </div>
                     </div>
                 </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{% url 'calculator:view_project' project.pk %}" class="btn-modern btn-outline">
+                        <i class="fas fa-times"></i>
+                        <span>انصراف</span>
+                    </a>
+                    <button type="submit" class="btn-modern btn-primary btn-lg">
+                        <i class="fas fa-save"></i>
+                        <span>ذخیره تغییرات</span>
+                    </button>
+                </div>
             </div>
 
-        </form>
-    </div>
+            <!-- Cost Preview Sidebar -->
+            <div class="col-lg-4">
+                <div class="card-modern animate-in cost-preview" id="costPreviewCard" data-calc-url="{% url 'calculator:calculate_preview' %}">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-success">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>پیش‌نمایش هزینه</h2>
+                                <p>محاسبه زنده</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <!-- Filament Cost Input -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-coins text-warning"></i>
+                                قیمت فیلامنت (تومان/کیلو)
+                            </label>
+                            <input type="number" id="preview-filament-cost" class="form-control"
+                                   value="1500000" step="10000" min="0">
+                            <div class="form-hint">مقدار پیش‌فرض: ۱,۵۰۰,۰۰۰ تومان</div>
+                        </div>
 
+                        <!-- Cost Breakdown -->
+                        <div class="d-flex flex-column gap-0 mt-4">
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-weight text-primary"></i>
+                                    وزن تخمینی
+                                </span>
+                                <span class="cost-preview-value" id="filament-weight">—</span>
+                            </div>
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-tape text-success"></i>
+                                    هزینه مواد
+                                </span>
+                                <span class="cost-preview-value text-success" id="material-cost">—</span>
+                            </div>
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-bolt text-warning"></i>
+                                    هزینه برق
+                                </span>
+                                <span class="cost-preview-value text-warning" id="electricity-cost">—</span>
+                            </div>
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-cog text-muted"></i>
+                                    استهلاک دستگاه
+                                </span>
+                                <span class="cost-preview-value" id="depreciation-cost">—</span>
+                            </div>
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-hammer text-info"></i>
+                                    پست‌پروسسینگ
+                                </span>
+                                <span class="cost-preview-value text-info" id="post-processing-cost">—</span>
+                            </div>
+                            <div class="cost-preview-item">
+                                <span class="cost-preview-label">
+                                    <i class="fas fa-palette text-danger"></i>
+                                    رنگ‌آمیزی
+                                </span>
+                                <span class="cost-preview-value text-danger" id="painting-cost">—</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: var(--border-color);">
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold">
+                                <i class="fas fa-calculator text-primary me-2"></i>
+                                جمع کل هزینه
+                            </span>
+                            <span class="fw-bold fs-5 text-danger" id="total-cost">—</span>
+                        </div>
+
+                        <!-- Selling Price -->
+                        <div class="cost-preview-total">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="cost-preview-total-label">قیمت پیشنهادی فروش</span>
+                                <span class="cost-preview-total-value" id="selling-price">—</span>
+                            </div>
+                            <div class="cost-preview-profit" id="profit-margin">
+                                سود: —
+                            </div>
+                        </div>
+
+                        <div class="text-muted small mt-4">
+                            <i class="fas fa-info-circle me-1"></i>
+                            محاسبه تقریبی است؛ اعداد نهایی پس از اختصاص به فیلامنت مشخص می‌شوند.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-// Image Upload
-(function() {
-    const fileInput = document.getElementById('{{ form.picture.id_for_label }}');
-    const imgPreview = document.getElementById('imgPreview');
-    const placeholder = document.getElementById('placeholder');
-    const selectBtn = document.getElementById('selectBtn');
-    const removeBtn = document.getElementById('removeBtn');
-    const removePic = document.getElementById('removePic');
-    const uploadZone = document.getElementById('uploadZone');
-    const clearCheckbox = document.querySelector('input[name$="picture-clear"]');
-
-    selectBtn?.addEventListener('click', () => fileInput?.click());
-
-    fileInput?.addEventListener('change', function(e) {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            imgPreview.src = ev.target.result;
-            imgPreview.style.display = 'block';
-            if (placeholder) placeholder.style.display = 'none';
-            if (removePic) removePic.value = '0';
-            if (clearCheckbox) clearCheckbox.checked = false;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    removeBtn?.addEventListener('click', function() {
-        if (fileInput) fileInput.value = '';
-        imgPreview.style.display = 'none';
-        if (placeholder) placeholder.style.display = 'flex';
-        if (removePic) removePic.value = '1';
-        if (clearCheckbox) clearCheckbox.checked = true;
-    });
-
-    // Drag & drop
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-        uploadZone?.addEventListener(evt, e => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
-    });
-
-    uploadZone?.addEventListener('dragover', () => uploadZone.classList.add('drag-over'));
-    uploadZone?.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-    uploadZone?.addEventListener('drop', function(e) {
-        uploadZone.classList.remove('drag-over');
-        const file = e.dataTransfer?.files?.[0];
-        if (!file || !fileInput) return;
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        fileInput.files = dt.files;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            imgPreview.src = ev.target.result;
-            imgPreview.style.display = 'block';
-            if (placeholder) placeholder.style.display = 'none';
-            if (removePic) removePic.value = '0';
-            if (clearCheckbox) clearCheckbox.checked = false;
-        };
-        reader.readAsDataURL(file);
-    });
-})();
-
-// Calculator
-(function() {
-    const inputs = {
-        filament: document.getElementById('{{ form.filament_used_mm.id_for_label }}'),
-        hours: document.getElementById('{{ form.print_hours.id_for_label }}'),
-        minutes: document.getElementById('{{ form.print_minutes.id_for_label }}'),
-        x: document.getElementById('{{ form.size_x.id_for_label }}'),
-        y: document.getElementById('{{ form.size_y.id_for_label }}'),
-        z: document.getElementById('{{ form.size_z.id_for_label }}'),
-        post: document.getElementById('{{ form.post_processing_enabled.id_for_label }}'),
-        paint: document.getElementById('{{ form.painting_enabled.id_for_label }}'),
-        cost: document.getElementById('costInput')
-    };
-
-    const ui = {
-        empty: document.getElementById('calcEmpty'),
-        content: document.getElementById('calcContent')
-    };
-
-    let calculating = false;
-
-    function fmt(n) {
-        return new Intl.NumberFormat('fa-IR').format(Math.round(n || 0));
-    }
-
-    function num(v) {
-        const n = parseFloat(v);
-        return isNaN(n) ? 0 : n;
-    }
-
-    function hours() {
-        return (parseInt(inputs.hours?.value, 10) || 0) + ((parseInt(inputs.minutes?.value, 10) || 0) / 60);
-    }
-
-    function valid() {
-        return num(inputs.filament?.value) > 0 && hours() > 0 && 
-               num(inputs.x?.value) > 0 && num(inputs.y?.value) > 0 && num(inputs.z?.value) > 0;
-    }
-
-    function calc() {
-        if (!valid()) {
-            ui.content.style.display = 'none';
-            ui.empty.style.display = 'flex';
-            return;
-        }
-
-        if (calculating) return;
-        calculating = true;
-
-        fetch('{% url "calculator:calculate_preview" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: JSON.stringify({
-                filament_used_mm: num(inputs.filament.value),
-                print_time_hours: hours(),
-                size_x: num(inputs.x.value),
-                size_y: num(inputs.y.value),
-                size_z: num(inputs.z.value),
-                filament_cost_per_kg: num(inputs.cost?.value) || 25000,
-                post_processing_enabled: !!(inputs.post?.checked),
-                painting_enabled: !!(inputs.paint?.checked),
-                packaging_cost: 0
-            })
-        })
-        .then(r => r.json())
-        .then(d => {
-            if (d.error) throw new Error(d.error);
-
-            ui.content.style.display = 'block';
-            ui.empty.style.display = 'none';
-
-            document.getElementById('weightValue').textContent = fmt(d.filament_weight) + ' گرم';
-            document.getElementById('matCost').textContent = fmt(d.material_cost) + ' تومان';
-            document.getElementById('elecCost').textContent = fmt(d.electricity_cost) + ' تومان';
-            document.getElementById('depCost').textContent = fmt(d.depreciation_cost) + ' تومان';
-            document.getElementById('totalVal').textContent = fmt(d.total_cost) + ' تومان';
-            document.getElementById('sellVal').textContent = fmt(d.selling_price) + ' تومان';
-
-            toggle('postLine', d.post_processing_cost > 0, 'postVal', d.post_processing_cost);
-            toggle('paintLine', d.painting_cost > 0, 'paintVal', d.painting_cost);
-
-            const profit = (d.selling_price || 0) - (d.total_cost || 0);
-            document.getElementById('profitTag').textContent = 'سود: ' + fmt(profit) + ' تومان';
-        })
-        .catch(err => console.error(err))
-        .finally(() => calculating = false);
-    }
-
-    function toggle(id, show, valId, val) {
-        const el = document.getElementById(id);
-        if (el) el.style.display = show ? 'flex' : 'none';
-        if (show) document.getElementById(valId).textContent = fmt(val) + ' تومان';
-    }
-
-    function debounce(fn, wait) {
-        let t;
-        return (...a) => {
-            clearTimeout(t);
-            t = setTimeout(() => fn(...a), wait);
-        };
-    }
-
-    const deb = debounce(calc, 400);
-
-    Object.values(inputs).forEach(el => {
-        if (!el) return;
-        el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', deb);
-    });
-
-    setTimeout(calc, 300);
-})();
-</script>
-
-<style>
-.visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-}
-
-/* ========== LAYOUT ========== */
-.edit-page {
-    background: var(--light-gray);
-    min-height: 100vh;
-    padding-bottom: 100px;
-}
-
-/* ========== TOP BAR ========== */
-.top-bar {
-    background: white;
-    border-bottom: 1px solid var(--border);
-    padding: 1rem 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: var(--shadow-sm);
-}
-
-.top-bar-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.back-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.3s;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-}
-
-.back-link:hover {
-    background: var(--primary-50);
-    color: var(--primary-dark);
-}
-
-.top-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--gray);
-    font-size: 0.95rem;
-}
-
-.project-code {
-    background: var(--primary);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.875rem;
-}
-
-.separator {
-    color: var(--border);
-}
-
-.project-name {
-    font-weight: 600;
-    color: var(--dark);
-}
-
-/* ========== EDIT CONTAINER ========== */
-.edit-container {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-.edit-layout {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 2rem;
-    align-items: start;
-}
-
-/* ========== MAIN CONTENT ========== */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.edit-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    transition: all 0.3s;
-}
-
-.edit-card:hover {
-    box-shadow: var(--shadow);
-}
-
-.card-label {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: white;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.label-number {
-    width: 36px;
-    height: 36px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 1.125rem;
-}
-
-.label-text {
-    font-weight: 700;
-    font-size: 1.125rem;
-}
-
-.card-content {
-    padding: 1.5rem;
-}
-
-/* ========== INPUTS ========== */
-.input-wrapper {
-    position: relative;
-}
-
-.input-wrapper input {
-    width: 100%;
-    padding: 1.25rem 1rem 0.5rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 1.125rem;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.input-wrapper input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
-}
-
-.floating-label {
-    position: absolute;
-    right: 1rem;
-    top: 0.5rem;
-    font-size: 0.75rem;
-    color: var(--gray);
-    font-weight: 600;
-    pointer-events: none;
-}
-
-.field-error {
-    display: block;
-    margin-top: 0.5rem;
-    color: var(--danger);
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* ========== FIELDS ROW ========== */
-.fields-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.field-group label.field-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
-}
-
-.field-group label.field-label i {
-    color: var(--primary);
-}
-
-.field-group input {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.field-group input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-}
-
-.field-hint {
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--gray);
-}
-
-/* ========== TIME FIELDS ========== */
-.time-fields {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.time-field {
-    flex: 1;
-    position: relative;
-}
-
-.time-field input {
-    width: 100%;
-    padding: 0.875rem 1rem 1.75rem;
-    text-align: center;
-    font-size: 1.25rem;
-}
-
-.time-unit {
-    position: absolute;
-    bottom: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.7rem;
-    color: var(--gray);
-    font-weight: 700;
-}
-
-.time-sep {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--primary);
-}
-
-/* ========== DIMENSIONS ========== */
-.dimensions-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.dim-field {
-    display: flex;
-    align-items: stretch;
-    gap: 0.75rem;
-}
-
-.dim-icon {
-    width: 48px;
-    flex-shrink: 0;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    color: white;
-}
-
-.dim-icon.x-axis {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.dim-icon.y-axis {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.dim-icon.z-axis {
-    background: linear-gradient(135deg, #06b6d4, #0891b2);
-}
-
-.dim-input {
-    flex: 1;
-    position: relative;
-}
-
-.dim-input input {
-    width: 100%;
-    padding: 0.875rem 1rem 1.75rem;
-    text-align: center;
-    font-size: 1.125rem;
-    font-weight: 700;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-}
-
-.dim-input input:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.dim-input label {
-    position: absolute;
-    bottom: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.7rem;
-    color: var(--gray);
-    font-weight: 700;
-}
-
-/* ========== SERVICES ========== */
-.services-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.service-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    border: 2px solid var(--border);
-    transition: all 0.3s;
-}
-
-.service-item:hover {
-    background: white;
-    border-color: var(--primary);
-}
-
-.service-switch {
-    flex-shrink: 0;
-}
-
-.switch-input {
-    display: none;
-}
-
-.switch-label {
-    width: 52px;
-    height: 28px;
-    background: #cbd5e1;
-    border-radius: 28px;
-    display: block;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.switch-label::after {
-    content: '';
-    width: 22px;
-    height: 22px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    transition: all 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.switch-input:checked + .switch-label {
-    background: var(--primary);
-}
-
-.switch-input:checked + .switch-label::after {
-    transform: translateX(-24px);
-}
-
-.service-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-}
-
-.service-icon-wrap {
-    width: 48px;
-    height: 48px;
-    background: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: var(--primary);
-    box-shadow: var(--shadow-sm);
-}
-
-.service-text h4 {
-    margin: 0 0 0.25rem;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-.service-text p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--gray);
-}
-
-/* ========== SIDEBAR ========== */
-.sidebar-content {
-    position: sticky;
-    top: 6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.sidebar-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-}
-
-.sidebar-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0 0 1.25rem;
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-.sidebar-title i {
-    color: var(--primary);
-    font-size: 1.25rem;
-}
-
-/* ========== IMAGE UPLOAD ========== */
-.upload-zone {
-    transition: all 0.3s;
-}
-
-.upload-zone.drag-over {
-    transform: scale(1.02);
-}
-
-.image-container {
-    aspect-ratio: 4/3;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 1rem;
-    border: 2px dashed var(--border);
-}
-
-.uploaded-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.upload-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    color: var(--gray);
-}
-
-.upload-placeholder i {
-    font-size: 3rem;
-    opacity: 0.4;
-}
-
-.upload-placeholder span {
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.upload-actions {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.upload-btn {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.3s;
-}
-
-.upload-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-}
-
-.remove-btn {
-    width: 44px;
-    padding: 0.75rem;
-    background: var(--light-gray);
-    color: var(--danger);
-    border: none;
-    border-radius: var(--radius);
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.remove-btn:hover {
-    background: var(--danger);
-    color: white;
-}
-
-/* ========== CALCULATOR ========== */
-.calc-empty {
-    padding: 3rem 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--gray);
-}
-
-.calc-empty i {
-    font-size: 2.5rem;
-    opacity: 0.3;
-}
-
-.calc-empty p {
-    margin: 0;
-    font-weight: 600;
-}
-
-.calc-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.cost-input-group label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--gray);
-    margin-bottom: 0.5rem;
-}
-
-.cost-input-group input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-weight: 700;
-}
-
-.weight-display {
-    background: var(--light-gray);
-    padding: 0.875rem 1rem;
-    border-radius: var(--radius);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.weight-display span {
-    color: var(--gray);
-}
-
-.weight-display strong {
-    color: var(--dark);
-}
-
-.costs-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.cost-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.625rem 0;
-}
-
-.cost-name {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--gray);
-}
-
-.cost-amount {
-    font-weight: 700;
-    color: var(--dark);
-    font-size: 0.95rem;
-}
-
-.total-cost {
-    background: linear-gradient(135deg, var(--primary-50), white);
-    padding: 1rem;
-    border-radius: var(--radius);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 2px solid var(--primary);
-    font-weight: 700;
-}
-
-.total-cost strong {
-    color: var(--primary);
-    font-size: 1.125rem;
-}
-
-.selling-price {
-    background: linear-gradient(135deg, var(--success-50), white);
-    padding: 1rem;
-    border-radius: var(--radius);
-    border: 2px solid var(--success);
-}
-
-.selling-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    font-size: 0.875rem;
-    color: var(--gray);
-}
-
-.profit-tag {
-    background: rgba(16,185,129,0.15);
-    padding: 0.25rem 0.75rem;
-    border-radius: 50px;
-    font-weight: 700;
-    color: var(--success);
-    font-size: 0.75rem;
-}
-
-.selling-value {
-    text-align: center;
-    font-size: 1.75rem;
-    font-weight: 900;
-    color: var(--success);
-}
-
-/* ========== BOTTOM BAR ========== */
-.bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-top: 2px solid var(--border);
-    padding: 1rem 0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    z-index: 100;
-}
-
-.bottom-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.save-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--gray);
-    font-size: 0.95rem;
-}
-
-.save-info i {
-    color: var(--primary);
-}
-
-.bottom-actions {
-    display: flex;
-    gap: 1rem;
-}
-
-.btn-cancel {
-    padding: 0.875rem 1.5rem;
-    background: var(--light-gray);
-    color: var(--dark);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.3s;
-}
-
-.btn-cancel:hover {
-    background: var(--border);
-    color: var(--dark);
-}
-
-.btn-save {
-    padding: 0.875rem 2rem;
-    background: linear-gradient(135deg, var(--success), var(--success-600));
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-}
-
-.btn-save:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16,185,129,0.4);
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1200px) {
-    .edit-layout {
-        grid-template-columns: 1fr 340px;
-    }
-}
-
-@media (max-width: 991px) {
-    .edit-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .sidebar-content {
-        position: static;
-        grid-row: 1;
-    }
-
-    .fields-row,
-    .dimensions-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .top-info {
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.5rem;
-    }
-
-    .separator {
-        display: none;
-    }
-
-    .bottom-content {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .save-info {
-        display: none;
-    }
-
-    .bottom-actions {
-        width: 100%;
-    }
-
-    .btn-cancel,
-    .btn-save {
-        flex: 1;
-    }
-}
-</style>
+{% block extra_js %}
+<script src="{% static 'js/add_project.js' %}"></script>
 {% endblock %}

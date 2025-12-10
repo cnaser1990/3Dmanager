@@ -162,7 +162,7 @@ class Project(models.Model):
 
 class FilamentUsage(models.Model):
     filament = models.ForeignKey(Filament, on_delete=models.CASCADE, verbose_name='فیلامنت')
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='پروژه')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='مدل')
     quantity = models.PositiveIntegerField(default=1, verbose_name='تعداد تولید')
     filament_weight_used = models.FloatField(verbose_name='وزن فیلامنت (گرم)')
     material_cost = models.FloatField(verbose_name='هزینه مواد')

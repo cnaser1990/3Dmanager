@@ -1,92 +1,81 @@
+<!-- templates/calculator/sales_history.html -->
 {% extends "calculator/base.html" %}
 {% load jalali %}
 
-{% block title %}تاریخچه فروش{% endblock %}
+{% block title %}تاریخچه فروش - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
-    
-    <!-- Modern History Header -->
-    <div class="history-header">
-        <div class="header-bg"></div>
-        <div class="header-wrapper">
-            <div class="header-icon-wrapper">
-                <div class="header-icon">
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:index' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="page-header-icon">
                     <i class="fas fa-history"></i>
                 </div>
+                <div class="page-header-text">
+                    <h1>تاریخچه فروش</h1>
+                    <p>{{ period_name|default:"همه زمان‌ها" }} • {{ total_sales|default:0 }} فروش</p>
+                </div>
             </div>
-            <div class="header-content">
-                <h1 class="header-title">تاریخچه فروش</h1>
-                <p class="header-subtitle">
-                    {{ period_name|default:"همه زمان‌ها" }} • {{ total_sales|default:0 }} فروش ثبت شده
-                </p>
-            </div>
-            <div class="header-actions">
-                <a href="{% url 'calculator:sales' %}" class="btn-new-sale">
+            <div class="page-header-actions">
+                <a href="{% url 'calculator:sales' %}" class="btn-modern btn-success">
                     <i class="fas fa-plus"></i>
                     <span>فروش جدید</span>
                 </a>
             </div>
         </div>
-    </div>
-
-    <!-- Statistics Grid -->
-    <div class="stats-grid">
-        <div class="stat-card stat-card-info">
-            <div class="stat-icon-wrapper">
-                <i class="fas fa-shopping-cart"></i>
+        
+        <!-- Stats -->
+        <div class="page-header-stats">
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ total_sales|default:0 }}</div>
+                    <div class="header-stat-label">تعداد فروش</div>
+                </div>
             </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ total_sales|default:0 }}</div>
-                <div class="stat-label">تعداد فروش</div>
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-coins"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ total_revenue|default:0|floatformat:0 }}</div>
+                    <div class="header-stat-label">درآمد (تومان)</div>
+                </div>
             </div>
-        </div>
-
-        <div class="stat-card stat-card-success">
-            <div class="stat-icon-wrapper">
-                <i class="fas fa-coins"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ total_revenue|default:0|floatformat:0 }}</div>
-                <div class="stat-label">کل درآمد (تومان)</div>
-            </div>
-        </div>
-
-        <div class="stat-card stat-card-warning">
-            <div class="stat-icon-wrapper">
-                <i class="fas fa-boxes"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ total_quantity|default:0 }}</div>
-                <div class="stat-label">تعداد محصولات</div>
-            </div>
-        </div>
-
-        <div class="stat-card stat-card-primary">
-            <div class="stat-icon-wrapper">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-value">{{ total_revenue|default:0|floatformat:0 }}</div>
-                <div class="stat-label">فروش کل (تومان)</div>
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-boxes"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ total_quantity|default:0 }}</div>
+                    <div class="header-stat-label">تعداد محصول</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters Card -->
-    <div class="filters-card">
-        <div class="filters-header">
-            <i class="fas fa-filter"></i>
-            <h2>فیلتر و جستجو</h2>
+    <!-- Filters -->
+    <div class="card-modern mb-4 animate-in">
+        <div class="card-modern-header">
+            <div class="card-header-title">
+                <div class="card-header-icon icon-primary">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <div class="card-header-text">
+                    <h2>فیلتر و جستجو</h2>
+                </div>
+            </div>
         </div>
-        <div class="filters-body">
-            <form method="GET" class="filters-form" id="filterForm">
-                <div class="filter-group">
-                    <label class="filter-label">
-                        <i class="fas fa-calendar-alt"></i>
+        <div class="card-modern-body">
+            <form method="get" id="filterForm" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-alt text-primary me-1"></i>
                         دوره زمانی
                     </label>
-                    <select name="period" class="filter-select" id="periodSelect">
+                    <select name="period" id="periodSelect" class="form-control form-select">
                         <option value="all" {% if period == 'all' %}selected{% endif %}>همه</option>
                         <option value="today" {% if period == 'today' %}selected{% endif %}>امروز</option>
                         <option value="week" {% if period == 'week' %}selected{% endif %}>هفته گذشته</option>
@@ -94,1014 +83,191 @@
                         <option value="year" {% if period == 'year' %}selected{% endif %}>سال گذشته</option>
                     </select>
                 </div>
-
-                <div class="filter-group filter-search">
-                    <label class="filter-label">
-                        <i class="fas fa-search"></i>
+                <div class="col-md-5">
+                    <label class="form-label">
+                        <i class="fas fa-search text-primary me-1"></i>
                         جستجو
                     </label>
-                    <input type="text" name="search" class="filter-input" value="{{ search|default:'' }}" 
-                           placeholder="کد محصول، نام مشتری، شماره...">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" value="{{ search|default:'' }}" placeholder="کد محصول، نام مشتری...">
+                    </div>
                 </div>
-
-                <div class="filter-group">
-                    <label class="filter-label">
-                        <i class="fas fa-sort"></i>
+                <div class="col-md-3">
+                    <label class="form-label">
+                        <i class="fas fa-sort text-primary me-1"></i>
                         مرتب‌سازی
                     </label>
-                    <select name="sort" class="filter-select" id="sortSelect">
+                    <select name="sort" id="sortSelect" class="form-control form-select">
                         <option value="-sale_date" {% if sort == '-sale_date' %}selected{% endif %}>جدیدترین</option>
                         <option value="sale_date" {% if sort == 'sale_date' %}selected{% endif %}>قدیمی‌ترین</option>
                         <option value="-total_price" {% if sort == '-total_price' %}selected{% endif %}>بیشترین قیمت</option>
                         <option value="total_price" {% if sort == 'total_price' %}selected{% endif %}>کمترین قیمت</option>
                         <option value="-quantity" {% if sort == '-quantity' %}selected{% endif %}>بیشترین تعداد</option>
-                        <option value="customer_name" {% if sort == 'customer_name' %}selected{% endif %}>نام مشتری</option>
                     </select>
                 </div>
-
-                <div class="filter-actions">
-                    <button type="submit" class="btn-reports btn-primary">
-                        <i class="fas fa-search"></i>
-                        <span>اعمال فیلتر</span>
-                    </button>
-                    <a href="{% url 'calculator:sales_history' %}" class="btn-reset-filter" title="پاک کردن فیلترها">
-                        <i class="fas fa-redo"></i>
-                    </a>
+                <div class="col-md-1">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn-modern btn-primary btn-icon">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href="{% url 'calculator:sales_history' %}" class="btn-modern btn-outline btn-icon" title="پاک کردن">
+                            <i class="fas fa-redo"></i>
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Sales History Card -->
-    <div class="history-card">
-        <div class="history-card-header">
-            <div class="header-left">
-                <i class="fas fa-list"></i>
-                <h2>لیست فروش‌ها</h2>
+    <!-- Sales Table -->
+    <div class="card-modern animate-in">
+        <div class="card-modern-header">
+            <div class="card-header-title">
+                <div class="card-header-icon icon-success">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div class="card-header-text">
+                    <h2>لیست فروش‌ها</h2>
+                </div>
             </div>
-            <div class="count-badge">
-                {% if page_obj %}{{ page_obj.paginator.count }}{% else %}0{% endif %} مورد
-            </div>
+            <span class="badge-count">{% if page_obj %}{{ page_obj.paginator.count }}{% else %}0{% endif %}</span>
+        </div>
+        
+        {% if page_obj and page_obj|length > 0 %}
+        <div class="table-container">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>کد</th>
+                        <th>تصویر</th>
+                        <th>محصول</th>
+                        <th>تعداد</th>
+                        <th>قیمت واحد</th>
+                        <th>بسته‌بندی</th>
+                        <th>قیمت کل</th>
+                        <th>مشتری</th>
+                        <th>تاریخ</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in page_obj %}
+                    <tr class="table-row">
+                        <td>
+                            <span class="badge badge-warning">{{ sale.project_code }}</span>
+                        </td>
+                        <td>
+                            {% if sale.project_obj and sale.project_obj.picture %}
+                                <img src="{{ sale.project_obj.picture.url }}" alt="" 
+                                     style="width: 48px; height: 48px; border-radius: var(--radius-md); object-fit: cover;">
+                            {% else %}
+                                <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-cube text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-bold">
+                                {% if sale.project_obj %}{{ sale.project_obj.model_name }}{% else %}کد {{ sale.project_code }}{% endif %}
+                            </div>
+                            {% if sale.notes %}
+                            <div class="text-muted small text-truncate" style="max-width: 150px;">{{ sale.notes }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-info">{{ sale.quantity }} عدد</span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold">{{ sale.unit_price|floatformat:0 }}</span>
+                            <span class="text-muted small">تومان</span>
+                        </td>
+                        <td>
+                            {% if sale.packaging_cost and sale.packaging_cost > 0 %}
+                                <span>{{ sale.packaging_cost|floatformat:0 }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="fw-bold text-success">{{ sale.total_price|floatformat:0 }}</span>
+                            <span class="text-muted small">تومان</span>
+                        </td>
+                        <td>
+                            {% if sale.customer_name %}
+                                <div class="fw-semibold">{{ sale.customer_name }}</div>
+                                {% if sale.customer_phone %}
+                                <div class="text-muted small">{{ sale.customer_phone }}</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">ناشناس</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ sale.sale_date|jalali:"%Y/%m/%d"|fa_digits }}</div>
+                            <div class="text-muted small">{{ sale.sale_date|jalali:"%H:%M"|fa_digits }}</div>
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'calculator:delete_sale' sale.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-modern btn-ghost btn-icon btn-sm text-danger"
+                                        onclick="return confirm('حذف این فروش؟')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
-        <div class="history-card-body">
-            {% if page_obj and page_obj|length > 0 %}
-                <div class="sales-table-wrapper">
-                    <table class="sales-table">
-                        <thead>
-                            <tr>
-                                <th>کد</th>
-                                <th>تصویر</th>
-                                <th>محصول</th>
-                                <th>تعداد</th>
-                                <th>قیمت واحد</th>
-                                <th>بسته‌بندی</th>
-                                <th>قیمت کل</th>
-                                <th>مشتری</th>
-                                <th>تاریخ</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sale in page_obj %}
-                            <tr class="sale-row">
-                                <td>
-                                    <span class="code-badge">{{ sale.project_code }}</span>
-                                </td>
-                                <td>
-                                    <div class="image-cell">
-                                        {% if sale.project_obj %}
-                                            {% if sale.project_obj.picture %}
-                                                <img src="{{ sale.project_obj.picture.url }}" 
-                                                    alt="{{ sale.project_obj.model_name }}" 
-                                                    class="sale-thumbnail">
-                                            {% else %}
-                                                <div class="no-image">
-                                                    <i class="fas fa-cube"></i>
-                                                </div>
-                                            {% endif %}
-                                        {% else %}
-                                            <div class="no-image">
-                                                <i class="fas fa-cube"></i>
-                                            </div>
-                                        {% endif %}
-
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="product-cell">
-                                        <strong>
-                                            {% if sale.project_obj %}
-                                                {{ sale.project_obj.model_name }}
-                                            {% else %}
-                                                کد {{ sale.project_code }}
-                                            {% endif %}
-                                        </strong>
-                                        {% if sale.notes %}
-                                            <span class="notes">{{ sale.notes|truncatechars:50 }}</span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="quantity-badge">{{ sale.quantity }} عدد</span>
-                                </td>
-                                <td>
-                                    <div class="price-cell">
-                                        <strong>{{ sale.unit_price|floatformat:0 }}</strong>
-                                        <span>تومان</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if sale.packaging_cost and sale.packaging_cost > 0 %}
-                                        <div class="price-cell">
-                                            <strong>{{ sale.packaging_cost|floatformat:0 }}</strong>
-                                            <span>تومان</span>
-                                        </div>
-                                    {% else %}
-                                        <span class="no-value">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="price-cell price-total">
-                                        <strong>{{ sale.total_price|floatformat:0 }}</strong>
-                                        <span>تومان</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if sale.customer_name %}
-                                        <div class="customer-cell">
-                                            <strong>{{ sale.customer_name }}</strong>
-                                            {% if sale.customer_phone %}
-                                                <span>{{ sale.customer_phone }}</span>
-                                            {% endif %}
-                                        </div>
-                                    {% else %}
-                                        <span class="no-value">ناشناس</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="date-cell">
-                                        <strong>{{ sale.sale_date|jalali:"%Y/%m/%d"|fa_digits }}</strong>
-                                        <span>{{ sale.sale_date|jalali:"%H:%M"|fa_digits }}</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <form method="POST" action="{% url 'calculator:delete_sale' sale.pk %}" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-delete-sale" 
-                                                onclick="return confirm('آیا از حذف این فروش اطمینان دارید؟\n\nمحصول: {% if sale.project_obj %}{{ sale.project_obj.model_name }}{% else %}کد {{ sale.project_code }}{% endif %}\nمبلغ: {{ sale.total_price|floatformat:0 }} تومان')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
+            </div>
+            <nav class="pagination-nav">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+                    {% endif %}
+                    <li class="active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li><a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="card-modern-body">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-{% if search %}search{% else %}shopping-cart{% endif %}"></i>
                 </div>
-
-                <!-- Pagination -->
-                {% if page_obj.has_other_pages %}
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">
-                        صفحه {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}
-                    </div>
-                    <nav class="pagination-nav">
-                        {% if page_obj.has_previous %}
-                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1" 
-                               class="page-btn" title="اولین صفحه">
-                                <i class="fas fa-angle-double-right"></i>
-                            </a>
-                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}" 
-                               class="page-btn" title="صفحه قبل">
-                                <i class="fas fa-angle-right"></i>
-                            </a>
-                        {% endif %}
-
-                        <span class="current-page">{{ page_obj.number }}</span>
-
-                        {% if page_obj.has_next %}
-                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}" 
-                               class="page-btn" title="صفحه بعد">
-                                <i class="fas fa-angle-left"></i>
-                            </a>
-                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}" 
-                               class="page-btn" title="آخرین صفحه">
-                                <i class="fas fa-angle-double-left"></i>
-                            </a>
-                        {% endif %}
-                    </nav>
-                </div>
-                {% endif %}
-            {% else %}
-                <!-- Empty State -->
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-{% if search %}search{% else %}shopping-cart{% endif %}"></i>
-                    </div>
-                    <h3 class="empty-title">
-                        {% if search %}
-                            نتیجه‌ای یافت نشد
-                        {% else %}
-                            هیچ فروشی ثبت نشده
-                        {% endif %}
-                    </h3>
-                    <p class="empty-text">
-                        {% if search %}
-                            فیلترهای خود را تغییر دهید یا جستجوی دیگری انجام دهید
-                        {% else %}
-                            برای شروع، اولین فروش خود را ثبت کنید
-                        {% endif %}
-                    </p>
-                    <div class="empty-actions">
-                        {% if search %}
-                            <a href="{% url 'calculator:sales_history' %}" class="btn-empty-action">
-                                <i class="fas fa-times"></i>
-                                پاک کردن فیلترها
-                            </a>
-                        {% else %}
-                            <a href="{% url 'calculator:sales' %}" class="btn-empty-action">
-                                <i class="fas fa-plus"></i>
-                                ثبت فروش جدید
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'calculator:index' %}" class="btn-empty-secondary">
-                            <i class="fas fa-home"></i>
-                            داشبورد
+                <h3 class="empty-state-title">
+                    {% if search %}نتیجه‌ای یافت نشد{% else %}فروشی ثبت نشده{% endif %}
+                </h3>
+                <p class="empty-state-text">
+                    {% if search %}فیلترها را تغییر دهید{% else %}اولین فروش خود را ثبت کنید{% endif %}
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    {% if search %}
+                        <a href="{% url 'calculator:sales_history' %}" class="btn-modern btn-outline">
+                            <i class="fas fa-times"></i>
+                            <span>پاک کردن فیلتر</span>
                         </a>
-                    </div>
+                    {% endif %}
+                    <a href="{% url 'calculator:sales' %}" class="btn-modern btn-primary">
+                        <i class="fas fa-plus"></i>
+                        <span>ثبت فروش</span>
+                    </a>
                 </div>
-            {% endif %}
+            </div>
         </div>
+        {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function formatNumber(num) {
-    return new Intl.NumberFormat('fa-IR').format(Math.round(num || 0));
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit on filter change
-    ['periodSelect', 'sortSelect'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('change', function() {
-                document.getElementById('filterForm').submit();
-            });
-        }
-    });
-
-    // Format numbers in stat cards
-    document.querySelectorAll('.stat-value').forEach(element => {
-        const value = parseFloat(element.textContent.replace(/[^\d.-]/g, ''));
-        if (!isNaN(value) && value !== 0) {
-            element.textContent = formatNumber(value);
-        }
-    });
-
-    // Animate rows on scroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, index) => {
-            if (entry.isIntersecting) {
-                setTimeout(() => {
-                    entry.target.classList.add('visible');
-                }, index * 30);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.sale-row').forEach(row => {
-        observer.observe(row);
-    });
-
-    // Thumbnail hover effect
-    document.querySelectorAll('.sale-thumbnail').forEach(thumb => {
-        thumb.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.2)';
-        });
-        thumb.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
-});
-</script>
-
-<style>
-:root {
-    --primary: #6366f1;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --dark: #1f2937;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ========== HISTORY HEADER ========== */
-.history-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-xl);
-    position: relative;
-    overflow: hidden;
-}
-
-.header-bg {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,.15), transparent 60%);
-}
-
-.header-wrapper {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.header-icon-wrapper {
-    flex-shrink: 0;
-}
-
-.header-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.header-content {
-    flex: 1;
-}
-
-.header-title {
-    font-size: 2rem;
-    font-weight: 900;
-    color: white;
-    margin: 0 0 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-subtitle {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.95);
-    margin: 0;
-}
-
-.header-actions {
-    flex-shrink: 0;
-}
-
-.btn-new-sale {
-    background: white;
-    color: var(--primary);
-    padding: 0.875rem 1.75rem;
-    border-radius: var(--radius);
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    transition: var(--transition);
-    box-shadow: var(--shadow);
-}
-
-.btn-new-sale:hover {
-    background: var(--light-gray);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-/* ========== STATISTICS GRID ========== */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    border: 2px solid var(--border);
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    transition: var(--transition);
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-}
-
-.stat-card-primary { border-color: rgba(99, 102, 241, 0.3); }
-.stat-card-success { border-color: rgba(16, 185, 129, 0.3); }
-.stat-card-warning { border-color: rgba(245, 158, 11, 0.3); }
-.stat-card-info { border-color: rgba(6, 182, 212, 0.3); }
-
-.stat-icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    color: white;
-    flex-shrink: 0;
-}
-
-.stat-card-primary .stat-icon-wrapper { background: linear-gradient(135deg, var(--primary), #4f46e5); }
-.stat-card-success .stat-icon-wrapper { background: linear-gradient(135deg, var(--success), #059669); }
-.stat-card-warning .stat-icon-wrapper { background: linear-gradient(135deg, var(--warning), #d97706); }
-.stat-card-info .stat-icon-wrapper { background: linear-gradient(135deg, var(--info), #0891b2); }
-
-.stat-content {
-    flex: 1;
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--dark);
-    line-height: 1;
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: var(--gray);
-    font-weight: 600;
-}
-
-/* ========== FILTERS CARD ========== */
-.filters-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
-    margin-bottom: 2rem;
-    overflow: hidden;
-}
-
-.filters-header {
-    background: linear-gradient(to bottom, var(--light-gray), white);
-    border-bottom: 1px solid var(--border);
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.filters-header i {
-    font-size: 1.5rem;
-    color: var(--primary);
-}
-
-.filters-header h2 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0;
-}
-
-.filters-body {
-    padding: 1.5rem;
-}
-
-.filters-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.25rem;
-    align-items: end;
-}
-
-.filter-search {
-    grid-column: span 2;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-label {
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.filter-label i {
-    color: var(--primary);
-}
-
-.filter-select,
-.filter-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: var(--transition);
-}
-
-.filter-select:focus,
-.filter-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.filter-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-reports,
-.btn-reset-filter {
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius);
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-    text-decoration: none;
-}
-
-.btn-reports {
-    background: linear-gradient(135deg, var(--primary), #4f46e5);
-    color: white;
-    flex: 1;
-}
-
-.btn-reports:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.btn-reset-filter {
-    background: var(--light-gray);
-    color: var(--gray);
-    width: 50px;
-    justify-content: center;
-    padding: 0.75rem;
-}
-
-.btn-reset-filter:hover {
-    background: var(--border);
-    color: var(--dark);
-}
-
-/* ========== HISTORY CARD ========== */
-.history-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-}
-
-.history-card-header {
-    background: linear-gradient(to bottom, var(--light-gray), white);
-    border-bottom: 1px solid var(--border);
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-left i {
-    font-size: 1.5rem;
-    color: var(--primary);
-}
-
-.header-left h2 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0;
-}
-
-.count-badge {
-    background: var(--primary);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius);
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-/* ========== SALES TABLE ========== */
-.sales-table-wrapper {
-    overflow-x: auto;
-    max-height: 700px;
-    overflow-y: auto;
-}
-
-.sales-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-}
-
-.sales-table thead th {
-    background: linear-gradient(135deg, var(--dark), #374151);
-    color: white;
-    padding: 1rem 0.75rem;
-    text-align: right;
-    font-weight: 700;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-.sale-row {
-    border-bottom: 1px solid var(--border);
-    transition: var(--transition);
-    opacity: 0;
-    transform: translateY(10px);
-}
-
-.sale-row.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.sale-row:hover {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent);
-}
-
-.sales-table tbody td {
-    padding: 1rem 0.75rem;
-    vertical-align: middle;
-}
-
-.code-badge {
-    background: var(--warning);
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.85rem;
-}
-
-.image-cell {
-    width: 60px;
-}
-
-.sale-thumbnail {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--radius);
-    object-fit: cover;
-    transition: var(--transition);
-}
-
-.no-image {
-    width: 50px;
-    height: 50px;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gray);
-    font-size: 1.25rem;
-}
-
-.product-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 150px;
-}
-
-.product-cell strong {
-    font-size: 0.95rem;
-    color: var(--dark);
-}
-
-.notes {
-    font-size: 0.8rem;
-    color: var(--gray);
-}
-
-.quantity-badge {
-    background: rgba(6, 182, 212, 0.1);
-    color: var(--info);
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.85rem;
-}
-
-.price-cell {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-}
-
-.price-cell strong {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-.price-cell span {
-    font-size: 0.75rem;
-    color: var(--gray);
-}
-
-.price-total strong {
-    color: var(--primary);
-    font-size: 1.1rem;
-}
-
-.customer-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 120px;
-}
-
-.customer-cell strong {
-    font-size: 0.9rem;
-    color: var(--dark);
-}
-
-.customer-cell span {
-    font-size: 0.8rem;
-    color: var(--gray);
-}
-
-.date-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    text-align: center;
-    min-width: 90px;
-}
-
-.date-cell strong {
-    font-size: 0.9rem;
-    color: var(--dark);
-}
-
-.date-cell span {
-    font-size: 0.75rem;
-    color: var(--gray);
-}
-
-.no-value {
-    color: var(--gray);
-    font-size: 0.9rem;
-}
-
-.btn-delete-sale {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    border: 2px solid transparent;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.btn-delete-sale:hover {
-    background: var(--danger);
-    color: white;
-    transform: scale(1.1);
-    border-color: var(--danger);
-}
-
-/* ========== PAGINATION ========== */
-.pagination-wrapper {
-    background: linear-gradient(to bottom, var(--light-gray), white);
-    border-top: 2px solid var(--border);
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
-.pagination-info {
-    font-weight: 600;
-    color: var(--gray);
-}
-
-.pagination-nav {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.page-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius);
-    background: white;
-    border: 2px solid var(--border);
-    color: var(--gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.page-btn:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-}
-
-.current-page {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius);
-    background: linear-gradient(135deg, var(--primary), #4f46e5);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-}
-
-/* ========== EMPTY STATE ========== */
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-}
-
-.empty-icon {
-    font-size: 5rem;
-    color: var(--border);
-    margin-bottom: 1.5rem;
-}
-
-.empty-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray);
-    margin-bottom: 1rem;
-}
-
-.empty-text {
-    font-size: 1rem;
-    color: var(--gray);
-    margin-bottom: 2rem;
-}
-
-.empty-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.btn-empty-action,
-.btn-empty-secondary {
-    padding: 0.875rem 1.75rem;
-    border-radius: var(--radius);
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.btn-empty-action {
-    background: linear-gradient(135deg, var(--primary), #4f46e5);
-    color: white;
-}
-
-.btn-empty-action:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-    color: white;
-}
-
-.btn-empty-secondary {
-    background: var(--light-gray);
-    color: var(--dark);
-    border: 2px solid var(--border);
-}
-
-.btn-empty-secondary:hover {
-    background: var(--border);
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 991px) {
-    .header-wrapper {
-        flex-wrap: wrap;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .header-content {
-        width: 100%;
-    }
-
-    .header-actions {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 768px) {
-    .filters-form {
-        grid-template-columns: 1fr;
-    }
-
-    .filter-search,
-    .filter-actions {
-        grid-column: span 1;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .sales-table {
-        font-size: 0.75rem;
-    }
-
-    .sales-table thead th,
-    .sales-table tbody td {
-        padding: 0.75rem 0.5rem;
-    }
-
-    .pagination-wrapper {
-        flex-direction: column;
-    }
-
-    .header-title {
-        font-size: 1.5rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .empty-state {
-        padding: 3rem 1.5rem;
-    }
-}
-</style>
 {% endblock %}

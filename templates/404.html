@@ -1,178 +1,153 @@
-<!-- templates/404.html -->
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحه پیدا نشد - 404</title>
-    
-    <!-- Bootstrap 5 RTL -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts - Vazir -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>404 - اسپاگتی شد! | پرینت‌کست</title>
+    <!-- FontAwesome CDN (So icons work even if local static fails) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        * {
-            font-family: 'Vazirmatn', 'Tahoma', sans-serif;
-            box-sizing: border-box;
+        :root {
+            --primary: #6366f1;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --font: 'Tahoma', sans-serif;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #fdfdfd 100%);
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+            background: radial-gradient(circle at center, #fff 0%, #e0e7ff 100%);
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            color: #27272a;
+            overflow: hidden;
+            color: var(--text);
         }
 
-        .error-container {
+        .container {
+            position: relative;
             text-align: center;
-            max-width: 600px;
-            padding: 2rem;
+            z-index: 10;
         }
 
-        .error-icon {
+        /* Glitch Text */
+        .error-code {
             font-size: 8rem;
-            color: #0ea5e9;
-            margin-bottom: 1rem;
+            font-weight: 900;
+            color: var(--primary);
+            position: relative;
+            margin: 0;
+            line-height: 1;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        /* Nozzle Animation */
+        .nozzle-wrapper {
+            margin-bottom: 20px;
+            animation: shake 3s infinite ease-in-out;
+        }
+        .nozzle-head {
+            width: 50px; height: 40px; background: #374151; margin: 0 auto; border-radius: 4px;
+        }
+        .nozzle-tip {
+            width: 0; height: 0; 
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #d4af37;
+            margin: 0 auto;
+        }
+        .spaghetti {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-top: -15px;
+            display: block;
+            animation: spin 6s infinite linear;
             opacity: 0.8;
         }
 
-        .error-code {
-            font-size: 6rem;
-            font-weight: 800;
-            color: #0369a1;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        h2 { font-size: 2rem; margin: 10px 0; }
+        p { color: #6b7280; margin-bottom: 30px; font-size: 1.1rem; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 24px; border-radius: 12px; text-decoration: none;
+            font-weight: bold; transition: 0.3s; margin: 5px;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5); }
+        .btn-outline { border: 2px solid #d1d5db; color: #4b5563; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: white; }
+
+        /* Terminal Style */
+        .terminal {
+            background: #111827; color: #10b981;
+            padding: 20px; border-radius: 12px;
+            font-family: monospace; text-align: left; direction: ltr;
+            max-width: 400px; margin: 0 auto 30px auto;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+        }
+        .line { margin-bottom: 5px; opacity: 0; animation: type 0.5s forwards; }
+        .line:nth-child(1) { animation-delay: 0.2s; }
+        .line:nth-child(2) { animation-delay: 0.6s; }
+        .line:nth-child(3) { animation-delay: 1.0s; color: #ef4444; }
+        .cursor { animation: blink 1s infinite; }
+
+        /* Floating Background */
+        .bg-icon {
+            position: absolute; color: var(--primary); opacity: 0.05;
+            font-size: 5rem; animation: float 10s infinite linear;
         }
 
-        .error-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #27272a;
-            margin-bottom: 1rem;
-        }
-
-        .error-message {
-            font-size: 1.1rem;
-            color: #52525b;
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .btn-home {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.39);
-        }
-
-        .btn-home:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(14, 165, 233, 0.5);
-            color: white;
-            text-decoration: none;
-        }
-
-        .error-details {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(14, 165, 233, 0.2);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-weight: 800;
-            font-size: 1.2rem;
-            color: #0369a1;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .navbar-brand:hover {
-            color: #0ea5e9;
-            text-decoration: none;
-        }
-
-        @media (max-width: 768px) {
-            .error-code { font-size: 4rem; }
-            .error-title { font-size: 1.5rem; }
-            .error-icon { font-size: 5rem; }
-            .error-container { padding: 1rem; }
-        }
+        @keyframes shake { 0%, 100% {transform:translateX(0);} 50% {transform:translateX(5px);} }
+        @keyframes spin { 0% {transform:rotate(0deg) scale(1);} 50% {transform:rotate(180deg) scale(1.2);} 100% {transform:rotate(360deg) scale(1);} }
+        @keyframes type { to {opacity: 1;} }
+        @keyframes blink { 50% {opacity: 0;} }
+        @keyframes float { 0% {transform: translateY(0) rotate(0deg);} 100% {transform: translateY(-50px) rotate(20deg);} }
     </style>
 </head>
 <body>
-    <a href="{% url 'calculator:index' %}" class="navbar-brand">
-        <i class="fas fa-cube"></i>
-        محاسبگر پرینت سه‌بعدی
-    </a>
 
-    <div class="error-container">
-        <div class="error-icon">
-            <i class="fas fa-search"></i>
+    <!-- Floating Background -->
+    <i class="fas fa-cube bg-icon" style="top:10%; left:10%"></i>
+    <i class="fas fa-layer-group bg-icon" style="bottom:10%; right:10%; animation-delay: -2s"></i>
+    <i class="fas fa-cog bg-icon" style="top:20%; right:20%; animation-delay: -5s"></i>
+
+    <div class="container">
+        <div class="nozzle-wrapper">
+            <div class="nozzle-head"></div>
+            <div class="nozzle-tip"></div>
+            <i class="fas fa-wind spaghetti"></i>
         </div>
-        
-        <div class="error-code">404</div>
-        
-        <h1 class="error-title">صفحه پیدا نشد!</h1>
-        
-        <p class="error-message">
-            متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.
-            <br>
-            لطفاً آدرس را بررسی کنید یا به صفحه اصلی بازگردید.
-        </p>
 
-        <a href="{% url 'calculator:index' %}" class="btn-home">
-            <i class="fas fa-home"></i>
-            بازگشت به صفحه اصلی
-        </a>
+        <h1 class="error-code">404</h1>
+        <h2>پرینت ناموفق بود!</h2>
+        <p>لایه مورد نظر پیدا نشد (Page Not Found).<br>ممکن است مدل پاک شده باشد یا آدرس اشتباه باشد.</p>
 
-        <div class="error-details">
-            <h6 class="mb-3">
-                <i class="fas fa-info-circle me-2 text-primary"></i>
-                اطلاعات اضافی
-            </h6>
-            <p class="mb-2"><strong>درخواست شده:</strong> {{ request.path }}</p>
-            <p class="mb-0"><strong>زمان:</strong> <span id="current-time"></span></p>
+        <div class="terminal">
+            <div class="line">> G28 X0 Y0 ; Home</div>
+            <div class="line">> M104 S200 ; Heat Nozzle</div>
+            <div class="line">> Error: 404 Layer Missing</div>
+            <div class="line">> _<span class="cursor">_</span></div>
+        </div>
+
+        <div>
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                صفحه اصلی
+            </a>
+            <a href="javascript:history.back()" class="btn btn-outline">
+                <i class="fas fa-undo"></i>
+                بازگشت
+            </a>
         </div>
     </div>
 
-    <script>
-        // Show current time
-        document.getElementById('current-time').textContent = new Date().toLocaleString('fa-IR');
-        
-        // Add some animation
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.querySelector('.error-container');
-            container.style.opacity = '0';
-            container.style.transform = 'translateY(30px)';
-            container.style.transition = 'all 0.6s ease';
-            
-            setTimeout(() => {
-                container.style.opacity = '1';
-                container.style.transform = 'translateY(0)';
-            }, 100);
-        });
-    </script>
 </body>
 </html>

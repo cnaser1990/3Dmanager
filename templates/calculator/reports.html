@@ -1,114 +1,132 @@
+<!-- templates/calculator/reports.html -->
 {% extends "calculator/base.html" %}
-{% block title %}گزارشات فروش{% endblock %}
+{% block title %}گزارش‌ها - پرینت‌کست{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-3 px-lg-4 py-4">
 
-<!-- Hero Header -->
-<div class="page-header">
-    <div class="header-bg"></div>
-    <div class="header-wrapper">
-        <div class="header-icon-box">
-            <i class="fas fa-chart-bar"></i>
-        </div>
-        <div class="header-text">
-            <h1 class="header-title">گزارش‌ها و آمار</h1>
-            <p class="header-desc">{{ period_name|default:"همه زمان‌ها" }}</p>
-        </div>
-        <button class="header-btn" onclick="window.print()">
-            <i class="fas fa-print"></i>
-            چاپ
-        </button>
-    </div>
-</div>
-
-<!-- Filters -->
-<div class="panel filters-panel">
-    <div class="panel-head">
-        <div class="panel-title">
-            <i class="fas fa-filter"></i>
-            <h2>فیلتر گزارشات</h2>
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:index' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="page-header-text">
+                    <h1>گزارش‌ها و آمار</h1>
+                    <p>{{ period_name|default:"همه زمان‌ها" }}</p>
+                </div>
+            </div>
+            <div class="page-header-actions">
+                <button type="button" class="btn-modern btn-outline" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;" onclick="window.print()">
+                    <i class="fas fa-print"></i>
+                    <span>چاپ</span>
+                </button>
+            </div>
         </div>
     </div>
-    <div class="panel-body">
-        <form method="GET" class="filter-form">
-            <div class="filter-row">
-                <div class="filter-col">
-                    <label><i class="fas fa-calendar"></i> دوره</label>
-                    <select name="period" class="filter-input" onchange="this.form.submit()">
+
+    <!-- Stats Grid -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card stat-card-info animate-in stagger-1">
+            <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total_sales|default:0 }}</div>
+                <div class="stat-label">تعداد فروش</div>
+            </div>
+        </div>
+        <div class="stat-card stat-card-success animate-in stagger-2">
+            <div class="stat-icon"><i class="fas fa-coins"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total_revenue|default:0|floatformat:0 }}</div>
+                <div class="stat-label">کل درآمد (تومان)</div>
+            </div>
+        </div>
+        <div class="stat-card stat-card-warning animate-in stagger-3">
+            <div class="stat-icon"><i class="fas fa-box"></i></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ total_packaging_cost|default:0|floatformat:0 }}</div>
+                <div class="stat-label">هزینه بسته‌بندی</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-modern mb-4 animate-in">
+        <div class="card-modern-header">
+            <div class="card-header-title">
+                <div class="card-header-icon icon-primary">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <div class="card-header-text">
+                    <h2>فیلتر گزارشات</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-modern-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-calendar text-primary me-1"></i> دوره</label>
+                    <select name="period" class="form-control form-select">
                         <option value="week" {% if period == 'week' %}selected{% endif %}>هفته</option>
                         <option value="month" {% if period == 'month' %}selected{% endif %}>ماه</option>
                         <option value="year" {% if period == 'year' %}selected{% endif %}>سال</option>
                         <option value="all" {% if period == 'all' %}selected{% endif %}>همه</option>
                     </select>
                 </div>
-                <div class="filter-col filter-col-2">
-                    <label><i class="fas fa-search"></i> جستجو</label>
-                    <input type="text" name="item_filter" class="filter-input" value="{{ item_filter|default:'' }}" placeholder="کد محصول...">
+                <div class="col-md-6">
+                    <label class="form-label"><i class="fas fa-search text-primary me-1"></i> کد محصول</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="item_filter" class="form-control" value="{{ item_filter|default:'' }}" placeholder="کد محصول...">
+                    </div>
                 </div>
-                <div class="filter-col-btns">
-                    <button type="submit" class="btn-filter">
-                        <i class="fas fa-search"></i>
-                        جستجو
-                    </button>
-                    {% if item_filter %}
-                    <a href="{% url 'calculator:reports' %}" class="btn-reset">
-                        <i class="fas fa-times"></i>
-                    </a>
-                    {% endif %}
+                <div class="col-md-3">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn-modern btn-primary flex-grow-1">
+                            <i class="fas fa-search"></i>
+                            <span>جستجو</span>
+                        </button>
+                        {% if item_filter %}
+                        <a href="{% url 'calculator:reports' %}" class="btn-modern btn-outline btn-icon">
+                            <i class="fas fa-times"></i>
+                        </a>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-box stat-info">
-        <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
-        <div class="stat-data">
-            <span>{{ total_sales|default:0 }}</span>
-            <label>تعداد فروش</label>
-        </div>
-    </div>
-    <div class="stat-box stat-success">
-        <div class="stat-icon"><i class="fas fa-coins"></i></div>
-        <div class="stat-data">
-            <span>{{ total_revenue|default:0|floatformat:0 }}</span>
-            <label>کل درآمد</label>
-        </div>
-    </div>
-    <div class="stat-box stat-warning">
-        <div class="stat-icon"><i class="fas fa-box"></i></div>
-        <div class="stat-data">
-            <span>{{ total_packaging_cost|default:0|floatformat:0 }}</span>
-            <label>بسته‌بندی</label>
-        </div>
-    </div>
-</div>
-
-<!-- Main Grid -->
-<div class="main-grid">
-    
-    <!-- Sales Table -->
-    <div class="panel sales-panel">
-        <div class="panel-head">
-            <div class="panel-title">
-                <i class="fas fa-list"></i>
-                <h2>جزئیات فروش</h2>
-            </div>
-        </div>
-        <div class="panel-body no-pad">
-            {% if sales_data %}
-                <div class="table-wrap">
-                    <table class="data-table">
+    <div class="row g-4">
+        <!-- Sales Table -->
+        <div class="col-lg-8">
+            <div class="card-modern animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-primary">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>جزئیات فروش</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if sales_data %}
+                <div class="table-container">
+                    <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>ردیف</th>
-                                <th>کد محصول</th>
+                                <th>#</th>
+                                <th>کد</th>
                                 <th>تصویر</th>
                                 <th>نام</th>
                                 <th>تعداد</th>
-                                <th>قیمت</th>
+                                <th>قیمت واحد</th>
                                 <th>بسته‌بندی</th>
                                 <th>جمع</th>
                                 <th>مشتری</th>
@@ -118,704 +136,124 @@
                         <tbody>
                             {% for sale in sales_data %}
                             <tr class="table-row">
-                                <td><span class="badge-row">{{ forloop.counter }}</span></td>
-                                <td><span class="badge-code">{{ sale.project_code }}</span></td>
+                                <td><span class="badge badge-primary">{{ forloop.counter }}</span></td>
+                                <td><span class="badge badge-warning">{{ sale.project_code }}</span></td>
                                 <td>
                                     {% if sale.project_obj and sale.project_obj.has_image %}
-                                        <img src="{{ sale.project_obj.picture.url }}" class="thumb" alt="">
+                                        <img src="{{ sale.project_obj.picture.url }}" alt=""
+                                             style="width: 40px; height: 40px; border-radius: var(--radius-md); object-fit: cover;">
                                     {% else %}
-                                        <div class="thumb-placeholder"><i class="fas fa-cube"></i></div>
+                                        <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-cube text-muted"></i>
+                                        </div>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <strong>
-                                        {% if sale.project_obj %}{{ sale.project_obj.model_name }}{% else %}کد {{ sale.project_code }}{% endif %}
-                                    </strong>
+                                <td class="fw-bold">
+                                    {% if sale.project_obj %}{{ sale.project_obj.model_name }}{% else %}کد {{ sale.project_code }}{% endif %}
                                 </td>
-                                <td><span class="badge-qty">{{ sale.quantity }}</span></td>
-                                <td><strong>{{ sale.unit_price|floatformat:0 }}</strong></td>
+                                <td><span class="badge badge-info">{{ sale.quantity }}</span></td>
+                                <td>{{ sale.unit_price|floatformat:0 }}</td>
                                 <td>{{ sale.packaging_cost|default:0|floatformat:0 }}</td>
-                                <td><strong class="text-success">{{ sale.total_price|floatformat:0 }}</strong></td>
+                                <td class="fw-bold text-success">{{ sale.total_price|floatformat:0 }}</td>
                                 <td>{{ sale.customer_name|default:"—" }}</td>
-                                <td><strong>{{ sale.display_date }}</strong></td>
+                                <td class="text-muted small">{{ sale.display_date }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            {% else %}
-                <div class="empty">
-                    <i class="fas fa-chart-bar"></i>
-                    <h3>{% if item_filter %}نتیجه‌ای یافت نشد{% else %}داده‌ای موجود نیست{% endif %}</h3>
-                    <p>{% if item_filter %}فیلتر را تغییر دهید{% else %}فروشی ثبت نشده است{% endif %}</p>
-                    <a href="{% if item_filter %}{% url 'calculator:reports' %}{% else %}{% url 'calculator:sales' %}{% endif %}" class="btn-empty">
-                        <i class="fas fa-{% if item_filter %}times{% else %}plus{% endif %}"></i>
-                        {% if item_filter %}حذف فیلتر{% else %}ثبت فروش{% endif %}
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- Top Products -->
-        <!-- Top Products -->
-        <div class="panel top-panel">
-            <div class="panel-head panel-head-warning">
-                <div class="panel-title">
-                    <i class="fas fa-trophy"></i>
-                    <h2>پرفروش‌ترین</h2>
-                </div>
-            </div>
-            <div class="panel-body">
-                {% if top_products %}
-                    {% for p in top_products %}
-                    <a href="{% if p.project %}{% url 'calculator:view_project' p.project.pk %}{% else %}#{% endif %}" 
-                    class="top-item-link">
-                        <div class="top-item">
-                            <div class="rank">{{ forloop.counter }}</div>
-                            
-                            <!-- Product Image -->
-                            <div class="top-image">
-                                {% if p.project and p.project.has_image %}
-                                    <img src="{{ p.project.picture.url }}" alt="{{ p.name }}">
-                                {% else %}
-                                    <div class="top-image-placeholder">
-                                        <i class="fas fa-cube"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Product Data -->
-                            <div class="top-data">
-                                <strong>{{ p.name|default:"نامشخص" }}</strong>
-                                <div class="top-stats">
-                                    <span><i class="fas fa-shopping-cart"></i> {{ p.count }}</span>
-                                    <span><i class="fas fa-coins"></i> {{ p.revenue|floatformat:0 }}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Arrow Icon -->
-                            <div class="top-arrow">
-                                <i class="fas fa-chevron-left"></i>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
                 {% else %}
-                    <div class="empty-small">
-                        <i class="fas fa-trophy"></i>
-                        <p>داده‌ای موجود نیست</p>
+                <div class="card-modern-body">
+                    <div class="empty-state" style="padding: var(--space-8);">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h3 class="empty-state-title">{% if item_filter %}نتیجه‌ای یافت نشد{% else %}داده‌ای موجود نیست{% endif %}</h3>
+                        <p class="empty-state-text">{% if item_filter %}فیلتر را تغییر دهید{% else %}هنوز فروشی ثبت نشده{% endif %}</p>
+                        <a href="{% if item_filter %}{% url 'calculator:reports' %}{% else %}{% url 'calculator:sales' %}{% endif %}" class="btn-modern btn-primary">
+                            <i class="fas fa-{% if item_filter %}times{% else %}plus{% endif %}"></i>
+                            <span>{% if item_filter %}حذف فیلتر{% else %}ثبت فروش{% endif %}</span>
+                        </a>
                     </div>
+                </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Daily Stats -->
-        {% if daily_stats %}
-        <div class="panel daily-panel">
-            <div class="panel-head panel-head-info">
-                <div class="panel-title">
-                    <i class="fas fa-calendar-day"></i>
-                    <h2>آمار روزانه</h2>
-                </div>
-            </div>
-            <div class="panel-body">
-                {% for day in daily_stats|slice:":7" %}
-                <div class="daily-item">
-                    <div class="daily-date">{{ day.date_display }}</div>
-                    <div class="daily-data">
-                        <span>{{ day.count }} فروش</span>
-                        <strong>{{ day.revenue|floatformat:0 }} تومان</strong>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Top Products -->
+            <div class="card-modern mb-4 animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-warning">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>پرفروش‌ترین</h2>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
+                <div class="card-modern-body">
+                    {% if top_products %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for p in top_products %}
+                        <a href="{% if p.project %}{% url 'calculator:view_project' p.project.pk %}{% else %}#{% endif %}" class="text-decoration-none">
+                            <div class="d-flex align-items-center gap-3 p-3 rounded-xl" style="background: linear-gradient(135deg, var(--warning-50), white); transition: var(--transition-normal);">
+                                <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--gradient-warning); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark">{{ p.name|default:"نامشخص" }}</div>
+                                    <div class="text-muted small">
+                                        <span><i class="fas fa-shopping-cart me-1"></i>{{ p.count }}</span>
+                                        <span class="mx-2">•</span>
+                                        <span><i class="fas fa-coins me-1"></i>{{ p.revenue|floatformat:0 }}</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-left text-warning"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-trophy mb-2" style="font-size: 2rem; opacity: 0.3;"></i>
+                        <div>داده‌ای موجود نیست</div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- Daily Stats -->
+            {% if daily_stats %}
+            <div class="card-modern animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-info">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>آمار روزانه</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-modern-body">
+                    <div class="d-flex flex-column gap-3">
+                        {% for day in daily_stats|slice:":7" %}
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <div>
+                                <div class="fw-bold">{{ day.date_display }}</div>
+                                <div class="text-muted small">{{ day.count }} فروش</div>
+                            </div>
+                            <div class="fw-bold text-success">{{ day.revenue|floatformat:0 }} تومان</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
-
 </div>
-
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-    document.querySelectorAll('.table-row').forEach((r,i)=>{
-        setTimeout(()=>r.classList.add('show'),i*30);
-    });
-    document.querySelectorAll('.top-item').forEach((r,i)=>{
-        setTimeout(()=>r.classList.add('show'),i*50);
-    });
-});
-</script>
-
-
-<style>
-:root{
-    --primary:#6366f1;
-    --success:#10b981;
-    --warning:#f59e0b;
-    --danger:#ef4444;
-    --info:#06b6d4;
-    --dark:#1f2937;
-    --gray:#6b7280;
-    --light:#f3f4f6;
-    --border:#e5e7eb;
-    --radius:12px;
-    --shadow:0 4px 6px -1px rgba(0,0,0,.1);
-    --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1);
-}
-
-/* Header */
-.page-header{
-    background:linear-gradient(135deg,#667eea,#764ba2);
-    border-radius:16px;
-    padding:2rem;
-    margin-bottom:2rem;
-    position:relative;
-    overflow:hidden;
-    box-shadow:var(--shadow-lg);
-}
-.header-bg{
-    position:absolute;
-    inset:0;
-    background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 60%);
-}
-.header-wrapper{
-    position:relative;
-    z-index:1;
-    display:flex;
-    align-items:center;
-    gap:1.5rem;
-}
-.header-icon-box{
-    width:70px;
-    height:70px;
-    background:rgba(255,255,255,.2);
-    backdrop-filter:blur(10px);
-    border-radius:var(--radius);
-    display:grid;
-    place-items:center;
-    font-size:2rem;
-    color:#fff;
-    border:2px solid rgba(255,255,255,.3);
-}
-.header-text{flex:1;}
-.header-title{
-    font-size:2rem;
-    font-weight:900;
-    color:#fff;
-    margin:0 0 .5rem;
-    text-shadow:0 2px 4px rgba(0,0,0,.1);
-}
-.header-desc{color:rgba(255,255,255,.95);margin:0;}
-.header-btn{
-    background:#fff;
-    color:var(--primary);
-    padding:.9rem 1.5rem;
-    border-radius:var(--radius);
-    border:none;
-    font-weight:700;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    gap:.5rem;
-    box-shadow:var(--shadow);
-    transition:all .3s;
-}
-.header-btn:hover{transform:translateY(-2px);}
-
-/* Panel */
-.panel{
-    background:#fff;
-    border-radius:16px;
-    border:1px solid var(--border);
-    box-shadow:var(--shadow-lg);
-    overflow:hidden;
-    margin-bottom:2rem;
-}
-.panel-head{
-    background:linear-gradient(to bottom,var(--light),#fff);
-    border-bottom:1px solid var(--border);
-    padding:1.25rem 1.5rem;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-.panel-head-warning{background:linear-gradient(135deg,var(--warning),#d97706);color:#fff;}
-.panel-head-info{background:linear-gradient(135deg,var(--info),#0891b2);color:#fff;}
-.panel-title{
-    display:flex;
-    align-items:center;
-    gap:.75rem;
-}
-.panel-title i{color:var(--primary);font-size:1.3rem;}
-.panel-head-warning .panel-title i,
-.panel-head-info .panel-title i{color:#fff;}
-.panel-title h2{margin:0;font-size:1.1rem;font-weight:800;color:var(--dark);}
-.panel-head-warning .panel-title h2,
-.panel-head-info .panel-title h2{color:#fff;}
-.panel-body{padding:1.5rem;}
-.panel-body.no-pad{padding:0;}
-.count-badge{
-    background:var(--primary);
-    color:#fff;
-    padding:.5rem 1rem;
-    border-radius:var(--radius);
-    font-weight:700;
-    font-size:.9rem;
-}
-
-/* Filters */
-.filter-form{display:flex;flex-direction:column;gap:1rem;}
-.filter-row{
-    display:grid;
-    grid-template-columns:180px 1fr auto;
-    gap:1rem;
-    align-items:end;
-}
-.filter-col{display:flex;flex-direction:column;gap:.5rem;}
-.filter-col-2{grid-column:span 1;}
-.filter-col label{font-weight:700;color:var(--dark);font-size:.9rem;display:flex;align-items:center;gap:.5rem;}
-.filter-col label i{color:var(--primary);}
-.filter-input{
-    padding:.75rem 1rem;
-    border:2px solid var(--border);
-    border-radius:var(--radius);
-    font-weight:600;
-    transition:all .3s;
-}
-.filter-input:focus{
-    outline:none;
-    border-color:var(--primary);
-    box-shadow:0 0 0 3px rgba(99,102,241,.1);
-}
-.filter-col-btns{display:flex;gap:.5rem;}
-.btn-filter,
-.btn-reset{
-    padding:.75rem 1.5rem;
-    border-radius:var(--radius);
-    font-weight:700;
-    border:none;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    gap:.5rem;
-    transition:all .3s;
-    text-decoration:none;
-}
-.btn-filter{
-    background:linear-gradient(135deg,var(--primary),#4f46e5);
-    color:#fff;
-}
-.btn-filter:hover{transform:translateY(-2px);}
-.btn-reset{
-    background:var(--light);
-    color:var(--gray);
-    width:50px;
-    justify-content:center;
-    padding:.75rem;
-}
-
-/* Stats Grid */
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:1.25rem;
-    margin-bottom:2rem;
-}
-.stat-box{
-    background:#fff;
-    border-radius:16px;
-    padding:1.5rem;
-    border:2px solid var(--border);
-    box-shadow:var(--shadow);
-    display:flex;
-    align-items:center;
-    gap:1.25rem;
-    transition:all .3s;
-}
-.stat-box:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
-.stat-info{border-color:rgba(6,182,212,.3);}
-.stat-success{border-color:rgba(16,185,129,.3);}
-.stat-warning{border-color:rgba(245,158,11,.3);}
-.stat-icon{
-    width:60px;
-    height:60px;
-    border-radius:14px;
-    display:grid;
-    place-items:center;
-    font-size:1.75rem;
-    color:#fff;
-    flex-shrink:0;
-}
-.stat-info .stat-icon{background:linear-gradient(135deg,var(--info),#0891b2);}
-.stat-success .stat-icon{background:linear-gradient(135deg,var(--success),#059669);}
-.stat-warning .stat-icon{background:linear-gradient(135deg,var(--warning),#d97706);}
-.stat-data{flex:1;}
-.stat-data span{
-    font-size:2rem;
-    font-weight:900;
-    color:var(--dark);
-    line-height:1;
-    display:block;
-    margin-bottom:.5rem;
-}
-.stat-data label{
-    font-size:.875rem;
-    color:var(--gray);
-    font-weight:600;
-}
-
-/* Main Grid */
-.main-grid{
-    display:grid;
-    grid-template-columns:1fr 350px;
-    gap:2rem;
-}
-
-/* Table */
-.table-wrap{overflow-x:auto;max-height:700px;overflow-y:auto;}
-.data-table{width:100%;border-collapse:collapse;font-size:.875rem;}
-.data-table thead th{
-    background:linear-gradient(135deg,var(--dark),#374151);
-    color:#fff;
-    padding:1rem .75rem;
-    text-align:right;
-    font-weight:700;
-    font-size:.85rem;
-    white-space:nowrap;
-    position:sticky;
-    top:0;
-    z-index:10;
-}
-.table-row{
-    border-bottom:1px solid var(--border);
-    transition:all .3s;
-    opacity:0;
-    transform:translateY(10px);
-}
-.table-row.show{opacity:1;transform:translateY(0);}
-.table-row:hover{background:linear-gradient(135deg,rgba(99,102,241,.05),transparent);}
-.data-table tbody td{padding:1rem .75rem;vertical-align:middle;}
-
-.badge-code{
-    background:var(--warning);
-    color:#fff;
-    padding:.375rem .75rem;
-    border-radius:6px;
-    font-weight:700;
-    font-size:.85rem;
-}
-.thumb{
-    width:50px;
-    height:50px;
-    border-radius:var(--radius);
-    object-fit:cover;
-}
-.thumb-placeholder{
-    width:50px;
-    height:50px;
-    background:var(--light);
-    border-radius:var(--radius);
-    display:grid;
-    place-items:center;
-    color:var(--gray);
-    font-size:1.25rem;
-}
-.badge-qty{
-    background:rgba(6,182,212,.1);
-    color:var(--info);
-    padding:.375rem .75rem;
-    border-radius:6px;
-    font-weight:700;
-    font-size:.85rem;
-}
-.text-success{color:var(--success);}
-
-/* Sidebar */
-.top-item{
-    display:flex;
-    align-items:center;
-    gap:1rem;
-    padding:1rem;
-    background:linear-gradient(135deg,var(--light),#fff);
-    border:2px solid var(--border);
-    border-radius:var(--radius);
-    margin-bottom:1rem;
-    transition:all .3s;
-    opacity:0;
-    transform:translateX(20px);
-}
-.top-item.show{opacity:1;transform:translateX(0);}
-.top-item:hover{
-    border-color:var(--warning);
-    transform:translateX(-4px);
-    box-shadow:var(--shadow);
-}
-.rank{
-    width:36px;
-    height:36px;
-    background:linear-gradient(135deg,var(--warning),#d97706);
-    color:#fff;
-    border-radius:50%;
-    display:grid;
-    place-items:center;
-    font-weight:800;
-    flex-shrink:0;
-}
-.top-data{flex:1;}
-.top-data strong{
-    font-size:.95rem;
-    color:var(--dark);
-    display:block;
-    margin-bottom:.5rem;
-}
-.top-stats{
-    display:flex;
-    gap:1rem;
-    font-size:.8rem;
-    color:var(--gray);
-}
-.top-stats i{margin-right:.25rem;}
-
-.daily-item{
-    display:flex;
-    align-items:center;
-    gap:1rem;
-    padding:1rem;
-    border-bottom:1px solid var(--border);
-}
-.daily-item:last-child{border:none;}
-.daily-date{
-    width:50px;
-    height:50px;
-    background:linear-gradient(135deg,var(--info),#0891b2);
-    color:#fff;
-    border-radius:var(--radius);
-    display:grid;
-    place-items:center;
-    font-weight:800;
-    font-size:.9rem;
-    flex-shrink:0;
-}
-.daily-data{flex:1;}
-.daily-data span{
-    font-size:.85rem;
-    color:var(--gray);
-    display:block;
-    margin-bottom:.25rem;
-}
-.daily-data strong{
-    font-size:1.1rem;
-    color:var(--dark);
-    font-weight:800;
-}
-
-/* Empty */
-.empty{
-    text-align:center;
-    padding:4rem 2rem;
-}
-.empty i{
-    font-size:5rem;
-    color:var(--border);
-    margin-bottom:1.5rem;
-}
-.empty h3{
-    font-size:1.5rem;
-    font-weight:700;
-    color:var(--gray);
-    margin-bottom:1rem;
-}
-.empty p{
-    font-size:1rem;
-    color:var(--gray);
-    margin-bottom:2rem;
-}
-.btn-empty{
-    background:linear-gradient(135deg,var(--primary),#4f46e5);
-    color:#fff;
-    padding:.875rem 1.75rem;
-    border-radius:var(--radius);
-    font-weight:700;
-    text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    gap:.5rem;
-    transition:all .3s;
-}
-.btn-empty:hover{
-    transform:translateY(-2px);
-    box-shadow:var(--shadow);
-    color:#fff;
-}
-
-.empty-small{
-    text-align:center;
-    padding:3rem 1.5rem;
-    color:var(--gray);
-}
-.empty-small i{
-    font-size:3rem;
-    color:var(--border);
-    margin-bottom:1rem;
-}
-
-/* Top Products Link */
-.top-item-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.top-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: linear-gradient(135deg, var(--light), #fff);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 1rem;
-    transition: all .3s;
-    opacity: 0;
-    transform: translateX(20px);
-    position: relative;
-}
-
-.top-item.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.top-item:hover {
-    border-color: var(--warning);
-    transform: translateX(-4px);
-    box-shadow: var(--shadow);
-    background: linear-gradient(135deg, #fef3c7, #fff);
-}
-
-.rank {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--warning), #d97706);
-    color: #fff;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    flex-shrink: 0;
-}
-
-/* Product Image in Top Products */
-.top-image {
-    width: 50px;
-    height: 50px;
-    border-radius: var(--radius);
-    overflow: hidden;
-    flex-shrink: 0;
-    position: relative;
-}
-
-.top-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform .3s;
-}
-
-.top-item:hover .top-image img {
-    transform: scale(1.1);
-}
-
-.top-image-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, var(--warning), #d97706);
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-size: 1.25rem;
-}
-
-.top-data {
-    flex: 1;
-}
-
-.top-data strong {
-    font-size: .95rem;
-    color: var(--dark);
-    display: block;
-    margin-bottom: .5rem;
-}
-
-.top-stats {
-    display: flex;
-    gap: 1rem;
-    font-size: .8rem;
-    color: var(--gray);
-}
-
-.top-stats i {
-    margin-left: .25rem;
-}
-
-/* Arrow Icon */
-.top-arrow {
-    width: 32px;
-    height: 32px;
-    background: rgba(245, 158, 11, 0.1);
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    color: var(--warning);
-    transition: all .3s;
-    flex-shrink: 0;
-}
-
-.top-item:hover .top-arrow {
-    background: var(--warning);
-    color: #fff;
-    transform: translateX(4px);
-}
-
-.top-arrow i {
-    font-size: .9rem;
-}
-
-.badge-row {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    padding: .375rem .75rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: .85rem;
-}
-
-/* Responsive */
-@media(max-width:1200px){
-    .main-grid{grid-template-columns:1fr;}
-}
-@media(max-width:768px){
-    .header-wrapper{flex-wrap:wrap;text-align:center;}
-    .header-text{width:100%;}
-    .header-btn{width:100%;}
-    .header-title{font-size:1.5rem;}
-    .filter-row{grid-template-columns:1fr;gap:1rem;}
-    .filter-col-2{grid-column:span 1;}
-    .stats-grid{grid-template-columns:1fr;}
-    .data-table{font-size:.75rem;}
-    .data-table thead th,
-    .data-table tbody td{padding:.75rem .5rem;}
-}
-
-/* Print */
-@media print{
-    .page-header,.filters-panel,.header-btn{display:none!important;}
-    .panel{box-shadow:none!important;border:1px solid #ddd!important;}
-}
-</style>
 {% endblock %}

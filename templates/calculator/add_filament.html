@@ -1,792 +1,333 @@
 <!-- templates/calculator/add_filament.html -->
 {% extends "calculator/base.html" %}
+{% load static %}
 
-{% block title %}اضافه کردن فیلامنت جدید{% endblock %}
+{% block title %}افزودن فیلامنت - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
-    
-    <!-- Modern Page Header -->
-    <div class="page-header-gradient">
-        <div class="header-pattern"></div>
-        <div class="header-content-modern">
-            <div class="d-flex align-items-center gap-3">
-                <div class="header-icon-circle">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <div>
-                    <h1 class="page-title-modern">فیلامنت جدید</h1>
-                    <p class="page-subtitle">اضافه کردن فیلامنت به انبار موجودی</p>
-                </div>
-            </div>
-            <div class="header-actions-group">
-                <a href="{% url 'calculator:index' %}" class="btn-header-back">
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:filaments' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
                     <i class="fas fa-arrow-right"></i>
-                    <span>بازگشت</span>
                 </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="page-header-text">
+                    <h1>افزودن فیلامنت جدید</h1>
+                    <p>ثبت فیلامنت جدید در موجودی انبار</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="form-container">
-        <div class="row justify-content-center">
-            <div class="col-xl-8 col-lg-10">
-                <!-- Main Form Card -->
-                <div class="form-card-modern animate-fade-up">
-                    <form method="POST" id="filamentForm" novalidate>
-                        {% csrf_token %}
-                        
-                        <!-- Form Header -->
-                        <div class="form-section-header">
-                            <div class="section-icon">
-                                <i class="fas fa-layer-group"></i>
+    <form method="post" id="filamentForm">
+        {% csrf_token %}
+        <div class="row g-4">
+            
+            <!-- Main Form -->
+            <div class="col-lg-8">
+                <!-- Basic Info Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-primary">
+                                <i class="fas fa-info-circle"></i>
                             </div>
-                            <div class="section-text">
-                                <h3 class="section-title">اطلاعات پایه</h3>
-                                <p class="section-desc">مشخصات اصلی فیلامنت را وارد کنید</p>
-                            </div>
-                        </div>
-
-                        <!-- Basic Info Section -->
-                        <div class="form-section-body">
-                            <div class="row g-4">
-                                <!-- Name -->
-                                <div class="col-md-6">
-                                    <div class="form-group-modern">
-                                        <label for="{{ form.name.id_for_label }}" class="form-label-modern">
-                                            <i class="fas fa-tag"></i>
-                                            نام فیلامنت
-                                        </label>
-                                        <div class="input-wrapper">
-                                            {{ form.name }}
-                                            <div class="input-focus-border"></div>
-                                        </div>
-                                        {% if form.name.errors %}
-                                            <div class="field-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                {{ form.name.errors.0 }}
-                                            </div>
-                                        {% else %}
-                                            <div class="form-hint">
-                                                <i class="fas fa-info-circle"></i>
-                                                نام برند و مدل فیلامنت (مثال: SUNLU PLA+ Premium)
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <!-- Color (text + picker + chip) -->
-                                <div class="col-md-6">
-                                    <div class="form-group-modern">
-                                        <label for="{{ form.color.id_for_label }}" class="form-label-modern">
-                                            <i class="fas fa-palette"></i>
-                                            رنگ
-                                        </label>
-                                        <div class="color-row">
-                                            <div class="input-wrapper">
-                                                {{ form.color }}
-                                                <div class="input-focus-border"></div>
-                                            </div>
-                                            <!-- Helper color picker (mirrors the text field) -->
-                                            <input type="color" id="colorPicker" class="color-picker" value="#6c757d" title="انتخاب رنگ">
-                                            <div class="color-chip" id="colorPreviewChip" title="پیش‌نمایش رنگ"></div>
-                                        </div>
-                                        {% if form.color.errors %}
-                                            <div class="field-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                {{ form.color.errors.0 }}
-                                            </div>
-                                        {% else %}
-                                            <div class="form-hint">
-                                                <i class="fas fa-info-circle"></i>
-                                                می‌توانید نام رنگ (قرمز، آبی، سفید، شفاف) یا کد رنگ مثل #667eea وارد کنید. از انتخابگر رنگ نیز می‌توانید استفاده کنید.
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            <div class="card-header-text">
+                                <h2>اطلاعات پایه</h2>
+                                <p>مشخصات اصلی فیلامنت</p>
                             </div>
                         </div>
-
-                        <!-- Technical Specs Section -->
-                        <div class="form-section-header mt-5">
-                            <div class="section-icon specs">
-                                <i class="fas fa-cogs"></i>
-                            </div>
-                            <div class="section-text">
-                                <h3 class="section-title">مشخصات فنی</h3>
-                                <p class="section-desc">جزئیات فنی و قیمت‌گذاری</p>
-                            </div>
-                        </div>
-
-                        <div class="form-section-body">
-                            <div class="row g-4">
-                                <!-- Material -->
-                                <div class="col-md-4">
-                                    <div class="form-group-modern">
-                                        <label for="{{ form.material.id_for_label }}" class="form-label-modern">
-                                            <i class="fas fa-atom"></i>
-                                            نوع ماده
-                                        </label>
-                                        <div class="input-wrapper select-wrapper">
-                                            {{ form.material }}
-                                            <div class="select-arrow">
-                                                <i class="fas fa-chevron-down"></i>
-                                            </div>
-                                            <div class="input-focus-border"></div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.name.id_for_label }}">
+                                        <i class="fas fa-tag text-primary"></i>
+                                        نام فیلامنت
+                                        <span class="required">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.name.errors.0 }}
                                         </div>
-                                        {% if form.material.errors %}
-                                            <div class="field-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                {{ form.material.errors.0 }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
+                                    {% else %}
+                                        <div class="form-hint">مثال: SUNLU PLA+ Premium</div>
+                                    {% endif %}
                                 </div>
-                                
-                                <!-- Initial amount -->
-                                <div class="col-md-4">
-                                    <div class="form-group-modern">
-                                        <label for="{{ form.initial_amount.id_for_label }}" class="form-label-modern">
-                                            <i class="fas fa-ruler"></i>
-                                            مقدار اولیه
-                                        </label>
-                                        <div class="input-wrapper with-unit">
-                                            {{ form.initial_amount }}
-                                            <span class="input-unit">متر</span>
-                                            <div class="input-focus-border"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.material.id_for_label }}">
+                                        <i class="fas fa-cube text-primary"></i>
+                                        نوع ماده
+                                        <span class="required">*</span>
+                                    </label>
+                                    {{ form.material }}
+                                    {% if form.material.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.material.errors.0 }}
                                         </div>
-                                        {% if form.initial_amount.errors %}
-                                            <div class="field-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                {{ form.initial_amount.errors.0 }}
-                                            </div>
-                                        {% else %}
-                                            <div class="form-hint success">
-                                                <i class="fas fa-lightbulb"></i>
-                                                معمولاً 1 کیلو ≈ 330 متر
-                                            </div>
-                                        {% endif %}
-                                    </div>
+                                    {% endif %}
                                 </div>
-                                
-                                <!-- Cost per kg -->
-                                <div class="col-md-4">
-                                    <div class="form-group-modern">
-                                        <label for="{{ form.cost_per_kg.id_for_label }}" class="form-label-modern">
-                                            <i class="fas fa-coins"></i>
-                                            قیمت خرید
-                                        </label>
-                                        <div class="input-wrapper with-unit">
-                                            {{ form.cost_per_kg }}
-                                            <span class="input-unit">تومان/کیلو</span>
-                                            <div class="input-focus-border"></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.color.id_for_label }}">
+                                        <i class="fas fa-palette text-primary"></i>
+                                        رنگ
+                                    </label>
+                                    <div class="color-input-wrapper">
+                                        <div class="color-input-group">
+                                            {{ form.color }}
+                                            <div class="color-preview-box" id="colorPreview">
+                                                <div class="color-preview-inner" id="colorPreviewInner"></div>
+                                            </div>
                                         </div>
-                                        {% if form.cost_per_kg.errors %}
-                                            <div class="field-error">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                {{ form.cost_per_kg.errors.0 }}
-                                            </div>
-                                        {% else %}
-                                            <div class="form-hint">
-                                                <i class="fas fa-chart-line"></i>
-                                                قیمت هر کیلوگرم فیلامنت
-                                            </div>
-                                        {% endif %}
+                                        <div class="color-presets">
+                                            <button type="button" class="color-preset" data-color="#EF4444" style="background: #EF4444;" title="قرمز"></button>
+                                            <button type="button" class="color-preset" data-color="#F97316" style="background: #F97316;" title="نارنجی"></button>
+                                            <button type="button" class="color-preset" data-color="#EAB308" style="background: #EAB308;" title="زرد"></button>
+                                            <button type="button" class="color-preset" data-color="#22C55E" style="background: #22C55E;" title="سبز"></button>
+                                            <button type="button" class="color-preset" data-color="#06B6D4" style="background: #06B6D4;" title="فیروزه‌ای"></button>
+                                            <button type="button" class="color-preset" data-color="#3B82F6" style="background: #3B82F6;" title="آبی"></button>
+                                            <button type="button" class="color-preset" data-color="#8B5CF6" style="background: #8B5CF6;" title="بنفش"></button>
+                                            <button type="button" class="color-preset" data-color="#EC4899" style="background: #EC4899;" title="صورتی"></button>
+                                            <button type="button" class="color-preset" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #ddd;" title="سفید"></button>
+                                            <button type="button" class="color-preset" data-color="#000000" style="background: #000000;" title="مشکی"></button>
+                                            <button type="button" class="color-preset" data-color="#6B7280" style="background: #6B7280;" title="خاکستری"></button>
+                                            <button type="button" class="color-preset" data-color="#92400E" style="background: #92400E;" title="قهوه‌ای"></button>
+                                        </div>
                                     </div>
+                                    {% if form.color.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.color.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">نام رنگ یا کد HEX (مثل #667eea) - یا از رنگ‌های آماده انتخاب کنید</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Live Preview Section -->
-                        <div class="preview-section">
-                            <div class="preview-header">
-                                <div class="preview-icon">
-                                    <i class="fas fa-eye"></i>
-                                </div>
-                                <h4 class="preview-title">پیش‌نمایش زنده</h4>
-                            </div>
-                            
-                            <div class="preview-content">
-                                <div class="preview-grid">
-                                    <div class="preview-item">
-                                        <div class="preview-item-icon">
-                                            <i class="fas fa-signature"></i>
-                                        </div>
-                                        <div class="preview-item-content">
-                                            <span class="preview-label">نام کامل</span>
-                                            <span class="preview-value" id="previewName">در حال انتظار...</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="preview-item">
-                                        <div class="preview-item-icon price">
-                                            <i class="fas fa-tag"></i>
-                                        </div>
-                                        <div class="preview-item-content">
-                                            <span class="preview-label">قیمت هر متر</span>
-                                            <span class="preview-value text-primary" id="previewPrice">محاسبه...</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="preview-item">
-                                        <div class="preview-item-icon total">
-                                            <i class="fas fa-calculator"></i>
-                                        </div>
-                                        <div class="preview-item-content">
-                                            <span class="preview-label">ارزش کل</span>
-                                            <span class="preview-value text-success" id="previewTotal">محاسبه...</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="preview-item">
-                                        <div class="preview-item-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
-                                            <i class="fas fa-palette"></i>
-                                        </div>
-                                        <div class="preview-item-content d-flex align-items-center justify-content-between w-100">
-                                            <span class="preview-label">پیش‌نمایش رنگ</span>
-                                            <span class="color-chip-lg" id="previewChip"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <a href="{% url 'calculator:index' %}" class="btn-modern btn-cancel">
-                                <i class="fas fa-times"></i>
-                                <span>انصراف</span>
-                            </a>
-                            <button type="submit" class="btn-modern btn-submit">
-                                <i class="fas fa-check"></i>
-                                <span>ذخیره فیلامنت</span>
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
-                <!-- Tips Cards Grid -->
-                <div class="tips-grid">
-                    <!-- Temperature Guide -->
-                    <div class="tip-card animate-fade-up delay-1">
-                        <div class="tip-header">
-                            <div class="tip-icon temperature">
-                                <i class="fas fa-thermometer-half"></i>
+                <!-- Quantity & Price Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-success">
+                                <i class="fas fa-calculator"></i>
                             </div>
-                            <h5 class="tip-title">دمای پرینت</h5>
-                        </div>
-                        <div class="tip-content">
-                            <div class="temp-item">
-                                <span class="material-badge pla">PLA</span>
-                                <span class="temp-range">190-220°C</span>
-                            </div>
-                            <div class="temp-item">
-                                <span class="material-badge pla-plus">PLA+</span>
-                                <span class="temp-range">200-230°C</span>
-                            </div>
-                            <div class="temp-item">
-                                <span class="material-badge abs">ABS</span>
-                                <span class="temp-range">230-260°C</span>
-                            </div>
-                            <div class="temp-item">
-                                <span class="material-badge petg">PETG</span>
-                                <span class="temp-range">220-250°C</span>
+                            <div class="card-header-text">
+                                <h2>مقادیر و قیمت</h2>
+                                <p>موجودی و هزینه خرید</p>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Conversion Guide -->
-                    <div class="tip-card animate-fade-up delay-2">
-                        <div class="tip-header">
-                            <div class="tip-icon conversion">
-                                <i class="fas fa-exchange-alt"></i>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.initial_amount.id_for_label }}">
+                                        <i class="fas fa-ruler text-success"></i>
+                                        مقدار اولیه (متر)
+                                        <span class="required">*</span>
+                                    </label>
+                                    {{ form.initial_amount }}
+                                    
+                                    <!-- Quick Amount Buttons -->
+                                    <div class="quick-amount-btns">
+                                        <button type="button" class="quick-amount-btn" data-amount="330">
+                                            <span class="amount-value">۳۳۰</span>
+                                            <span class="amount-label">1kg</span>
+                                        </button>
+                                        <button type="button" class="quick-amount-btn" data-amount="165">
+                                            <span class="amount-value">۱۶۵</span>
+                                            <span class="amount-label">0.5kg</span>
+                                        </button>
+                                        <button type="button" class="quick-amount-btn" data-amount="660">
+                                            <span class="amount-value">۶۶۰</span>
+                                            <span class="amount-label">2kg</span>
+                                        </button>
+                                        <button type="button" class="quick-amount-btn" data-amount="1000">
+                                            <span class="amount-value">۱۰۰۰</span>
+                                            <span class="amount-label">3kg</span>
+                                        </button>
+                                    </div>
+                                    
+                                    {% if form.initial_amount.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.initial_amount.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">معمولاً 1 کیلو ≈ 330 متر (PLA 1.75mm)</div>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <h5 class="tip-title">تبدیل وزن به طول</h5>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.cost_per_kg.id_for_label }}">
+                                        <i class="fas fa-coins text-warning"></i>
+                                        قیمت خرید (تومان/کیلو)
+                                        <span class="required">*</span>
+                                    </label>
+                                    {{ form.cost_per_kg }}
+                                    {% if form.cost_per_kg.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.cost_per_kg.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">قیمت تمام‌شده هر کیلوگرم فیلامنت</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                        <div class="tip-content">
-                            <div class="conversion-item">
-                                <div class="conversion-icon">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <div class="conversion-info">
-                                    <span class="conversion-type">1.75mm PLA</span>
-                                    <span class="conversion-value">1kg ≈ 330m</span>
-                                </div>
+                        
+                        <!-- Cost Calculator -->
+                        <div class="cost-calculator-box" id="costCalculator" style="display: none;">
+                            <div class="calculator-header">
+                                <i class="fas fa-calculator"></i>
+                                <span>محاسبه قیمت</span>
                             </div>
-                            <div class="conversion-item">
-                                <div class="conversion-icon">
-                                    <i class="fas fa-circle"></i>
+                            <div class="calculator-body">
+                                <div class="calc-item">
+                                    <span class="calc-label">قیمت هر متر:</span>
+                                    <span class="calc-value" id="pricePerMeter">—</span>
                                 </div>
-                                <div class="conversion-info">
-                                    <span class="conversion-type">3.00mm PLA</span>
-                                    <span class="conversion-value">1kg ≈ 110m</span>
-                                </div>
-                            </div>
-                            <div class="conversion-item">
-                                <div class="conversion-icon">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <div class="conversion-info">
-                                    <span class="conversion-type">TPU Flexible</span>
-                                    <span class="conversion-value">1kg ≈ 400m</span>
+                                <div class="calc-item">
+                                    <span class="calc-label">ارزش کل رول:</span>
+                                    <span class="calc-value" id="totalValue">—</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Quick Tips -->
-                    <div class="tip-card animate-fade-up delay-3">
-                        <div class="tip-header">
-                            <div class="tip-icon tips">
+                <!-- Actions -->
+                <div class="form-actions-bar">
+                    <a href="{% url 'calculator:filaments' %}" class="btn-modern btn-outline">
+                        <i class="fas fa-times"></i>
+                        <span>انصراف</span>
+                    </a>
+                    <button type="submit" class="btn-modern btn-primary btn-lg">
+                        <i class="fas fa-check"></i>
+                        <span>ذخیره فیلامنت</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Preview Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-info">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>پیش‌نمایش</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="filament-preview-card">
+                            <div class="preview-spool">
+                                <div class="preview-spool-ring">
+                                    <div class="preview-spool-center" id="previewSpoolColor"></div>
+                                </div>
+                            </div>
+                            <div class="preview-info">
+                                <div class="preview-name" id="previewName">نام فیلامنت</div>
+                                <div class="preview-material" id="previewMaterial">PLA</div>
+                                <div class="preview-stats">
+                                    <div class="preview-stat">
+                                        <span class="preview-stat-value" id="previewAmount">۰</span>
+                                        <span class="preview-stat-label">متر</span>
+                                    </div>
+                                    <div class="preview-stat-divider"></div>
+                                    <div class="preview-stat">
+                                        <span class="preview-stat-value" id="previewPrice">۰</span>
+                                        <span class="preview-stat-label">تومان/کیلو</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tips Card -->
+                <div class="card-modern animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-warning">
                                 <i class="fas fa-lightbulb"></i>
                             </div>
-                            <h5 class="tip-title">نکات سریع</h5>
+                            <div class="card-header-text">
+                                <h2>نکات مفید</h2>
+                            </div>
                         </div>
-                        <div class="tip-content">
-                            <div class="quick-tip">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <span>فیلامنت را در جای خشک نگهداری کنید</span>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="tips-list">
+                            <div class="tip-item-card">
+                                <div class="tip-icon" style="background: var(--primary-50);">
+                                    <i class="fas fa-box text-primary"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">نگهداری صحیح</div>
+                                    <div class="tip-text">فیلامنت را در جای خشک و دور از نور نگهداری کنید.</div>
+                                </div>
                             </div>
-                            <div class="quick-tip">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <span>قطر فیلامنت را بررسی کنید</span>
+                            <div class="tip-item-card">
+                                <div class="tip-icon" style="background: var(--success-50);">
+                                    <i class="fas fa-ruler-combined text-success"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">تبدیل وزن به طول</div>
+                                    <div class="tip-text">PLA 1.75mm: هر کیلو ≈ 330 متر</div>
+                                </div>
                             </div>
-                            <div class="quick-tip">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <span>تاریخ تولید را یادداشت کنید</span>
+                            <div class="tip-item-card">
+                                <div class="tip-icon" style="background: var(--warning-50);">
+                                    <i class="fas fa-sync text-warning"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">رول نیمه‌مصرف</div>
+                                    <div class="tip-text">مقدار باقی‌مانده را تقریبی وارد کنید.</div>
+                                </div>
+                            </div>
+                            <div class="tip-item-card">
+                                <div class="tip-icon" style="background: var(--info-50);">
+                                    <i class="fas fa-thermometer-half text-info"></i>
+                                </div>
+                                <div class="tip-content">
+                                    <div class="tip-title">دمای پرینت</div>
+                                    <div class="tip-text">دمای توصیه‌شده روی بسته را چک کنید.</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Tips -->
             </div>
         </div>
-    </div>
+    </form>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Animate cards
-    const animateElements = () => {
-        const els = document.querySelectorAll('.animate-fade-up, .tip-card');
-        els.forEach((el, i) => {
-            setTimeout(() => {
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
-            }, i * 80);
-        });
-    };
-    setTimeout(animateElements, 100);
-
-    const idName = '{{ form.name.id_for_label }}';
-    const idColor = '{{ form.color.id_for_label }}';
-    const idMaterial = '{{ form.material.id_for_label }}';
-    const idInitial = '{{ form.initial_amount.id_for_label }}';
-    const idCostKg = '{{ form.cost_per_kg.id_for_label }}';
-
-    const elName = document.getElementById(idName);
-    const elColor = document.getElementById(idColor);
-    const elMaterial = document.getElementById(idMaterial);
-    const elInitial = document.getElementById(idInitial);
-    const elCostKg = document.getElementById(idCostKg);
-
-    const colorPicker = document.getElementById('colorPicker');
-    const chip = document.getElementById('colorPreviewChip');
-    const chipLg = document.getElementById('previewChip');
-
-    // Persian to English digits
-    function toEnDigits(s) {
-        return (s || '').toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-    }
-
-    // Map common Persian names to hex
-    const faMap = {
-        'قرمز':'#ef4444','آبی':'#3b82f6','ابی':'#3b82f6','سبز':'#10b981','سفید':'#ffffff','سفيد':'#ffffff',
-        'مشکی':'#000000','مشكى':'#000000','زرد':'#f59e0b','نارنجی':'#f97316','صورتی':'#ec4899','بنفش':'#8b5cf6',
-        'قهوه‌ای':'#8b4513','قهوه اي':'#8b4513','خاکستری':'#6b7280','طلایی':'#f59e0b','نقره‌ای':'#9ca3af',
-        'شفاف':'transparent'
-    };
-
-    // Normalize color for CSS; returns {css, hex} where hex is #RRGGBB or null
-    function normalizeColor(val) {
-        let v = (val || '').trim();
-        if (!v) return { css: '#6c757d', hex: '#6c757d' };
-
-        v = toEnDigits(v).toLowerCase();
-
-        if (faMap[v]) {
-            const css = faMap[v];
-            return { css, hex: css.startsWith('#') ? css : null };
-        }
-
-        // #RRGGBB
-        if (/^#[0-9a-f]{6}$/i.test(v)) {
-            return { css: v, hex: v };
-        }
-        // RRGGBB
-        if (/^[0-9a-f]{6}$/i.test(v)) {
-            const hex = '#' + v;
-            return { css: hex, hex };
-        }
-
-        // Basic English color names (let browser validate)
-        if (/^[a-z]+$/i.test(v)) {
-            return { css: v, hex: null };
-        }
-
-        // Fallback
-        return { css: '#6c757d', hex: '#6c757d' };
-    }
-
-    function setChipColor(css) {
-        if (chip) chip.style.backgroundColor = css;
-        if (chipLg) chipLg.style.backgroundColor = css;
-    }
-
-    function syncPicker(hex) {
-        // input[type=color] requires hex
-        colorPicker.value = hex || '#6c757d';
-    }
-
-    function updateColorUI() {
-        const { css, hex } = normalizeColor(elColor?.value);
-        setChipColor(css);
-        syncPicker(hex);
-    }
-
-    // Live preview formatting
-    function fmt(n) {
-        return new Intl.NumberFormat('fa-IR').format(Math.round(n || 0));
-    }
-
-    function updatePreview() {
-        const name = (elName?.value || '').trim();
-        const color = (elColor?.value || '').trim();
-        const material = (elMaterial?.selectedOptions?.[0]?.text || '').trim();
-        const amount = parseFloat(toEnDigits(elInitial?.value)) || 0;
-        const costKg = parseFloat(toEnDigits(elCostKg?.value)) || 0;
-
-        const fullName = [name, color, material].filter(Boolean).join(' ').trim();
-        const pricePerMeter = costKg ? (costKg / 330) : 0;
-        const totalValue = amount * pricePerMeter;
-
-        const previewName = document.getElementById('previewName');
-        const previewPrice = document.getElementById('previewPrice');
-        const previewTotal = document.getElementById('previewTotal');
-
-        const animateValue = (el, value) => {
-            if (!el) return;
-            el.style.opacity = '0';
-            el.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                el.textContent = value;
-                el.style.opacity = '1';
-                el.style.transform = 'scale(1)';
-            }, 120);
-        };
-
-        animateValue(previewName, fullName || 'در انتظار ورود اطلاعات...');
-        animateValue(previewPrice, pricePerMeter > 0 ? `${fmt(pricePerMeter)} تومان` : 'محاسبه...');
-        animateValue(previewTotal, totalValue > 0 ? `${fmt(totalValue)} تومان` : 'محاسبه...');
-    }
-
-    // Bind events
-    const inputs = document.querySelectorAll('#filamentForm input, #filamentForm select');
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            if (input === elColor) updateColorUI();
-            updatePreview();
-        });
-        input.addEventListener('focus', function() {
-            const wrapper = this.closest('.input-wrapper');
-            if (wrapper) wrapper.classList.add('focused');
-        });
-        input.addEventListener('blur', function() {
-            const wrapper = this.closest('.input-wrapper');
-            if (wrapper) wrapper.classList.remove('focused');
-        });
-    });
-
-    // Color picker mirrors text input
-    colorPicker.addEventListener('input', function() {
-        if (elColor) {
-            elColor.value = this.value;
-            updateColorUI();
-            updatePreview();
-        }
-    });
-
-    // Initial state
-    updateColorUI();
-    updatePreview();
-
-    // Submit feedback
-    const form = document.getElementById('filamentForm');
-    form.addEventListener('submit', function() {
-        const btn = form.querySelector('.btn-submit');
-        if (btn) {
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>در حال ذخیره...</span>';
-            btn.disabled = true;
-        }
-    });
-});
-</script>
-
-<style>
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --dark: #1f2937;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Header */
-.page-header-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: var(--radius-lg);
-    padding: 2.5rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-}
-.header-pattern {
-    position: absolute; inset: 0;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
-}
-.header-content-modern {
-    position: relative; z-index: 1;
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;
-}
-.header-icon-circle {
-    width: 70px; height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
-.page-title-modern { font-size: 2.2rem; font-weight: 800; color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.page-subtitle { color: rgba(255, 255, 255, 0.9); font-size: 1rem; margin: 0; }
-.btn-header-back {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.875rem 1.75rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius);
-    color: white; font-weight: 600; text-decoration: none; transition: var(--transition);
-}
-.btn-header-back:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-
-/* Card */
-.form-card-modern {
-    background: white; border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    overflow: hidden; opacity: 0; transform: translateY(20px); transition: var(--transition);
-}
-.animate-fade-up { opacity: 0; transform: translateY(20px); transition: all .6s cubic-bezier(0.4,0,0.2,1); }
-
-/* Sections */
-.form-section-header {
-    display: flex; align-items: center; gap: 1.25rem;
-    padding: 2rem 2rem 1rem;
-    border-bottom: 2px solid var(--light-gray);
-}
-.section-icon {
-    width: 56px; height: 56px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    border-radius: 16px; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 1.5rem; box-shadow: var(--shadow);
-}
-.section-icon.specs {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-.section-title { font-size: 1.25rem; font-weight: 700; color: var(--dark); margin: 0 0 0.25rem; }
-.section-desc { font-size: 0.9rem; color: var(--gray); margin: 0; }
-.form-section-body { padding: 2rem; }
-
-/* Form fields */
-.form-group-modern { position: relative; margin-bottom: 0; }
-.form-label-modern { display: flex; align-items: center; gap: .5rem; font-weight: 600; color: var(--dark); margin-bottom: .75rem; font-size: .95rem; }
-.form-label-modern i { color: var(--primary); font-size: 1rem; }
-
-.input-wrapper {
-    position: relative; background: var(--light-gray);
-    border-radius: var(--radius); transition: var(--transition);
-}
-.input-wrapper .form-control,
-.input-wrapper .form-select,
-.input-wrapper input[type="text"],
-.input-wrapper input[type="number"],
-.input-wrapper select {
-    width: 100%; padding: 0.875rem 1rem; background: transparent !important;
-    border: 2px solid transparent !important; border-radius: var(--radius);
-    font-size: 1rem; color: var(--dark); transition: var(--transition); box-shadow: none !important;
-}
-.input-wrapper select.form-select { appearance: none; padding-right: 2.5rem; }
-.input-wrapper:has(.form-control:focus),
-.input-wrapper:has(.form-select:focus),
-.input-wrapper.focused {
-    background: white; box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
-}
-.input-focus-border {
-    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-    border-radius: 2px; transition: width .3s ease;
-}
-.input-wrapper.focused .input-focus-border { width: 100%; }
-.select-wrapper { position: relative; }
-.select-arrow { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--gray); transition: var(--transition); z-index: 1; }
-.input-wrapper.focused .select-arrow { color: var(--primary); }
-
-/* Units */
-.input-wrapper.with-unit { position: relative; }
-.input-wrapper.with-unit input { padding-left: 6rem !important; }
-.input-unit {
-    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
-    color: var(--gray); font-size: .9rem; font-weight: 600; pointer-events: none; z-index: 1;
-}
-.input-wrapper.focused .input-unit { color: var(--primary); }
-
-/* Helper & errors */
-.form-hint { display: flex; align-items: center; gap: .375rem; margin-top: .5rem; font-size: .85rem; color: var(--gray); }
-.form-hint.success { color: var(--success); }
-.field-error {
-    display: inline-flex; align-items: center; gap: .4rem;
-    color: var(--danger); font-size: .85rem; margin-top: .5rem;
-    padding: .4rem .6rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
-}
-
-/* Color row */
-.color-row {
-    display: grid; grid-template-columns: 1fr auto auto; gap: .5rem; align-items: stretch;
-}
-.color-picker {
-    width: 54px; height: 44px; border: 2px solid var(--border); border-radius: 10px; background: white; padding: 0; cursor: pointer;
-}
-.color-chip {
-    width: 44px; height: 44px; border-radius: 10px; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.color-chip-lg {
-    display: inline-block; width: 48px; height: 28px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-/* Preview */
-.preview-section {
-    margin: 2rem; padding: 1.5rem;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border-radius: var(--radius-lg); border: 2px solid #bfdbfe;
-}
-.preview-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-.preview-icon {
-    width: 40px; height: 40px; background: white; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; color: var(--info); font-size: 1.25rem; box-shadow: var(--shadow-sm);
-}
-.preview-title { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin: 0; }
-.preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-.preview-item {
-    display: flex; align-items: center; gap: 1rem; padding: 1rem; background: white; border-radius: var(--radius); transition: var(--transition);
-}
-.preview-item:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-.preview-item-icon {
-    width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem;
-}
-.preview-item-icon.price { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
-.preview-item-icon.total { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.preview-item-content { flex: 1; display: flex; flex-direction: column; }
-.preview-label { font-size: .8rem; color: var(--gray); margin-bottom: .25rem; }
-.preview-value { font-size: 1rem; font-weight: 700; color: var(--dark); transition: all .3s ease; }
-
-/* Actions */
-.form-actions {
-    display: flex; gap: 1rem; justify-content: flex-end;
-    padding: 1.5rem 2rem 2rem;
-    background: linear-gradient(to top, var(--light-gray), transparent);
-}
-.btn-modern {
-    display: inline-flex; align-items: center; gap: .5rem;
-    padding: .875rem 2rem; border-radius: var(--radius);
-    font-weight: 600; text-decoration: none; transition: var(--transition);
-    border: none; cursor: pointer; font-size: 1rem;
-}
-.btn-cancel { background: white; color: var(--gray); border: 2px solid var(--border); }
-.btn-cancel:hover { background: var(--light-gray); color: var(--dark); transform: translateY(-2px); }
-.btn-submit { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; box-shadow: var(--shadow); }
-.btn-submit:hover { transform: translateY(-2px); box-shadow: var(--shadow-xl); }
-.btn-submit:disabled { opacity: .6; cursor: not-allowed; }
-
-/* Tips */
-.tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-.tip-card { background: white; border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: var(--transition); opacity: 0; transform: translateY(20px); }
-.tip-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-.delay-1 { animation-delay: .1s; } .delay-2 { animation-delay: .2s; } .delay-3 { animation-delay: .3s; }
-.tip-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 2px solid var(--light-gray); }
-.tip-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; }
-.tip-icon.temperature { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-.tip-icon.conversion { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
-.tip-icon.tips { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.tip-title { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin: 0; }
-.tip-content { display: flex; flex-direction: column; gap: .75rem; }
-.temp-item, .conversion-item, .quick-tip {
-    display: flex; align-items: center; justify-content: space-between; gap: .75rem;
-    padding: .625rem; background: var(--light-gray); border-radius: 8px; transition: var(--transition);
-}
-.temp-item:hover { background: linear-gradient(135deg, rgba(99,102,241,.05), rgba(99,102,241,.02)); transform: translateX(-4px); }
-.conversion-item:hover { background: linear-gradient(135deg, rgba(6,182,212,.05), rgba(6,182,212,.02)); transform: translateX(-4px); }
-.quick-tip { justify-content: flex-start; background: linear-gradient(135deg, rgba(16,185,129,.05), rgba(16,185,129,.02)); }
-.quick-tip:hover { background: linear-gradient(135deg, rgba(16,185,129,.1), rgba(16,185,129,.05)); transform: translateX(-4px); }
-.material-badge { padding: .25rem .75rem; border-radius: 6px; font-weight: 700; font-size: .85rem; color: white; }
-.material-badge.pla { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-.material-badge.pla-plus { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
-.material-badge.abs { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-.material-badge.petg { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.temp-range { font-weight: 600; color: var(--dark); }
-.conversion-icon { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--info); }
-.conversion-info { flex: 1; display: flex; justify-content: space-between; align-items: center; }
-.conversion-type { font-weight: 600; color: var(--dark); font-size: .9rem; }
-.conversion-value { color: var(--info); font-weight: 700; }
-
-/* Responsive */
-@media (max-width: 768px) {
-    .page-header-gradient { padding: 1.5rem; }
-    .page-title-modern { font-size: 1.75rem; }
-    .header-icon-circle { width: 56px; height: 56px; font-size: 1.5rem; }
-    .form-section-header { padding: 1.5rem 1.5rem 1rem; }
-    .form-section-body { padding: 1.5rem; }
-    .preview-grid { grid-template-columns: 1fr; }
-    .form-actions { flex-direction: column; padding: 1.5rem; }
-    .btn-modern { width: 100%; justify-content: center; }
-    .tips-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 576px) {
-    .header-content-modern { flex-direction: column; align-items: flex-start; }
-    .preview-section { margin: 1rem; padding: 1rem; }
-}
-</style>
+{% block extra_js %}
+<script src="{% static 'js/add_filament.js' %}"></script>
 {% endblock %}

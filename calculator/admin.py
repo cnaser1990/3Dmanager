@@ -61,7 +61,7 @@ class ProjectAdmin(admin.ModelAdmin):
     readonly_fields = ['code', 'created_date', 'filament_weight_display', 'usage_count', 'assigned_filaments_display']
     
     fieldsets = (
-        ('اطلاعات پروژه', {
+        ('اطلاعات مدل', {
             'fields': ('model_name', 'code', 'picture')
         }),
         ('مشخصات فنی', {
@@ -142,7 +142,7 @@ class FilamentUsageAdmin(admin.ModelAdmin):
     
     def project_display(self, obj):
         return f"{obj.project.code} - {obj.project.model_name}"
-    project_display.short_description = 'پروژه'
+    project_display.short_description = 'مدل'
     
     def filament_display(self, obj):
         return f"{obj.filament.name} ({obj.filament.color})"

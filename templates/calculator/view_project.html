@@ -1,355 +1,286 @@
+<!-- templates/calculator/view_project.html -->
 {% extends "calculator/base.html" %}
 
-{% block title %}{{ project.model_name }} - کد {{ project.code }}{% endblock %}
+{% block title %}{{ project.model_name }} - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
-    
-    <!-- Modern Page Header -->
-<div class="project-page-header">
-    <div class="header-pattern"></div>
-    <div class="header-wrapper">
-        <div class="header-top">
-            <a href="{% url 'calculator:projects' %}" class="back-btn">
-                <i class="fas fa-arrow-right"></i>
-                <span>بازگشت به لیست</span>
-            </a>
-            
-            <!-- Quick Actions in Header -->
-            <div class="header-quick-actions">
-                <a href="{% url 'calculator:edit_project' project.pk %}" class="header-action-btn header-action-edit">
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:projects' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <div class="page-header-text">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">کد {{ project.code }}</span>
+                    </div>
+                    <h1>{{ project.model_name }}</h1>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">
+                            <i class="fas fa-calendar me-1"></i>
+                            {{ project.created_date|date:"Y/m/d" }}
+                        </span>
+                        {% if project.filamentusage_set.count > 0 %}
+                        <span class="badge" style="background: rgba(16,185,129,0.3); color: white;">
+                            <i class="fas fa-link me-1"></i>
+                            {{ project.filamentusage_set.count }} فیلامنت متصل
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="page-header-actions">
+                <a href="{% url 'calculator:edit_project' project.pk %}" class="btn-modern btn-success">
                     <i class="fas fa-edit"></i>
                     <span>ویرایش</span>
                 </a>
-                <a class="header-action-btn header-action-delete" href="{% url 'calculator:delete_project' project.pk %}"
-                    onclick="return confirm('آیا از حذف این مدل مطمئن هستید؟')">
+                <a href="{% url 'calculator:delete_project' project.pk %}" class="btn-modern btn-outline" 
+                   style="background: rgba(255,255,255,0.1); border-color: rgba(239,68,68,0.5); color: #fca5a5;"
+                   onclick="return confirm('آیا از حذف این مدل مطمئن هستید؟')">
                     <i class="fas fa-trash"></i>
-                    <span>حذف مدل</span>
                 </a>
             </div>
         </div>
         
-        <div class="header-main">
-            <div class="project-icon-wrapper">
-                <div class="project-icon-bg"></div>
-                <div class="project-icon">
-                    <i class="fas fa-cube"></i>
+        <!-- Quick Stats -->
+        <div class="page-header-stats">
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-ruler"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ project.filament_used_mm|floatformat:0 }}</div>
+                    <div class="header-stat-label">میلی‌متر فیلامنت</div>
                 </div>
             </div>
-            <div class="header-info">
-                <h1 class="project-title-main">{{ project.model_name }}</h1>
-                <div class="project-meta-info">
-                    <span class="meta-info-item">
-                        <i class="fas fa-calendar"></i>
-                        ایجاد شده در {{ project.created_date|date:"Y/m/d" }}
-                    </span>
-                    {% if project.filament_usages.count > 0 %}
-                    <span class="meta-info-item">
-                        <i class="fas fa-layer-group"></i>
-                        {{ project.filament_usages.count }} فیلامنت
-                    </span>
-                    {% endif %}
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-weight"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ project.filament_weight_grams|floatformat:0 }}g</div>
+                    <div class="header-stat-label">وزن تخمینی</div>
                 </div>
             </div>
-        </div>
-
-        <div class="header-stats-row">
-            <div class="stat-mini">
-                <div class="stat-mini-icon stat-mini-primary">
-                    <i class="fas fa-ruler"></i>
-                </div>
-                <div class="stat-mini-content">
-                    <span class="stat-mini-label">فیلامنت مصرفی</span>
-                    <strong class="stat-mini-value">{{ project.filament_used_mm|floatformat:0 }} mm</strong>
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value">{{ project.print_time_hours|floatformat:1 }}h</div>
+                    <div class="header-stat-label">زمان پرینت</div>
                 </div>
             </div>
-            
-            <div class="stat-mini">
-                <div class="stat-mini-icon stat-mini-success">
-                    <i class="fas fa-weight"></i>
-                </div>
-                <div class="stat-mini-content">
-                    <span class="stat-mini-label">وزن</span>
-                    <strong class="stat-mini-value">{{ project.filament_weight_grams|floatformat:1 }} g</strong>
-                </div>
-            </div>
-            
-            <div class="stat-mini">
-                <div class="stat-mini-icon stat-mini-warning">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-mini-content">
-                    <span class="stat-mini-label">زمان پرینت</span>
-                    <strong class="stat-mini-value">{{ project.print_time_hours|floatformat:1 }} h</strong>
-                </div>
-            </div>
-            
-            <div class="stat-mini">
-                <div class="stat-mini-icon stat-mini-info">
-                    <i class="fas fa-cube"></i>
-                </div>
-                <div class="stat-mini-content">
-                    <span class="stat-mini-label">ابعاد</span>
-                    <strong class="stat-mini-value stat-mini-value-sm">
-                        {{ project.size_x|floatformat:0 }}×{{ project.size_y|floatformat:0 }}×{{ project.size_z|floatformat:0 }}
-                    </strong>
+            <div class="header-stat">
+                <div class="header-stat-icon"><i class="fas fa-cube"></i></div>
+                <div class="header-stat-content">
+                    <div class="header-stat-value" style="font-size: var(--font-size-base);">{{ project.size_x|floatformat:0 }}×{{ project.size_y|floatformat:0 }}×{{ project.size_z|floatformat:0 }}</div>
+                    <div class="header-stat-label">ابعاد (mm)</div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-    <!-- Main Content Grid -->
-    <div class="project-content-grid">
+    <div class="row g-4">
         
-        <!-- Left Column: Project Image & Info -->
-        <div class="project-sidebar">
-            
-            <!-- Project Image Card -->
-            <div class="sidebar-card image-card">
-                <div class="image-container">
+        <!-- Left Column: Image & Details -->
+        <div class="col-lg-4">
+            <!-- Image Card -->
+            <div class="card-modern mb-4 animate-in overflow-hidden">
+                <div style="height: 280px; background: linear-gradient(135deg, var(--primary-100), var(--secondary-100));">
                     {% if project.has_image %}
-                        <img src="{{ project.picture.url }}" alt="{{ project.model_name }}" class="project-image">
-                        <div class="image-badge-overlay">
-                            <span class="image-badge">
-                                <i class="fas fa-camera"></i>
-                                تصویر مدل
-                            </span>
-                        </div>
+                        <img src="{{ project.picture.url }}" alt="{{ project.model_name }}"
+                             style="width: 100%; height: 100%; object-fit: cover;">
                     {% else %}
-                        <div class="no-image-placeholder">
-                            <div class="placeholder-icon">
-                                <i class="fas fa-image"></i>
-                            </div>
-                            <p class="placeholder-text">بدون تصویر</p>
+                        <div class="d-flex flex-column align-items-center justify-content-center h-100" style="background: var(--gradient-primary);">
+                            <i class="fas fa-image text-white mb-2" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <span class="text-white" style="opacity: 0.7;">بدون تصویر</span>
                         </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Technical Details Card (Combined with Services) -->
-            <div class="sidebar-card details-card">
-                <div class="card-header-simple">
-                    <div class="card-header-icon">
-                        <i class="fas fa-info-circle"></i>
+            <!-- Technical Details Card -->
+            <div class="card-modern animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-primary">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="card-header-text">
+                            <h2>جزئیات فنی</h2>
+                        </div>
                     </div>
-                    <h3 class="card-header-title">جزئیات فنی</h3>
                 </div>
-                <div class="details-list">
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-ruler-combined"></i>
-                            ابعاد X
-                        </span>
-                        <strong class="detail-value">{{ project.size_x|floatformat:1 }} mm</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-ruler-combined"></i>
-                            ابعاد Y
-                        </span>
-                        <strong class="detail-value">{{ project.size_y|floatformat:1 }} mm</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-ruler-combined"></i>
-                            ابعاد Z
-                        </span>
-                        <strong class="detail-value">{{ project.size_z|floatformat:1 }} mm</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-tape"></i>
-                            طول فیلامنت
-                        </span>
-                        <strong class="detail-value">{{ project.filament_used_mm|floatformat:0 }} mm</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-balance-scale"></i>
-                            وزن فیلامنت
-                        </span>
-                        <strong class="detail-value">{{ project.filament_weight_grams|floatformat:2 }} g</strong>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">
-                            <i class="fas fa-hourglass-half"></i>
-                            زمان پرینت
-                        </span>
-                        <strong class="detail-value">{{ project.print_time_hours|floatformat:2 }} h</strong>
+                <div class="card-modern-body">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-ruler-horizontal text-primary"></i> طول (X)
+                            </span>
+                            <span class="fw-bold">{{ project.size_x|floatformat:1 }} mm</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-ruler-vertical text-primary"></i> عرض (Y)
+                            </span>
+                            <span class="fw-bold">{{ project.size_y|floatformat:1 }} mm</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-arrows-alt-v text-primary"></i> ارتفاع (Z)
+                            </span>
+                            <span class="fw-bold">{{ project.size_z|floatformat:1 }} mm</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-tape text-success"></i> طول فیلامنت
+                            </span>
+                            <span class="fw-bold">{{ project.filament_used_mm|floatformat:0 }} mm</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-weight text-warning"></i> وزن فیلامنت
+                            </span>
+                            <span class="fw-bold">{{ project.filament_weight_grams|floatformat:1 }} g</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: var(--bg-secondary);">
+                            <span class="d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-clock text-info"></i> زمان پرینت
+                            </span>
+                            <span class="fw-bold">{{ project.print_time_hours|floatformat:2 }} ساعت</span>
+                        </div>
                     </div>
 
-                    <!-- Additional Services Section (Merged) -->
                     {% if project.post_processing_enabled or project.painting_enabled %}
-                    <div class="detail-divider">
-                        <span class="divider-text">
-                            <i class="fas fa-tools"></i>
-                            خدمات اضافی
-                        </span>
-                    </div>
-                    
-                    {% if project.post_processing_enabled %}
-                    <div class="detail-row detail-row-service">
-                        <span class="detail-label">
-                            <i class="fas fa-hammer"></i>
-                            پست‌پروسسینگ
-                        </span>
-                        <div class="service-check">
-                            <i class="fas fa-check-circle"></i>
+                    <hr class="my-4" style="border-color: var(--border-color);">
+                    <h3 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-tools text-success"></i>
+                        خدمات اضافی
+                    </h3>
+                    <div class="d-flex flex-column gap-2">
+                        {% if project.post_processing_enabled %}
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: linear-gradient(135deg, var(--success-50), white);">
+                            <span class="d-flex align-items-center gap-2 text-success">
+                                <i class="fas fa-hammer"></i> پست‌پروسسینگ
+                            </span>
+                            <i class="fas fa-check-circle text-success"></i>
                         </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if project.painting_enabled %}
-                    <div class="detail-row detail-row-service">
-                        <span class="detail-label">
-                            <i class="fas fa-palette"></i>
-                            رنگ‌آمیزی
-                        </span>
-                        <div class="service-check">
-                            <i class="fas fa-check-circle"></i>
+                        {% endif %}
+                        {% if project.painting_enabled %}
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-xl" style="background: linear-gradient(135deg, var(--warning-50), white);">
+                            <span class="d-flex align-items-center gap-2 text-warning">
+                                <i class="fas fa-palette"></i> رنگ‌آمیزی
+                            </span>
+                            <i class="fas fa-check-circle text-warning"></i>
                         </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Right Column: Filaments & Sales -->
-        <div class="project-main-content">
-            
-            <!-- Assigned Filaments Section -->
-            <div class="content-card filaments-section">
-                <div class="content-card-header">
-                    <div class="content-header-left">
-                        <div class="content-icon">
+        <div class="col-lg-8">
+            <!-- Filament Usages -->
+            <div class="card-modern mb-4 animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-primary">
                             <i class="fas fa-layer-group"></i>
                         </div>
-                        <div>
-                            <h2 class="content-title">فیلامنت‌های اختصاص یافته</h2>
-                            <p class="content-subtitle">
-                                {% if filament_usages %}
-                                    {{ filament_usages|length }} فیلامنت به این مدل متصل شده
-                                {% else %}
-                                    هنوز فیلامنتی اختصاص نیافته است
-                                {% endif %}
-                            </p>
+                        <div class="card-header-text">
+                            <h2>فیلامنت‌های اختصاص‌یافته</h2>
+                            <p>{% if filament_usages %}{{ filament_usages|length }} فیلامنت متصل{% else %}بدون فیلامنت{% endif %}</p>
                         </div>
                     </div>
                     {% if filament_usages %}
-                    <div class="content-badge">
-                        <span class="badge-count">{{ filament_usages|length }}</span>
-                    </div>
+                    <span class="badge-count">{{ filament_usages|length }}</span>
                     {% endif %}
                 </div>
-
-                <div class="content-card-body">
+                <div class="card-modern-body">
                     {% if filament_usages %}
-                        <div class="filament-usage-grid">
+                        <div class="row g-4">
                             {% for usage in filament_usages %}
-                            <div class="usage-card">
-                                <!-- Usage Card Header -->
-                                <div class="usage-card-header">
-                                    <div class="usage-header-left">
-                                        <div class="filament-color-indicator" 
-                                             style="background: #{{ usage.filament.color|default:'6c757d' }};"
-                                             title="{{ usage.filament.color }}">
-                                        </div>
-                                        <div class="usage-header-info">
-                                            <h3 class="usage-filament-name">{{ usage.filament.name }}</h3>
-                                            <div class="usage-filament-meta">
-                                                <span class="usage-meta-tag">
-                                                    <i class="fas fa-industry"></i>
+                            <div class="col-md-6">
+                                <div class="usage-card">
+                                    <div class="usage-header">
+                                        <div class="usage-header-left">
+                                            <div class="usage-color" style="background: {% if usage.filament.color and usage.filament.color|slice:':1' == '#' %}{{ usage.filament.color }}{% elif usage.filament.color %}#{{ usage.filament.color }}{% else %}#6b7280{% endif %};"></div>
+                                            <div>
+                                                <h3 class="usage-filament-name">{{ usage.filament.name }}</h3>
+                                                <div class="usage-material-badge">
+                                                    <i class="fas fa-cube"></i>
                                                     {{ usage.filament.material }}
-                                                </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-link me-1"></i>متصل
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="usage-stats">
+                                        <div class="usage-stat">
+                                            <div class="usage-stat-icon primary"><i class="fas fa-weight"></i></div>
+                                            <div>
+                                                <div class="usage-stat-label">وزن</div>
+                                                <div class="usage-stat-value">{{ usage.filament_weight_used|floatformat:0 }}g</div>
+                                            </div>
+                                        </div>
+                                        <div class="usage-stat">
+                                            <div class="usage-stat-icon danger"><i class="fas fa-coins"></i></div>
+                                            <div>
+                                                <div class="usage-stat-label">هزینه</div>
+                                                <div class="usage-stat-value">{{ usage.total_cost|floatformat:0 }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="usage-stat">
+                                            <div class="usage-stat-icon success"><i class="fas fa-tag"></i></div>
+                                            <div>
+                                                <div class="usage-stat-label">فروش</div>
+                                                <div class="usage-stat-value">{{ usage.selling_price|floatformat:0 }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="usage-stat">
+                                            <div class="usage-stat-icon warning"><i class="fas fa-chart-line"></i></div>
+                                            <div>
+                                                <div class="usage-stat-label">سود</div>
+                                                <div class="usage-stat-value">{{ usage.profit|floatformat:0 }}</div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="usage-status-badge">
-                                        <i class="fas fa-link"></i>
-                                        متصل
+                                    
+                                    <div class="text-muted small mb-3">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ usage.assigned_date|date:"Y/m/d" }}
                                     </div>
-                                </div>
-
-                                <!-- Usage Stats Grid -->
-                                <div class="usage-stats-grid">
-                                    <div class="usage-stat-box">
-                                        <div class="stat-box-icon stat-box-primary">
-                                            <i class="fas fa-weight"></i>
-                                        </div>
-                                        <div class="stat-box-content">
-                                            <span class="stat-box-label">وزن مصرفی</span>
-                                            <strong class="stat-box-value">{{ usage.filament_weight_used|floatformat:1 }} g</strong>
-                                        </div>
+                                    
+                                    <div class="usage-actions">
+                                        <a href="{% url 'calculator:view_filament' usage.filament.pk %}" class="usage-btn usage-btn-view">
+                                            <i class="fas fa-eye"></i>
+                                            <span>مشاهده فیلامنت</span>
+                                        </a>
+                                        <a href="{% url 'calculator:delete_filament_usage' usage.pk %}" class="usage-btn usage-btn-delete"
+                                           onclick="return confirm('حذف این اختصاص؟')">
+                                            <i class="fas fa-unlink"></i>
+                                        </a>
                                     </div>
-
-                                    <div class="usage-stat-box">
-                                        <div class="stat-box-icon stat-box-danger">
-                                            <i class="fas fa-coins"></i>
-                                        </div>
-                                        <div class="stat-box-content">
-                                            <span class="stat-box-label">هزینه ساخت</span>
-                                            <strong class="stat-box-value">{{ usage.total_cost|floatformat:0 }}</strong>
-                                        </div>
-                                    </div>
-
-                                    <div class="usage-stat-box">
-                                        <div class="stat-box-icon stat-box-success">
-                                            <i class="fas fa-tag"></i>
-                                        </div>
-                                        <div class="stat-box-content">
-                                            <span class="stat-box-label">قیمت فروش</span>
-                                            <strong class="stat-box-value">{{ usage.selling_price|floatformat:0 }}</strong>
-                                        </div>
-                                    </div>
-
-                                    <div class="usage-stat-box">
-                                        <div class="stat-box-icon stat-box-info">
-                                            <i class="fas fa-chart-line"></i>
-                                        </div>
-                                        <div class="stat-box-content">
-                                            <span class="stat-box-label">سود خالص</span>
-                                            <strong class="stat-box-value">{{ usage.profit|floatformat:0 }}</strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Assignment Date -->
-                                <div class="usage-footer">
-                                    <div class="usage-date">
-                                        <i class="fas fa-calendar-check"></i>
-                                        <span>اختصاص داده شده در {{ usage.assigned_date|date:"Y/m/d" }}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Usage Actions -->
-                                <div class="usage-card-actions">
-                                    <a href="{% url 'calculator:view_filament' usage.filament.pk %}" 
-                                       class="usage-btn usage-btn-view">
-                                        <i class="fas fa-eye"></i>
-                                        <span>مشاهده فیلامنت</span>
-                                    </a>
-                                    <a href="{% url 'calculator:delete_filament_usage' usage.pk %}" 
-                                       class="usage-btn usage-btn-delete"
-                                       onclick="return confirm('آیا از حذف این اختصاص مطمئن هستید؟')">
-                                        <i class="fas fa-unlink"></i>
-                                        <span>حذف اختصاص</span>
-                                    </a>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="empty-state-modern">
+                        <div class="empty-state">
                             <div class="empty-state-icon">
                                 <i class="fas fa-unlink"></i>
                             </div>
-                            <h3 class="empty-state-title">هنوز فیلامنتی اختصاص نیافته</h3>
+                            <h3 class="empty-state-title">فیلامنتی اختصاص نیافته</h3>
                             <p class="empty-state-text">
-                                برای محاسبه هزینه و قیمت فروش، این مدل را به یک فیلامنت اختصاص دهید
+                                برای محاسبه هزینه و قیمت فروش، این مدل را به یک فیلامنت اختصاص دهید.
                             </p>
-                            <a href="{% url 'calculator:filaments' %}" class="empty-state-btn">
+                            <a href="{% url 'calculator:filaments' %}" class="btn-modern btn-primary">
                                 <i class="fas fa-layer-group"></i>
                                 <span>رفتن به فیلامنت‌ها</span>
                             </a>
@@ -358,1637 +289,65 @@
                 </div>
             </div>
 
-            <!-- Sales History Section -->
+            <!-- Sales History -->
             {% if sales %}
-            <div class="content-card sales-section">
-                <div class="content-card-header">
-                    <div class="content-header-left">
-                        <div class="content-icon content-icon-success">
+            <div class="card-modern animate-in">
+                <div class="card-modern-header">
+                    <div class="card-header-title">
+                        <div class="card-header-icon icon-success">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
-                        <div>
-                            <h2 class="content-title">سوابق فروش</h2>
-                            <p class="content-subtitle">تاریخچه فروش این مدل</p>
+                        <div class="card-header-text">
+                            <h2>سوابق فروش</h2>
+                            <p>{{ sales|length }} فروش ثبت‌شده</p>
                         </div>
                     </div>
-                    <div class="content-badge content-badge-success">
-                        <span class="badge-count">{{ sales|length }}</span>
-                    </div>
+                    <span class="badge-count" style="background: var(--success-500);">{{ sales|length }}</span>
                 </div>
-
-                <div class="content-card-body">
-                    <div class="sales-grid">
+                <div class="card-modern-body">
+                    <div class="d-flex flex-column gap-3">
                         {% for sale in sales %}
-                        <div class="sale-card">
-                            <div class="sale-card-header">
-                                <div class="sale-header-left">
-                                    <div class="sale-number">
-                                        <span>#{{ forloop.counter }}</span>
-                                    </div>
-                                    <div class="sale-info">
-                                        <h4 class="sale-customer">{{ sale.customer_name|default:"مشتری ناشناس" }}</h4>
-                                        {% if sale.customer_phone %}
-                                        <p class="sale-phone">
-                                            <i class="fas fa-phone"></i>
-                                            {{ sale.customer_phone }}
-                                        </p>
-                                        {% endif %}
-                                    </div>
+                        <div class="d-flex justify-content-between align-items-center p-4 rounded-xl border" style="background: linear-gradient(135deg, var(--success-50), white);">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 50px; height: 50px; border-radius: var(--radius-lg); background: var(--gradient-success); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                    #{{ forloop.counter }}
                                 </div>
-                                <div class="sale-date-badge">
-                                    <i class="fas fa-calendar"></i>
-                                    <span>{{ sale.sale_date|date:"Y/m/d" }}</span>
+                                <div>
+                                    <div class="fw-bold">{{ sale.customer_name|default:"مشتری ناشناس" }}</div>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-calendar me-1"></i>{{ sale.sale_date|date:"Y/m/d" }}
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-boxes me-1"></i>{{ sale.quantity }} عدد
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="sale-details-grid">
-                                <div class="sale-detail-item">
-                                    <span class="sale-detail-label">فیلامنت</span>
-                                    <strong class="sale-detail-value">{{ sale.filament_usage.filament.name }}</strong>
-                                </div>
-                                <div class="sale-detail-item">
-                                    <span class="sale-detail-label">تعداد</span>
-                                    <strong class="sale-detail-value">{{ sale.quantity }} عدد</strong>
-                                </div>
-                            </div>
-
-                            <div class="sale-financial">
-                                <div class="financial-item financial-item-price">
-                                    <div class="financial-icon">
-                                        <i class="fas fa-coins"></i>
-                                    </div>
-                                    <div class="financial-content">
-                                        <span class="financial-label">مبلغ کل</span>
-                                        <strong class="financial-value">{{ sale.total_price|floatformat:0 }} تومان</strong>
-                                    </div>
-                                </div>
-                                <div class="financial-item financial-item-profit">
-                                    <div class="financial-icon">
-                                        <i class="fas fa-chart-line"></i>
-                                    </div>
-                                    <div class="financial-content">
-                                        <span class="financial-label">سود</span>
-                                        <strong class="financial-value">{{ sale.total_profit|floatformat:0 }} تومان</strong>
-                                    </div>
-                                </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-success" style="font-size: var(--font-size-lg);">{{ sale.total_price|floatformat:0 }} تومان</div>
+                                <div class="text-muted small">سود: {{ sale.total_profit|floatformat:0 }} تومان</div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
-            {% else %}
-                {% if filament_usages %}
-                <div class="content-card sales-section">
-                    <div class="content-card-body">
-                        <div class="empty-state-modern">
-                            <div class="empty-state-icon empty-state-icon-success">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <h3 class="empty-state-title">هنوز فروشی ثبت نشده</h3>
-                            <p class="empty-state-text">
-                                می‌توانید این مدل را از صفحه فروش به فروش برسانید
-                            </p>
-                            <a href="{% url 'calculator:sales' %}" class="empty-state-btn">
-                                <i class="fas fa-plus"></i>
-                                <span>ثبت فروش جدید</span>
-                            </a>
+            {% elif filament_usages %}
+            <div class="card-modern animate-in">
+                <div class="card-modern-body">
+                    <div class="empty-state" style="padding: var(--space-8);">
+                        <div class="empty-state-icon" style="background: var(--gradient-success);">
+                            <i class="fas fa-shopping-cart"></i>
                         </div>
+                        <h3 class="empty-state-title">هنوز فروشی ثبت نشده</h3>
+                        <p class="empty-state-text">این مدل را از صفحه فروش به مشتریان بفروشید.</p>
+                        <a href="{% url 'calculator:sales' %}" class="btn-modern btn-success">
+                            <i class="fas fa-plus"></i>
+                            <span>ثبت فروش</span>
+                        </a>
                     </div>
                 </div>
-                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Animate elements on scroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, { 
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-    
-    // Observe all animated elements
-    document.querySelectorAll('.usage-card, .sale-card, .sidebar-card, .content-card').forEach(el => {
-        observer.observe(el);
-    });
-
-    // Smooth scroll to sections
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-});
-</script>
-
-<style>
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --success: #10b981;
-    --success-dark: #059669;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --danger-dark: #dc2626;
-    --info: #06b6d4;
-    --dark: #1f2937;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ========== PROJECT PAGE HEADER ========== */
-.project-page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: var(--radius-lg);
-    padding: 0;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-}
-
-.header-pattern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    pointer-events: none;
-}
-
-.header-wrapper {
-    position: relative;
-    z-index: 1;
-    padding: 2rem;
-}
-
-.header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(4px);
-    color: white;
-}
-
-.header-actions-mobile {
-    display: none;
-}
-
-.btn-action-mobile {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.btn-action-mobile:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.action-dropdown {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-xl);
-    padding: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.action-dropdown .dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: var(--transition);
-    color: var(--dark);
-}
-
-.action-dropdown .dropdown-item:hover {
-    background: var(--light-gray);
-    color: var(--primary);
-}
-
-.action-dropdown .dropdown-item.text-danger {
-    color: var(--danger) !important;
-}
-
-.action-dropdown .dropdown-item.text-danger:hover {
-    background: rgba(239, 68, 68, 0.1) !important;
-}
-
-.header-main {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.project-icon-wrapper {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.project-icon-bg {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    width: calc(100% + 20px);
-    height: calc(100% + 20px);
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    animation: pulse-soft 3s infinite;
-}
-
-@keyframes pulse-soft {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.05); opacity: 0.3; }
-}
-
-.project-icon {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 2.5rem;
-}
-
-.header-info {
-    flex: 1;
-}
-
-.project-code-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.875rem;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-.project-title-main {
-    font-size: 2rem;
-    font-weight: 800;
-    color: white;
-    margin: 0 0 0.75rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    line-height: 1.2;
-}
-
-.project-meta-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-}
-
-.meta-info-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.meta-info-item i {
-    opacity: 0.8;
-}
-
-.header-stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-}
-
-.stat-mini {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.stat-mini-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-
-.stat-mini-primary {
-    background: rgba(99, 102, 241, 0.3);
-}
-
-.stat-mini-success {
-    background: rgba(16, 185, 129, 0.3);
-}
-
-.stat-mini-warning {
-    background: rgba(245, 158, 11, 0.3);
-}
-
-.stat-mini-info {
-    background: rgba(6, 182, 212, 0.3);
-}
-
-.stat-mini-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-mini-label {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.85);
-    margin-bottom: 0.125rem;
-}
-
-.stat-mini-value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: white;
-    line-height: 1.2;
-}
-
-.stat-mini-value-sm {
-    font-size: 0.875rem;
-}
-
-/* ========== PROJECT CONTENT GRID ========== */
-.project-content-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 2rem;
-}
-
-/* ========== PROJECT SIDEBAR ========== */
-.project-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.sidebar-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: slideUp 0.6s ease forwards;
-}
-
-@keyframes slideUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.sidebar-card:nth-child(1) { animation-delay: 0.1s; }
-.sidebar-card:nth-child(2) { animation-delay: 0.2s; }
-.sidebar-card:nth-child(3) { animation-delay: 0.3s; }
-.sidebar-card:nth-child(4) { animation-delay: 0.4s; }
-
-/* Image Card */
-.image-card {
-    padding: 0;
-}
-
-.image-container {
-    position: relative;
-    width: 100%;
-    height: 240px;
-    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-}
-
-.project-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.image-badge-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.image-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-.no-image-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.placeholder-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-}
-
-.placeholder-text {
-    color: rgba(255, 255, 255, 0.95);
-    font-weight: 600;
-    margin: 0;
-}
-
-/* Details Card */
-.card-header-simple {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(to bottom, var(--light-gray), white);
-}
-
-.card-header-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.125rem;
-}
-
-.card-header-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0;
-}
-
-.details-list {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-}
-
-.detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition: var(--transition);
-}
-
-.detail-row:hover {
-    border-color: var(--primary-light);
-    box-shadow: var(--shadow-sm);
-    transform: translateX(-4px);
-}
-
-.detail-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--gray);
-    font-weight: 500;
-}
-
-.detail-label i {
-    width: 16px;
-    text-align: center;
-    color: var(--primary);
-}
-
-.detail-value {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-/* Services Card */
-.services-list {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-}
-
-.service-item {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    padding: 0.875rem;
-    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition: var(--transition);
-}
-
-.service-item:hover {
-    border-color: var(--primary-light);
-    box-shadow: var(--shadow-sm);
-}
-
-.service-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-}
-
-.service-icon-info {
-    background: linear-gradient(135deg, var(--info) 0%, #0891b2 100%);
-}
-
-.service-icon-danger {
-    background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
-}
-
-.service-name {
-    flex: 1;
-    font-weight: 600;
-    color: var(--dark);
-}
-
-.service-status {
-    color: var(--success);
-    font-size: 1.25rem;
-}
-
-/* Actions Card */
-.actions-card {
-    padding: 1.25rem 1.5rem;
-}
-
-.actions-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.action-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.625rem;
-    padding: 0.875rem 1.25rem;
-    border-radius: var(--radius);
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.action-btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: white;
-    box-shadow: var(--shadow-sm);
-}
-
-.action-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    color: white;
-}
-
-.action-btn-secondary {
-    background: white;
-    color: var(--gray);
-    border: 2px solid var(--border);
-}
-
-.action-btn-secondary:hover {
-    background: var(--light-gray);
-    border-color: var(--gray);
-    color: var(--dark);
-}
-
-.action-btn-danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    border: 2px solid rgba(239, 68, 68, 0.3);
-}
-
-.action-btn-danger:hover {
-    background: var(--danger);
-    border-color: var(--danger);
-    color: white;
-}
-
-/* ========== PROJECT MAIN CONTENT ========== */
-.project-main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.content-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: var(--transition);
-}
-
-.content-card.animate-in {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.content-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    background: linear-gradient(to bottom, var(--light-gray), white);
-    border-bottom: 1px solid var(--border);
-}
-
-.content-header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.content-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.content-icon-success {
-    background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-}
-
-.content-title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0 0 0.25rem 0;
-}
-
-.content-subtitle {
-    font-size: 0.9rem;
-    color: var(--gray);
-    margin: 0;
-}
-
-.content-badge {
-    display: flex;
-    align-items: center;
-}
-
-.badge-count {
-    min-width: 44px;
-    height: 44px;
-    padding: 0 0.875rem;
-    background: linear-gradient(135deg, var(--info) 0%, #0891b2 100%);
-    border-radius: 12px;
-    color: white;
-    font-size: 1.125rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-sm);
-}
-
-.content-badge-success .badge-count {
-    background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-}
-
-.content-card-body {
-    padding: 2rem;
-}
-
-/* ========== FILAMENT USAGE GRID ========== */
-.filament-usage-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.5rem;
-}
-
-.usage-card {
-    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    transition: var(--transition);
-    opacity: 0;
-    transform: scale(0.95);
-}
-
-.usage-card.animate-in {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.usage-card:hover {
-    border-color: var(--primary-light);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px) scale(1);
-}
-
-.usage-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.25rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 2px dashed var(--border);
-}
-
-.usage-header-left {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.875rem;
-    flex: 1;
-}
-
-.filament-color-indicator {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    border: 3px solid white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    flex-shrink: 0;
-}
-
-.usage-header-info {
-    flex: 1;
-}
-
-.usage-filament-name {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin: 0 0 0.5rem 0;
-}
-
-.usage-filament-meta {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.usage-meta-tag {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.625rem;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.usage-status-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--success);
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.usage-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
-    margin-bottom: 1.25rem;
-}
-
-.usage-stat-box {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition: var(--transition);
-}
-
-.usage-stat-box:hover {
-    border-color: var(--primary-light);
-    box-shadow: var(--shadow-sm);
-}
-
-.stat-box-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.95rem;
-    flex-shrink: 0;
-}
-
-.stat-box-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-}
-
-.stat-box-success {
-    background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-}
-
-.stat-box-danger {
-    background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
-}
-
-.stat-box-info {
-    background: linear-gradient(135deg, var(--info) 0%, #0891b2 100%);
-}
-
-.stat-box-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-box-label {
-    font-size: 0.75rem;
-    color: var(--gray);
-    margin-bottom: 0.125rem;
-}
-
-.stat-box-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-    line-height: 1.2;
-}
-
-.usage-footer {
-    margin-bottom: 1.25rem;
-}
-
-.usage-date {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: var(--radius);
-    color: var(--gray);
-    font-size: 0.875rem;
-}
-
-.usage-date i {
-    color: var(--primary);
-}
-
-.usage-card-actions {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.75rem;
-}
-
-.usage-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.125rem;
-    border-radius: var(--radius);
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.usage-btn-view {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    border: 2px solid var(--primary-light);
-}
-
-.usage-btn-view:hover {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
-
-.usage-btn-delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    border: 2px solid rgba(239, 68, 68, 0.3);
-    padding: 0.75rem;
-}
-
-.usage-btn-delete:hover {
-    background: var(--danger);
-    border-color: var(--danger);
-    color: white;
-}
-
-/* ========== SALES GRID ========== */
-.sales-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1.5rem;
-}
-
-.sale-card {
-    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    transition: var(--transition);
-    opacity: 0;
-    transform: scale(0.95);
-}
-
-.sale-card.animate-in {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.sale-card:hover {
-    border-color: var(--success);
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px) scale(1);
-}
-
-.sale-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.25rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 2px dashed var(--border);
-}
-
-.sale-header-left {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.875rem;
-}
-
-.sale-number {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1rem;
-    font-weight: 800;
-    flex-shrink: 0;
-}
-
-.sale-info {
-    flex: 1;
-}
-
-.sale-customer {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0 0 0.375rem 0;
-}
-
-.sale-phone {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--gray);
-    margin: 0;
-}
-
-.sale-phone i {
-    font-size: 0.75rem;
-}
-
-.sale-date-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.875rem;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
-}
-
-.sale-details-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
-    margin-bottom: 1.25rem;
-}
-
-.sale-detail-item {
-    padding: 0.875rem;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.sale-detail-label {
-    font-size: 0.75rem;
-    color: var(--gray);
-}
-
-.sale-detail-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-.sale-financial {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.875rem;
-}
-
-.financial-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: var(--radius);
-}
-
-.financial-item-price {
-    background: rgba(6, 182, 212, 0.1);
-}
-
-.financial-item-profit {
-    background: rgba(16, 185, 129, 0.1);
-}
-
-.financial-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.financial-item-price .financial-icon {
-    background: var(--info);
-    color: white;
-}
-
-.financial-item-profit .financial-icon {
-    background: var(--success);
-    color: white;
-}
-
-.financial-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.financial-label {
-    font-size: 0.75rem;
-    color: var(--gray);
-    margin-bottom: 0.125rem;
-}
-
-.financial-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-    line-height: 1.2;
-}
-
-/* ========== EMPTY STATE ========== */
-.empty-state-modern {
-    text-align: center;
-    padding: 4rem 2rem;
-}
-
-.empty-state-icon {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, var(--light-gray) 0%, #e5e7eb 100%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gray);
-    font-size: 3rem;
-    margin: 0 auto 1.5rem;
-}
-
-.empty-state-icon-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
-    color: var(--success);
-}
-
-.empty-state-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray);
-    margin-bottom: 0.75rem;
-}
-
-.empty-state-text {
-    font-size: 1rem;
-    color: var(--gray);
-    margin-bottom: 2rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.empty-state-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: white;
-    border-radius: var(--radius);
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-    transition: var(--transition);
-    box-shadow: var(--shadow-lg);
-}
-
-.empty-state-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
-    color: white;
-}
-
-/* ========== RESPONSIVE DESIGN ========== */
-@media (max-width: 1199px) {
-    .project-content-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .project-sidebar {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-    }
-    
-    .image-card {
-        grid-column: 1 / -1;
-    }
-}
-
-@media (max-width: 991px) {
-    .header-wrapper {
-        padding: 1.5rem;
-    }
-    
-    .project-title-main {
-        font-size: 1.75rem;
-    }
-    
-    .header-stats-row {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .project-sidebar {
-        grid-template-columns: 1fr;
-    }
-    
-    .header-main {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .project-icon-wrapper {
-        align-self: center;
-    }
-    
-    .header-info {
-        text-align: center;
-    }
-    
-    .project-code-tag {
-        align-self: center;
-    }
-    
-    .project-meta-info {
-        justify-content: center;
-    }
-    
-    .header-stats-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .content-card-body {
-        padding: 1.25rem;
-    }
-    
-    .filament-usage-grid,
-    .sales-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .usage-card-actions {
-        grid-template-columns: 1fr;
-    }
-    
-    .usage-stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .sale-details-grid,
-    .sale-financial {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 576px) {
-    .header-wrapper {
-        padding: 1.25rem;
-    }
-    
-    .back-btn span {
-        display: none;
-    }
-    
-    .back-btn {
-        padding: 0.625rem;
-        width: 40px;
-        justify-content: center;
-    }
-    
-    .header-actions-mobile {
-        display: block;
-    }
-    
-    .project-title-main {
-        font-size: 1.5rem;
-    }
-    
-    .project-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
-    }
-    
-    .content-card-header {
-        padding: 1.25rem 1.5rem;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .content-title {
-        font-size: 1.25rem;
-    }
-    
-    .image-container {
-        height: 200px;
-    }
-    
-    .actions-grid {
-        gap: 0.625rem;
-    }
-    
-    .action-btn {
-        font-size: 0.875rem;
-        padding: 0.75rem 1rem;
-    }
-    /* Detail Divider */
-    .detail-divider {
-        margin: 1rem 0 0.875rem 0;
-        padding: 0.875rem 0;
-        border-top: 2px dashed var(--border);
-        border-bottom: 2px dashed var(--border);
-        display: flex;
-        justify-content: center;
-    }
-
-    .divider-text {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: var(--primary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .divider-text i {
-        font-size: 1rem;
-    }
-
-    /* Service Row Variant */
-    .detail-row-service {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.1) 100%);
-        border-color: rgba(16, 185, 129, 0.2);
-    }
-
-    .detail-row-service:hover {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.15) 100%);
-        border-color: var(--success);
-    }
-
-    .detail-row-service .detail-label {
-        color: var(--success);
-        font-weight: 600;
-    }
-
-    .detail-row-service .detail-label i {
-        color: var(--success);
-    }
-
-    .service-check {
-        color: var(--success);
-        font-size: 1.25rem;
-        display: flex;
-        align-items: center;
-        animation: checkPulse 2s infinite;
-    }
-
-    @keyframes checkPulse {
-        0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-        50% {
-            opacity: 0.8;
-            transform: scale(1.1);
-        }
-    }
-}
-/* Header Quick Actions */
-.header-quick-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    transition: var(--transition);
-    font-size: 0.95rem;
-    cursor: pointer;
-}
-
-.header-action-btn:hover {
-    background: rgba(255, 255, 255, 0.35);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-2px);
-    color: white;
-}
-
-.header-action-edit {
-    background: rgba(16, 185, 129, 0.3);
-    border-color: rgba(16, 185, 129, 0.4);
-}
-
-.header-action-delete {
-    background: rgba(202, 15, 43, 0.81);
-    border-color: rgba(226, 226, 226, 0.4);
-    text-color; rgba(243, 156, 169, 0.81);
-}
-
-.header-action-delete:hover {
-    background: rgba(246, 6, 58, 0.93);
-    border-color: rgba(218, 152, 47, 0.6);
-}
-
-.header-action-edit:hover {
-    background: rgba(16, 185, 129, 0.5);
-    border-color: rgba(16, 185, 129, 0.6);
-}
-
-.header-action-more {
-    padding: 0.75rem;
-    min-width: 44px;
-    justify-content: center;
-}
-
-.header-action-more i {
-    margin: 0;
-}
-
-/* Update back button to match */
-.back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(4px);
-    color: white;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .header-quick-actions {
-        gap: 0.5rem;
-    }
-    
-    .header-action-btn span {
-        display: none;
-    }
-    
-    .header-action-btn {
-        padding: 0.75rem;
-        min-width: 44px;
-        justify-content: center;
-    }
-    
-    .back-btn span {
-        display: none;
-    }
-    
-    .back-btn {
-        padding: 0.75rem;
-        min-width: 44px;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 576px) {
-    .header-top {
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-    
-    .header-quick-actions {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .header-action-edit {
-        flex: 1;
-    }
-    
-    .header-action-edit span {
-        display: inline;
-    }
-}
-</style>
 {% endblock %}

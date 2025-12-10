@@ -29,7 +29,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 SECRET_KEY = 'django-insecure-)z-k8&$xxmp_pg5s1kv0x12)8qg(7t*)c_dxxty!o3!2fn1t7a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "*"]
 

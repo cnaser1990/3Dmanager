@@ -1,1060 +1,422 @@
 <!-- templates/calculator/pricing_settings.html -->
 {% extends "calculator/base.html" %}
-{% block title %}تنظیمات قیمت‌گذاری{% endblock %}
+{% load static %}
+
+{% block title %}تنظیمات قیمت‌گذاری - پرینت‌کست{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-2 px-md-4 py-4">
-  
-  <!-- Modern Settings Header -->
-  <div class="settings-header">
-    <div class="header-icon-wrapper">
-      <div class="header-icon">
-        <i class="fas fa-sliders-h"></i>
-      </div>
-    </div>
-    <div class="header-content">
-      <h1 class="header-title">تنظیمات قیمت‌گذاری</h1>
-      <p class="header-subtitle">
-        مدیریت قیمت برق، درصد سود، استهلاک و سرویس‌های اضافی
-      </p>
-    </div>
-    <div class="header-badge">
-      <i class="fas fa-clock"></i>
-      <span>{{ settings_obj.updated_at|date:"Y/m/d H:i" }}</span>
-    </div>
-  </div>
+<div class="container-fluid px-3 px-lg-4 py-4">
 
-  <form method="post" id="settingsForm" novalidate>
-    {% csrf_token %}
-
-    <div class="settings-wrapper">
-      <div class="row g-4">
-        
-        <!-- Main Settings Section -->
-        <div class="col-lg-8">
-          
-          <!-- Base Costs Card -->
-          <div class="settings-card">
-            <div class="card-header">
-              <div class="header-icon-box header-icon-warning">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <div class="header-text">
-                <h2>هزینه‌های پایه</h2>
-                <p>قیمت برق، استهلاک و هزینه‌های عمومی</p>
-              </div>
+    <!-- Page Header -->
+    <div class="page-header animate-in">
+        <div class="page-header-inner">
+            <div class="page-header-content">
+                <a href="{% url 'calculator:index' %}" class="btn-modern btn-outline me-3" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: white;">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <div class="page-header-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="page-header-text">
+                    <h1>تنظیمات قیمت‌گذاری</h1>
+                    <p>مدیریت هزینه‌ها، درصد سود و سرویس‌های اضافی</p>
+                </div>
             </div>
-            
-            <div class="card-body">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-bolt"></i>
-                      قیمت برق (تومان/کیلووات‌ساعت)
-                    </label>
-                    {{ form.power_price_per_kwh }}
-                    {% for e in form.power_price_per_kwh.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      هزینه هر کیلووات‌ساعت برق مصرفی
-                    </div>
-                  </div>
+            <div class="page-header-actions">
+                <div class="header-date-badge">
+                    <i class="fas fa-clock"></i>
+                    <span>آخرین بروزرسانی:</span>
+                    <span id="lastUpdatedDate" data-date="{{ settings_obj.updated_at.isoformat }}"></span>
                 </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-tools"></i>
-                      استهلاک دستگاه (تومان/ساعت)
-                    </label>
-                    {{ form.depreciation_per_hour }}
-                    {% for e in form.depreciation_per_hour.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      هزینه استهلاک دستگاه در هر ساعت
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-percent"></i>
-                      درصد پرت فیلامنت (%)
-                    </label>
-                    {{ form.filament_waste_percent }}
-                    {% for e in form.filament_waste_percent.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      درصد فیلامنت هدر رفته در فرآیند
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-box"></i>
-                      هزینه بسته‌بندی (تومان)
-                    </label>
-                    {{ form.packaging_cost }}
-                    {% for e in form.packaging_cost.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      هزینه پیش‌فرض بسته‌بندی
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-
-          <!-- Services Card -->
-          <div class="settings-card">
-            <div class="card-header">
-              <div class="header-icon-box header-icon-info">
-                <i class="fas fa-wrench"></i>
-              </div>
-              <div class="header-text">
-                <h2>خدمات اضافی</h2>
-                <p>نرخ پست‌پروسسینگ و رنگ‌آمیزی</p>
-              </div>
-            </div>
-            
-            <div class="card-body">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-hammer"></i>
-                      نرخ پست‌پروسسینگ (تومان)
-                    </label>
-                    {{ form.post_processing_rate }}
-                    {% for e in form.post_processing_rate.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      هزینه پرداخت و تمیزکاری
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-palette"></i>
-                      نرخ رنگ‌آمیزی (تومان/سانتی‌متر مربع)
-                    </label>
-                    {{ form.painting_rate_per_cm2 }}
-                    {% for e in form.painting_rate_per_cm2.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      قیمت رنگ‌آمیزی هر سانتی‌متر مربع
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pricing Policy Card -->
-          <div class="settings-card">
-            <div class="card-header">
-              <div class="header-icon-box header-icon-success">
-                <i class="fas fa-percentage"></i>
-              </div>
-              <div class="header-text">
-                <h2>سیاست قیمت‌گذاری</h2>
-                <p>درصد سود و گرد کردن قیمت‌ها</p>
-              </div>
-            </div>
-            
-            <div class="card-body">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-chart-line"></i>
-                      درصد سود (%)
-                    </label>
-                    {{ form.profit_percent }}
-                    {% for e in form.profit_percent.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      درصد سود اضافه شده به هزینه‌ها
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="form-group">
-                    <label class="form-label">
-                      <i class="fas fa-calculator"></i>
-                      گرد کردن قیمت (تومان)
-                    </label>
-                    {{ form.round_to_nearest }}
-                    {% for e in form.round_to_nearest.errors %}
-                      <div class="field-error">{{ e }}</div>
-                    {% endfor %}
-                    <div class="field-hint">
-                      <i class="fas fa-info-circle"></i>
-                      قیمت‌ها به این مقدار گرد می‌شوند
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Action Card -->
-          <div class="action-card">
-            <div class="action-content">
-              <div class="action-icon">
-                <i class="fas fa-info-circle"></i>
-              </div>
-              <div class="action-text">
-                این تنظیمات بر تمام محاسبات آینده تأثیر خواهد گذاشت
-              </div>
-            </div>
-            <button type="submit" class="btn-save-settings">
-              <i class="fas fa-save"></i>
-              <span>ذخیره تنظیمات</span>
-            </button>
-          </div>
-
         </div>
+    </div>
 
-        <!-- Preview Sidebar -->
-        <div class="col-lg-4">
-          <div class="preview-sidebar sticky-preview">
+    <form method="post" id="settingsForm">
+        {% csrf_token %}
+        <div class="row g-4">
             
-            <!-- Preview Card -->
-            <div class="preview-card">
-              <div class="preview-header">
-                <i class="fas fa-eye"></i>
-                <h2>پیش‌نمایش زنده</h2>
-              </div>
-
-              <div class="preview-body">
-                
-                <!-- Base Costs Preview -->
-                <div class="preview-section">
-                  <h3 class="section-title">
-                    <i class="fas fa-bolt"></i>
-                    هزینه‌های پایه
-                  </h3>
-                  <div class="preview-items">
-                    <div class="preview-item">
-                      <span class="item-label">قیمت برق</span>
-                      <span class="item-value" id="preview-power">-</span>
+            <!-- Main Settings -->
+            <div class="col-lg-8">
+                <!-- Base Costs -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-warning">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>هزینه‌های پایه</h2>
+                                <p>مصرف برق و استهلاک دستگاه</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="preview-item">
-                      <span class="item-label">استهلاک</span>
-                      <span class="item-value" id="preview-depreciation">-</span>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.power_price_per_kwh.id_for_label }}">
+                                        <i class="fas fa-bolt text-warning"></i>
+                                        قیمت برق (تومان/کیلووات‌ساعت)
+                                    </label>
+                                    {{ form.power_price_per_kwh }}
+                                    {% if form.power_price_per_kwh.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.power_price_per_kwh.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">هزینه هر ۱ کیلووات ساعت برق</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.depreciation_per_hour.id_for_label }}">
+                                        <i class="fas fa-cog text-muted"></i>
+                                        استهلاک دستگاه (تومان/ساعت)
+                                    </label>
+                                    {{ form.depreciation_per_hour }}
+                                    {% if form.depreciation_per_hour.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.depreciation_per_hour.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">هزینه مستهلک شدن پرینتر</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.filament_waste_percent.id_for_label }}">
+                                        <i class="fas fa-recycle text-danger"></i>
+                                        درصد پرت فیلامنت (%)
+                                    </label>
+                                    {{ form.filament_waste_percent }}
+                                    {% if form.filament_waste_percent.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.filament_waste_percent.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">فیلامنت هدر رفته در شروع و تست</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.packaging_cost.id_for_label }}">
+                                        <i class="fas fa-box text-info"></i>
+                                        هزینه بسته‌بندی (تومان)
+                                    </label>
+                                    {{ form.packaging_cost }}
+                                    {% if form.packaging_cost.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.packaging_cost.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">هزینه پیش‌فرض بسته‌بندی</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="preview-item">
-                      <span class="item-label">پرت فیلامنت</span>
-                      <span class="item-value" id="preview-waste">-</span>
-                    </div>
-                    <div class="preview-item">
-                      <span class="item-label">بسته‌بندی</span>
-                      <span class="item-value" id="preview-packaging">-</span>
-                    </div>
-                  </div>
                 </div>
 
-                <!-- Services Preview -->
-                <div class="preview-section">
-                  <h3 class="section-title">
-                    <i class="fas fa-wrench"></i>
-                    خدمات اضافی
-                  </h3>
-                  <div class="preview-items">
-                    <div class="preview-item">
-                      <span class="item-label">پست‌پروسسینگ</span>
-                      <span class="item-value" id="preview-postprocessing">-</span>
+                <!-- Services -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-info">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>خدمات اضافی</h2>
+                                <p>نرخ پست‌پروسسینگ و رنگ‌آمیزی</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="preview-item">
-                      <span class="item-label">رنگ‌آمیزی</span>
-                      <span class="item-value" id="preview-painting">-</span>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.post_processing_rate.id_for_label }}">
+                                        <i class="fas fa-hammer text-info"></i>
+                                        نرخ پست‌پروسسینگ (تومان)
+                                    </label>
+                                    {{ form.post_processing_rate }}
+                                    {% if form.post_processing_rate.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.post_processing_rate.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">پرداخت، سنباده، حذف ساپورت</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.painting_rate_per_cm2.id_for_label }}">
+                                        <i class="fas fa-palette text-danger"></i>
+                                        نرخ رنگ‌آمیزی (تومان/cm²)
+                                    </label>
+                                    {{ form.painting_rate_per_cm2 }}
+                                    {% if form.painting_rate_per_cm2.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.painting_rate_per_cm2.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">هزینه رنگ براساس سطح مدل</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
 
-                <!-- Pricing Preview -->
-                <div class="preview-section">
-                  <h3 class="section-title">
-                    <i class="fas fa-percentage"></i>
-                    سیاست قیمت
-                  </h3>
-                  <div class="preview-items">
-                    <div class="preview-item">
-                      <span class="item-label">درصد سود</span>
-                      <span class="item-value item-value-success" id="preview-profit">-</span>
+                <!-- Pricing Policy -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-success">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>سیاست قیمت‌گذاری</h2>
+                                <p>درصد سود و رُند کردن قیمت</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="preview-item">
-                      <span class="item-label">گرد کردن</span>
-                      <span class="item-value" id="preview-round">-</span>
+                    <div class="card-modern-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.profit_percent.id_for_label }}">
+                                        <i class="fas fa-chart-line text-success"></i>
+                                        درصد سود (%)
+                                    </label>
+                                    {{ form.profit_percent }}
+                                    {% if form.profit_percent.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.profit_percent.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">درصدی که به هزینه اضافه می‌شود</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-0">
+                                    <label class="form-label" for="{{ form.round_to_nearest.id_for_label }}">
+                                        <i class="fas fa-sort-numeric-up text-primary"></i>
+                                        گرد کردن قیمت (تومان)
+                                    </label>
+                                    {{ form.round_to_nearest }}
+                                    {% if form.round_to_nearest.errors %}
+                                        <div class="form-error">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{ form.round_to_nearest.errors.0 }}
+                                        </div>
+                                    {% else %}
+                                        <div class="form-hint">مثلاً ۱۰۰۰ = نزدیک‌ترین هزار تومان</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
 
-                <!-- Info Alert -->
-                <div class="preview-alert">
-                  <i class="fas fa-lightbulb"></i>
-                  <p>این تنظیمات در محاسبات صفحه افزودن مدل به صورت زنده استفاده می‌شود.</p>
+                <!-- Submit -->
+                <div class="card-modern animate-in">
+                    <div class="card-modern-body p-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="fas fa-info-circle text-info" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <div class="fw-semibold">این تنظیمات بر تمام محاسبات آینده تأثیر می‌گذارد</div>
+                                    <div class="text-muted small">محاسبات قبلی تغییر نمی‌کنند.</div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-modern btn-primary btn-lg">
+                                <i class="fas fa-save"></i>
+                                <span>ذخیره تنظیمات</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-              </div>
             </div>
 
-            <!-- Sample Calculation Card -->
-            <div class="sample-calc-card">
-              <div class="sample-header">
-                <i class="fas fa-calculator"></i>
-                <h3>محاسبه نمونه</h3>
-              </div>
-              <div class="sample-body">
-                <div class="sample-input">
-                  <label>زمان پرینت (ساعت):</label>
-                  <input type="number" id="sample-hours" class="sample-input-field" value="5" min="0" step="0.1">
-                </div>
-                <div class="sample-input">
-                  <label>مصرف برق (کیلووات):</label>
-                  <input type="number" id="sample-power" class="sample-input-field" value="0.25" min="0" step="0.01">
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                
+                <!-- Current Values Summary -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-primary">
+                                <i class="fas fa-sliders-h"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>مقادیر فعلی</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-bolt text-warning"></i>
+                                    قیمت برق
+                                </span>
+                                <span class="fw-bold">{{ settings_obj.power_price_per_kwh|floatformat:0 }} ت</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-cog text-muted"></i>
+                                    استهلاک
+                                </span>
+                                <span class="fw-bold">{{ settings_obj.depreciation_per_hour|floatformat:0 }} ت/ساعت</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-recycle text-danger"></i>
+                                    پرت فیلامنت
+                                </span>
+                                <span class="fw-bold">{{ settings_obj.filament_waste_percent|floatformat:0 }}%</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-chart-line text-success"></i>
+                                    درصد سود
+                                </span>
+                                <span class="fw-bold text-success">{{ settings_obj.profit_percent|floatformat:0 }}%</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">
+                                    <i class="fas fa-sort-numeric-up text-primary"></i>
+                                    گرد کردن
+                                </span>
+                                <span class="fw-bold">{{ settings_obj.round_to_nearest|floatformat:0 }} ت</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="sample-result">
-                  <div class="result-item">
-                    <span>هزینه برق:</span>
-                    <strong id="calc-power-cost">-</strong>
-                  </div>
-                  <div class="result-item">
-                    <span>هزینه استهلاک:</span>
-                    <strong id="calc-depreciation-cost">-</strong>
-                  </div>
-                  <div class="result-item result-total">
-                    <span>جمع هزینه:</span>
-                    <strong id="calc-total-cost">-</strong>
-                  </div>
+                <!-- Guide Card -->
+                <div class="card-modern mb-4 animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-info">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>فرمول محاسبه</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="d-flex flex-column gap-2">
+                            <div class="calc-step">
+                                <div class="calc-step-icon" style="background: var(--success-100);">
+                                    <i class="fas fa-tape text-success"></i>
+                                </div>
+                                <div class="calc-step-text">
+                                    <span class="calc-step-title">هزینه مواد</span>
+                                    <span class="calc-step-desc">وزن × قیمت فیلامنت + پرت</span>
+                                </div>
+                            </div>
+                            <div class="calc-step-arrow">
+                                <i class="fas fa-plus text-muted"></i>
+                            </div>
+                            <div class="calc-step">
+                                <div class="calc-step-icon" style="background: var(--warning-100);">
+                                    <i class="fas fa-bolt text-warning"></i>
+                                </div>
+                                <div class="calc-step-text">
+                                    <span class="calc-step-title">هزینه برق</span>
+                                    <span class="calc-step-desc">توان × زمان × نرخ</span>
+                                </div>
+                            </div>
+                            <div class="calc-step-arrow">
+                                <i class="fas fa-plus text-muted"></i>
+                            </div>
+                            <div class="calc-step">
+                                <div class="calc-step-icon" style="background: var(--gray-100);">
+                                    <i class="fas fa-cog text-muted"></i>
+                                </div>
+                                <div class="calc-step-text">
+                                    <span class="calc-step-title">استهلاک</span>
+                                    <span class="calc-step-desc">ساعت کار × نرخ</span>
+                                </div>
+                            </div>
+                            <div class="calc-step-arrow">
+                                <i class="fas fa-plus text-muted"></i>
+                            </div>
+                            <div class="calc-step">
+                                <div class="calc-step-icon" style="background: var(--info-100);">
+                                    <i class="fas fa-tools text-info"></i>
+                                </div>
+                                <div class="calc-step-text">
+                                    <span class="calc-step-title">خدمات اضافی</span>
+                                    <span class="calc-step-desc">پست‌پروسس + رنگ</span>
+                                </div>
+                            </div>
+                            <div class="calc-step-arrow">
+                                <i class="fas fa-equals text-primary"></i>
+                            </div>
+                            <div class="calc-step" style="background: var(--primary-50); border: 1px solid var(--primary-200);">
+                                <div class="calc-step-icon" style="background: var(--primary-500);">
+                                    <i class="fas fa-coins text-white"></i>
+                                </div>
+                                <div class="calc-step-text">
+                                    <span class="calc-step-title text-primary fw-bold">قیمت نهایی</span>
+                                    <span class="calc-step-desc">(جمع × درصد سود) رُند شده</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
+
+                <!-- Tips Card -->
+                <div class="card-modern animate-in">
+                    <div class="card-modern-header">
+                        <div class="card-header-title">
+                            <div class="card-header-icon icon-warning">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="card-header-text">
+                                <h2>نکات مفید</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-modern-body">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>درصد پرت معمولاً بین ۵ تا ۱۵ درصد است</span>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>استهلاک را بر اساس قیمت پرینتر و عمر مفید محاسبه کنید</span>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>درصد سود ۳۰ تا ۵۰ درصد برای کارهای سفارشی مناسب است</span>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span>گرد کردن به ۵۰۰۰ یا ۱۰۰۰۰ تومان قیمت‌ها را زیباتر می‌کند</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-          </div>
         </div>
-
-      </div>
-    </div>
-
-  </form>
+    </form>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-// Format number with Persian digits and commas
-function formatNumber(num) {
-    return new Intl.NumberFormat('fa-IR').format(Math.round(num || 0));
-}
-
-// Update all previews
-function updatePreviews() {
-    // Get form values
-    const powerPrice = parseFloat(document.getElementById('{{ form.power_price_per_kwh.id_for_label }}').value) || 0;
-    const depreciation = parseFloat(document.getElementById('{{ form.depreciation_per_hour.id_for_label }}').value) || 0;
-    const wastePercent = parseFloat(document.getElementById('{{ form.filament_waste_percent.id_for_label }}').value) || 0;
-    const packaging = parseFloat(document.getElementById('{{ form.packaging_cost.id_for_label }}').value) || 0;
-    const postProcessing = parseFloat(document.getElementById('{{ form.post_processing_rate.id_for_label }}').value) || 0;
-    const painting = parseFloat(document.getElementById('{{ form.painting_rate_per_cm2.id_for_label }}').value) || 0;
-    const profit = parseFloat(document.getElementById('{{ form.profit_percent.id_for_label }}').value) || 0;
-    const roundTo = parseFloat(document.getElementById('{{ form.round_to_nearest.id_for_label }}').value) || 0;
-
-    // Update previews
-    document.getElementById('preview-power').textContent = `${formatNumber(powerPrice)} ت/کیلووات`;
-    document.getElementById('preview-depreciation').textContent = `${formatNumber(depreciation)} ت/ساعت`;
-    document.getElementById('preview-waste').textContent = `${wastePercent}%`;
-    document.getElementById('preview-packaging').textContent = `${formatNumber(packaging)} تومان`;
-    document.getElementById('preview-postprocessing').textContent = `${formatNumber(postProcessing)} تومان`;
-    document.getElementById('preview-painting').textContent = `${formatNumber(painting)} ت/سم²`;
-    document.getElementById('preview-profit').textContent = `${profit}%`;
-    document.getElementById('preview-round').textContent = `${formatNumber(roundTo)} تومان`;
-
-    // Update sample calculation
-    updateSampleCalculation(powerPrice, depreciation, profit, roundTo);
-}
-
-// Update sample calculation
-function updateSampleCalculation(powerPrice, depreciation, profit, roundTo) {
-    const hours = parseFloat(document.getElementById('sample-hours').value) || 0;
-    const powerKw = parseFloat(document.getElementById('sample-power').value) || 0;
-
-    // Calculate costs
-    const powerCost = hours * powerKw * powerPrice;
-    const depreciationCost = hours * depreciation;
-    const subtotal = powerCost + depreciationCost;
-    const withProfit = subtotal * (1 + profit / 100);
-    const total = roundTo > 0 ? Math.ceil(withProfit / roundTo) * roundTo : withProfit;
-
-    // Update display
-    document.getElementById('calc-power-cost').textContent = `${formatNumber(powerCost)} تومان`;
-    document.getElementById('calc-depreciation-cost').textContent = `${formatNumber(depreciationCost)} تومان`;
-    document.getElementById('calc-total-cost').textContent = `${formatNumber(total)} تومان`;
-}
-
-// Add event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Update preview on input change
-    document.querySelectorAll('#settingsForm input').forEach(input => {
-        input.addEventListener('input', updatePreviews);
-        input.addEventListener('change', updatePreviews);
-    });
-
-    // Update sample calculation on input change
-    document.getElementById('sample-hours').addEventListener('input', function() {
-        const powerPrice = parseFloat(document.getElementById('{{ form.power_price_per_kwh.id_for_label }}').value) || 0;
-        const depreciation = parseFloat(document.getElementById('{{ form.depreciation_per_hour.id_for_label }}').value) || 0;
-        const profit = parseFloat(document.getElementById('{{ form.profit_percent.id_for_label }}').value) || 0;
-        const roundTo = parseFloat(document.getElementById('{{ form.round_to_nearest.id_for_label }}').value) || 0;
-        updateSampleCalculation(powerPrice, depreciation, profit, roundTo);
-    });
-
-    document.getElementById('sample-power').addEventListener('input', function() {
-        const powerPrice = parseFloat(document.getElementById('{{ form.power_price_per_kwh.id_for_label }}').value) || 0;
-        const depreciation = parseFloat(document.getElementById('{{ form.depreciation_per_hour.id_for_label }}').value) || 0;
-        const profit = parseFloat(document.getElementById('{{ form.profit_percent.id_for_label }}').value) || 0;
-        const roundTo = parseFloat(document.getElementById('{{ form.round_to_nearest.id_for_label }}').value) || 0;
-        updateSampleCalculation(powerPrice, depreciation, profit, roundTo);
-    });
-
-    // Initial update
-    updatePreviews();
-
-    // Animate preview card
-    setTimeout(() => {
-        document.querySelector('.preview-sidebar')?.classList.add('visible');
-    }, 200);
-
-    // Form submission handling
-    document.getElementById('settingsForm').addEventListener('submit', function(e) {
-        const submitBtn = this.querySelector('.btn-save-settings');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>در حال ذخیره...</span>';
-    });
-});
-</script>
-
-<style>
-:root {
-    --primary: #6366f1;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #06b6d4;
-    --dark: #1f2937;
-    --gray: #6b7280;
-    --light-gray: #f3f4f6;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    --radius: 12px;
-    --radius-lg: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ========== SETTINGS HEADER ========== */
-.settings-header {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.settings-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    transform: translate(30%, -30%);
-}
-
-.header-icon-wrapper {
-    position: relative;
-    z-index: 1;
-}
-
-.header-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.header-content {
-    flex: 1;
-    position: relative;
-    z-index: 1;
-}
-
-.header-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: white;
-    margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-subtitle {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.95);
-    margin: 0;
-}
-
-.header-badge {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius);
-    padding: 0.75rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: white;
-    font-size: 0.9rem;
-    font-weight: 600;
-    position: relative;
-    z-index: 1;
-}
-
-.header-badge i {
-    font-size: 1rem;
-}
-
-/* ========== SETTINGS WRAPPER ========== */
-.settings-wrapper {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* ========== SETTINGS CARD ========== */
-.settings-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
-
-.settings-card .card-header {
-    background: linear-gradient(135deg, var(--light-gray), white);
-    border-bottom: 1px solid var(--border);
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-}
-
-.header-icon-box {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-}
-
-.header-icon-warning {
-    background: linear-gradient(135deg, var(--warning), #d97706);
-}
-
-.header-icon-info {
-    background: linear-gradient(135deg, var(--info), #0891b2);
-}
-
-.header-icon-success {
-    background: linear-gradient(135deg, var(--success), #059669);
-}
-
-.header-text h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin: 0 0 0.25rem 0;
-}
-
-.header-text p {
-    font-size: 0.9rem;
-    color: var(--gray);
-    margin: 0;
-}
-
-.settings-card .card-body {
-    padding: 2rem;
-}
-
-/* ========== FORM GROUPS ========== */
-.form-group {
-    margin-bottom: 0;
-}
-
-.form-label {
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
-}
-
-.form-label i {
-    font-size: 1rem;
-    color: var(--primary);
-}
-
-.form-control,
-.form-select {
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    transition: var(--transition);
-    width: 100%;
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-    outline: none;
-}
-
-.field-error {
-    color: var(--danger);
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-}
-
-.field-error::before {
-    content: '⚠';
-    font-size: 1rem;
-}
-
-.field-hint {
-    font-size: 0.875rem;
-    color: var(--gray);
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-}
-
-.field-hint i {
-    font-size: 0.75rem;
-}
-
-/* ========== ACTION CARD ========== */
-.action-card {
-    background: linear-gradient(135deg, var(--light-gray), white);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.action-content {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-}
-
-.action-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(6, 182, 212, 0.1);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--info);
-    font-size: 1.25rem;
-}
-
-.action-text {
-    color: var(--gray);
-    font-weight: 600;
-}
-
-.btn-save-settings {
-    padding: 0.875rem 2rem;
-    background: linear-gradient(135deg, var(--success), #059669);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-weight: 700;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-save-settings:hover:not(:disabled) {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
-}
-
-.btn-save-settings:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* ========== PREVIEW SIDEBAR ========== */
-.preview-sidebar {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: var(--transition);
-}
-
-.preview-sidebar.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.sticky-preview {
-    position: sticky;
-    top: 100px;
-}
-
-/* ========== PREVIEW CARD ========== */
-.preview-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    margin-bottom: 1.5rem;
-}
-
-.preview-header {
-    background: linear-gradient(135deg, var(--primary), #4f46e5);
-    color: white;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.preview-header i {
-    font-size: 1.5rem;
-}
-
-.preview-header h2 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.preview-body {
-    padding: 1.5rem;
-}
-
-/* ========== PREVIEW SECTIONS ========== */
-.preview-section {
-    margin-bottom: 1.5rem;
-}
-
-.preview-section:last-child {
-    margin-bottom: 0;
-}
-
-.section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--dark);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--border);
-}
-
-.section-title i {
-    font-size: 1.1rem;
-    color: var(--primary);
-}
-
-.preview-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.preview-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    transition: var(--transition);
-}
-
-.preview-item:hover {
-    background: var(--border);
-}
-
-.item-label {
-    font-size: 0.9rem;
-    color: var(--gray);
-    font-weight: 600;
-}
-
-.item-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--dark);
-}
-
-.item-value-success {
-    color: var(--success);
-}
-
-/* ========== PREVIEW ALERT ========== */
-.preview-alert {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    border: 2px solid var(--info);
-    border-radius: var(--radius);
-    padding: 1rem;
-    margin-top: 1.5rem;
-    display: flex;
-    align-items: start;
-    gap: 0.75rem;
-}
-
-.preview-alert i {
-    font-size: 1.25rem;
-    color: var(--info);
-    flex-shrink: 0;
-    margin-top: 0.125rem;
-}
-
-.preview-alert p {
-    font-size: 0.875rem;
-    color: #155e75;
-    margin: 0;
-    line-height: 1.6;
-    font-weight: 600;
-}
-
-/* ========== SAMPLE CALCULATION CARD ========== */
-.sample-calc-card {
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-}
-
-.sample-header {
-    background: linear-gradient(135deg, var(--success), #059669);
-    color: white;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.sample-header i {
-    font-size: 1.5rem;
-}
-
-.sample-header h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.sample-body {
-    padding: 1.5rem;
-}
-
-.sample-input {
-    margin-bottom: 1rem;
-}
-
-.sample-input label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
-}
-
-.sample-input-field {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    transition: var(--transition);
-}
-
-.sample-input-field:focus {
-    border-color: var(--success);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.sample-result {
-    background: linear-gradient(135deg, var(--light-gray), white);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-top: 1.5rem;
-}
-
-.result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.result-item:last-child {
-    border-bottom: none;
-}
-
-.result-item span {
-    font-size: 0.9rem;
-    color: var(--gray);
-    font-weight: 600;
-}
-
-.result-item strong {
-    font-size: 1rem;
-    color: var(--dark);
-    font-weight: 700;
-}
-
-.result-total {
-    padding-top: 1rem;
-    margin-top: 0.5rem;
-    border-top: 2px solid var(--border);
-}
-
-.result-total strong {
-    font-size: 1.25rem;
-    color: var(--success);
-}
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 991px) {
-    .sticky-preview {
-        position: static;
-        top: auto;
-    }
-
-    .settings-header {
-        flex-wrap: wrap;
-        justify-content: center;
-        text-align: center;
-        padding: 1.5rem;
-    }
-
-    .header-content {
-        width: 100%;
-    }
-
-    .header-badge {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 768px) {
-    .settings-card .card-body {
-        padding: 1.5rem;
-    }
-
-    .action-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .action-content {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .btn-save-settings {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .header-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-    }
-
-    .header-title {
-        font-size: 1.5rem;
-    }
-
-    .settings-card .card-header {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-</style>
 {% endblock %}

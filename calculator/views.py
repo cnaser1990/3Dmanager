@@ -205,7 +205,7 @@ def delete_filament(request, pk):
         if usage_count > 0:
             messages.error(
                 request,
-                f'نمی‌توان این فیلامنت را حذف کرد چون {usage_count} پروژه به آن اختصاص داده شده است. ابتدا اختصاص‌ها را حذف کنید.'
+                f'نمی‌توان این فیلامنت را حذف کرد چون {usage_count} مدل به آن اختصاص داده شده است. ابتدا اختصاص‌ها را حذف کنید.'
             )
             return redirect('calculator:delete_all_filament_usages', filament_id=pk)
         filament_name = f"{filament.name} ({filament.color})"
@@ -234,7 +234,7 @@ def assign_project_to_filament(request, filament_id):
             filament_usage.save()
             messages.success(
                 request,
-                f'پروژه "{filament_usage.project.model_name}" به فیلامنت "{filament.name}" اختصاص داده شد'
+                f'مدل "{filament_usage.project.model_name}" به فیلامنت "{filament.name}" اختصاص داده شد'
             )
             return redirect('calculator:view_filament', pk=filament.pk)
     else:
@@ -247,7 +247,7 @@ def delete_filament_usage(request, pk):
     filament = filament_usage.filament
     if request.method == 'POST':
         filament_usage.delete()
-        messages.success(request, 'اختصاص پروژه حذف شد و فیلامنت بازگردانده شد')
+        messages.success(request, 'اختصاص مدل حذف شد و فیلامنت بازگردانده شد')
         return redirect('calculator:view_filament', pk=filament.pk)
     return render(request, 'calculator/confirm_delete_project.html', {
         'filament_usage': filament_usage,
@@ -295,7 +295,7 @@ def add_project(request):
         form = ProjectForm(request.POST, request.FILES)
         if form.is_valid():
             project = form.save()
-            messages.success(request, f'پروژه جدید با کد {project.code} ثبت شد')
+            messages.success(request, f'مدل جدید با کد {project.code} ثبت شد')
             return redirect('calculator:view_project', pk=project.pk)
     else:
         form = ProjectForm()
@@ -331,7 +331,7 @@ def edit_project(request, pk):
                 usage.total_cost = costs['total_cost']
                 usage.selling_price = costs['selling_price']
                 usage.save()
-            messages.success(request, 'پروژه بروزرسانی شد')
+            messages.success(request, 'مدل بروزرسانی شد')
             return redirect('calculator:view_project', pk=project.pk)
     else:
         form = ProjectForm(instance=project)
@@ -341,17 +341,41 @@ def edit_project(request, pk):
 def delete_project(request, pk):
     project = get_object_or_404(Project, pk=pk)
     usage_count = FilamentUsage.objects.filter(project=project).count()
-    if usage_count > 0:
-        messages.error(
-            request,
-            f'نمی‌توان این پروژه را حذف کرد چون به {usage_count} فیلامنت اختصاص داده شده است. ابتدا اختصاص‌ها را حذف کنید.'
-        )
-        return redirect('calculator:view_project', pk=pk)
+    sales_count = Sale.objects.filter(project=project).count()
+    
     if request.method == 'POST':
+        project_name = project.model_name
+        project_code = project.code
+        
+        # First delete all related FilamentUsages (and return filament to stock)
+        usages = FilamentUsage.objects.filter(project=project)
+        total_filament_returned = 0
+        for usage in usages:
+            total_filament_returned += usage.total_filament_used
+        usages.delete()
+        
+        # Delete all related Sales
+        Sale.objects.filter(project=project).delete()
+        
+        # Now delete the project
         project.delete()
-        messages.success(request, 'پروژه حذف شد')
+        
+        # Success message
+        msg = f'پروژه "{project_name}" (کد {project_code}) با موفقیت حذف شد.'
+        if usage_count > 0:
+            msg += f' {usage_count} اختصاص فیلامنت حذف و {total_filament_returned:.1f} متر فیلامنت بازگردانده شد.'
+        if sales_count > 0:
+            msg += f' {sales_count} فروش مرتبط نیز حذف شد.'
+        
+        messages.success(request, msg)
         return redirect('calculator:projects')
-    return render(request, 'calculator/confirm_delete_project.html', {'project': project})
+    
+    context = {
+        'project': project,
+        'usage_count': usage_count,
+        'sales_count': sales_count,
+    }
+    return render(request, 'calculator/confirm_delete_project.html', context)
 
 
 from django.db import transaction
@@ -799,7 +823,7 @@ def delete_all_filament_usages(request, filament_id):
         usages.delete()
         messages.success(
             request,
-            f'✅ {count} اختصاص پروژه حذف شد و {total_filament_returned:.2f} متر فیلامنت به موجودی بازگردانده شد.'
+            f'✅ {count} اختصاص مدل حذف شد و {total_filament_returned:.2f} متر فیلامنت به موجودی بازگردانده شد.'
         )
         return redirect('calculator:delete_filament', pk=filament_id)
     usages = FilamentUsage.objects.filter(filament=filament).select_related('project')
